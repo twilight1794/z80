@@ -1,12 +1,11 @@
 # z80
-
-<div style="font-size: 2rem">[¡Ejecutar la aplicación web!](https://twilight1794.github.io/z80)</div>
+[¡Ejecutar la aplicación web!](https://twilight1794.github.io/z80)
 
 - Emulador del microprocesador Zilog Z80
 - Creado para la clase de Estructura y Programación de Computadoras, del profesor Alberto Templos Carbajal
 
 ## Características
-- Interfaz amigable: web
+- Interfaz web amigable
 - Carga y descarga de archivos .asm
 - Carga y descarga del estado del procesador
 - Ejecución normal, paso a paso y puntos de ruptura

@@ -3,6 +3,7 @@
 
 - Emulador del microprocesador Zilog Z80
 - Creado para la clase de Estructura y Programación de Computadoras, del profesor Alberto Templos Carbajal
+- Software libre, bajo la licencia GNU GPLv3
 
 ## Características
 - Interfaz web amigable

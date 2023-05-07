@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" role="application">
+    <head>
+        <title>Emulador Z80</title>
+        <link rel="stylesheet" type="text/css" href="estilos.css" />
+        <link rel="stylesheet" type="text/css" href="hint.min.css" />
+        <link rel="stylesheet" type="text/css" href="codemirror.min.css" />
+        <link rel="stylesheet" type="text/css" href="monokai.min.css" />
+        <script>/*<![CDATA[*/window.pumahat = {};/*]]>*/</script>
+        <script src="codemirror.min.js"></script>
+        <script src="plataforma.js"></script>
+        <script src="programa.js"></script>
+        <script src="cadenas.js"></script>
+        <script src="inicial.js" defer="defer"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <body>
+        <header>
+            <input type="file" id="archivo" hidden="hidden" aria-label="Carga de archivo" accept=".asm,.hex,.xml" />
+            <ul aria-label="Principal" role="menubar">
+                <li><span>Archivo</span>
+                    <ul>
+                        <li><button role="menuitem" id="btnAbrirAsm">Abrir archivo en ensamblador... <kbd>M-f a</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardarAsm">Guardar archivo en ensamblador... <kbd>M-f b</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirHex">Abrir archivo hex... <kbd>M-f c</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardarHex">Guardar archivo hex... <kbd>M-f d</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirMem">Abrir archivo de estado de máquina... <kbd>M-f e</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardarMem">Guardar archivo de estado de máquina... <kbd>M-f f</kbd></button></li>
+                    </ul>
+                </li>
+                <li><span>Editar</span>
+                    <ul>
+                        <li><button role="menuitem" id="btnCortar">Cortar <kbd>C-x</kbd></button></li>
+                        <li><button role="menuitem" id="btnCopiar">Copiar <kbd>C-c</kbd></button></li>
+                        <li><button role="menuitem" id="btnPegar">Pegar <kbd>C-v</kbd></button></li>
+                        <li role="separator"></li>
+                        <li><button role="menuitem" id="btnInsEti">Insertar etiqueta</button></li>
+                        <li><span>Insertar directiva</span>
+                            <ul id="f_dir">
+                                <li><button role="menuitem">EQU</button></li>
+                                <li><button role="menuitem">ORG</button></li>
+                                <li><button role="menuitem">DB</button></li>
+                                <li><button role="menuitem">END</button></li>
+                            </ul>
+                        </li>
+                        <li><span>Insertar mnemotécnico</span>
+                            <ul id="f_mnemo">
+                                <li><span>Carga</span>
+                                    <ul>
+                                        <li><button role="menuitem">LD</button></li>
+                                        <li><button role="menuitem">PUSH</button></li>
+                                        <li><button role="menuitem">POP</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Intercambio, transferencia y búsqueda</span>
+                                    <ul>
+                                        <li><button role="menuitem">CPD</button></li>
+                                        <li><button role="menuitem">CPDR</button></li>
+                                        <li><button role="menuitem">CPI</button></li>
+                                        <li><button role="menuitem">CPIR</button></li>
+                                        <li><button role="menuitem">EX</button></li>
+                                        <li><button role="menuitem">EXX</button></li>
+                                        <li><button role="menuitem">LDD</button></li>
+                                        <li><button role="menuitem">LDDR</button></li>
+                                        <li><button role="menuitem">LDI</button></li>
+                                        <li><button role="menuitem">LDIR</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Aritmético-lógico</span>
+                                    <ul>
+                                        <li><button role="menuitem">ADD</button></li>
+                                        <li><button role="menuitem">ADC</button></li>
+                                        <li><button role="menuitem">SUB</button></li>
+                                        <li><button role="menuitem">SBC</button></li>
+                                        <li><button role="menuitem">AND</button></li>
+                                        <li><button role="menuitem">OR</button></li>
+                                        <li><button role="menuitem">XOR</button></li>
+                                        <li><button role="menuitem">CP</button></li>
+                                        <li><button role="menuitem">INC</button></li>
+                                        <li><button role="menuitem">DEC</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Aritmético y control de CPU</span>
+                                    <ul>
+                                        <li><button role="menuitem">CCF</button></li>
+                                        <li><button role="menuitem">DAA</button></li>
+                                        <li><button role="menuitem">DI</button></li>
+                                        <li><button role="menuitem">EI</button></li>
+                                        <li><button role="menuitem">HALT</button></li>
+                                        <li><button role="menuitem">IM0</button></li>
+                                        <li><button role="menuitem">IM1</button></li>
+                                        <li><button role="menuitem">IM2</button></li>
+                                        <li><button role="menuitem">NEG</button></li>
+                                        <li><button role="menuitem">NOP</button></li>
+                                        <li><button role="menuitem">SCF</button></li>
+                                        <li><button role="menuitem">CPL</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Rotación y desplazamiento</span>
+                                    <ul>
+                                        <li><button role="menuitem">RLCA</button></li>
+                                        <li><button role="menuitem">RLA</button></li>
+                                        <li><button role="menuitem">RRCA</button></li>
+                                        <li><button role="menuitem">RRA</button></li>
+                                        <li><button role="menuitem">RRD</button></li>
+                                        <li><button role="menuitem">RLD</button></li>
+                                        <li><button role="menuitem">RLC</button></li>
+                                        <li><button role="menuitem">RL</button></li>
+                                        <li><button role="menuitem">RRC</button></li>
+                                        <li><button role="menuitem">RR</button></li>
+                                        <li><button role="menuitem">SLA</button></li>
+                                        <li><button role="menuitem">SRA</button></li>
+                                        <li><button role="menuitem">SRL</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Bits</span>
+                                    <ul>
+                                        <li><button role="menuitem">BIT</button></li>
+                                        <li><button role="menuitem">SET</button></li>
+                                        <li><button role="menuitem">RES</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Salto</span>
+                                    <ul>
+                                        <li><button role="menuitem">JP</button></li>
+                                        <li><button role="menuitem">JRC</button></li>
+                                        <li><button role="menuitem">JRNC</button></li>
+                                        <li><button role="menuitem">JRZ</button></li>
+                                        <li><button role="menuitem">JRNZ</button></li>
+                                        <li><button role="menuitem">DJNZ</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>Llamada y retorno</span>
+                                    <ul>
+                                        <li><button role="menuitem">RET</button></li>
+                                        <li><button role="menuitem">RETI</button></li>
+                                        <li><button role="menuitem">RETN</button></li>
+                                        <li><button role="menuitem">RST</button></li>
+                                        <li><button role="menuitem">CALL</button></li>
+                                    </ul>
+                                </li>
+                                <li><span>E/S</span>
+                                    <ul>
+                                        <li><button role="menuitem">IN</button></li>
+                                        <li><button role="menuitem">IND</button></li>
+                                        <li><button role="menuitem">INDR</button></li>
+                                        <li><button role="menuitem">INI</button></li>
+                                        <li><button role="menuitem">INIR</button></li>
+                                        <li><button role="menuitem">OUT</button></li>
+                                        <li><button role="menuitem">OTDR</button></li>
+                                        <li><button role="menuitem">OTIR</button></li>
+                                        <li><button role="menuitem">OUTD</button></li>
+                                        <li><button role="menuitem">OUTI</button></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><span>Ejecutar</span>
+                    <ul>
+                        <li><button role="menuitem" id="btnEjecutar">Ejecutar <kbd>M-e e</kbd></button></li>
+                        <li><button role="menuitem" id="btnAvanzar">Ejecutar una instrucción <kbd>M-e a</kbd></button></li>
+                        <li><button role="menuitem" id="btnDetener">Detener ejecución <kbd>M-e d</kbd></button></li>
+                        <li><button role="menuitem" id="btnRestablecer">Restablecer <kbd>M-e r</kbd></button></li>
+                    </ul>
+                </li>
+                <li><span>Ayuda</span>
+                    <ul>
+                        <li><a role="menuitem" target="_blank" href="https://twilight1794.github.io/z80/manualusuario.html">Manual de usuario <kbd>M-a a</kbd></a></li>
+                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">Informar sobre un problema <kbd>M-a p</kbd></a></li>
+                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">Repositorio <kbd>M-a r</kbd></a></li>
+                        <li><button role="menuitem" id="btnAcercaDe">Acerca de... <kbd>M-a s</kbd></button></li>
+                    </ul>
+                </li>
+            </ul>
+        </header>
+        <main>
+            <section id="r-cod">
+                <h2>Código</h2>
+                <div><div id="codemirror"></div></div>
+            </section>
+            <section id="r-msg" role="log">
+                <h2>Consola de mensajes</h2>
+                <div>
+                    <ul>
+                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
+                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
+                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
+                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
+                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
+                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
+                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
+                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
+                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
+                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
+                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
+                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
+                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
+                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
+                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
+                    </ul>
+                </div>
+            </section>
+            <section id="r-mem">
+                <h2>Memoria</h2>
+                <div>
+                <table>
+                    <thead><tr><th>Dirección</th><th>Valor</th><th>ASCII</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                </div>
+            </section>
+            <section id="r-vars">
+                <h2>Variables y etiquetas</h2>
+                <div><dl class="lvars"></dl></div>
+            </section><!--
+            <section id="r-ins">
+                <h2>Instrucción a ejecutar</h2>
+                <div>
+                    <table>
+                        <tr><th id="t-ip">IP</th><td id="v-ip">0000</td><th>Instrucción actual</th><td id="instAct">—</td></tr>
+                        <tr><th>Tamaño</th><td><output id="numTam">—</output> bytes<th>Próxima instrucción</th><td id="instProx">—</td></tr>
+                        <tr><th>Ciclos</th><td id="v-re"><output id="numTam">—</output> ciclos</td><td colspan="2">Instrucción <output id="numInst">—</output> de <output id="numTot">—</output></td></tr>
+                    </table>
+                </div>
+            </section>-->
+            <section id="r-reg">
+                <h2>Registros</h2>
+                <div>
+                    <table>
+                        <tr><th scope="col" colspan="4">Registros principales</th></tr>
+                        <tr><th scope="row">A</th><td>00</td><td colspan="2"></td></tr>
+                        <tr><th scope="row">B</th><td>00</td><th scope="row">C</th><td>00</td></tr>
+                        <tr><th scope="row">D</th><td>00</td><th scope="row">E</th><td>00</td></tr>
+                        <tr><th scope="row">H</th><td>00</td><th scope="row">L</th><td>00</td></tr>
+                        <tr><th scope="col" colspan="4">Registros alternativos</th></tr>
+                        <tr><th scope="row">A'</th><td>00</td><td colspan="2"></td></tr>
+                        <tr><th scope="row">B'</th><td>00</td><th scope="row">C'</th><td>00</td></tr>
+                        <tr><th scope="row">D'</th><td>00</td><th scope="row">E'</th><td>00</td></tr>
+                        <tr><th scope="row">H'</th><td>00</td><th scope="row">L'</th><td>00</td></tr>
+                        <tr><th scope="col" colspan="4">Registros de 16 bits</th></tr>
+                        <tr><th scope="row" colspan="2">IX</th><td colspan="2">0000</td></tr>
+                        <tr><th scope="row" colspan="2">IY</th><td colspan="2">0000</td></tr>
+                        <tr><th scope="row" colspan="2">SP</th><td colspan="2">0000</td></tr>
+                        <tr><th scope="row" colspan="2">PC</th><td colspan="2">0000</td></tr>
+                        <tr><th scope="col" colspan="4">Registros especiales</th></tr>
+                        <tr><th scope="row">I</th><td>00</td><th scope="row">R</th><td>00</td></tr>
+                        <tr><th scope="col" colspan="2">Registro F</th><th scope="col" colspan="2">Registro F'</th></tr>
+                        <tr><th scope="row">SF</th><td>0</td><th scope="row">SF'</th><td>0</td></tr>
+                        <tr><th scope="row">ZF</th><td>0</td><th scope="row">ZF'</th><td>0</td></tr>
+                        <tr><th scope="row">YF</th><td>0</td><th scope="row">YF'</th><td>0</td></tr>
+                        <tr><th scope="row">HF</th><td>0</td><th scope="row">HF'</th><td>0</td></tr>
+                        <tr><th scope="row">XF</th><td>0</td><th scope="row">XF'</th><td>0</td></tr>
+                        <tr><th scope="row">PF</th><td>0</td><th scope="row">PF'</th><td>0</td></tr>
+                        <tr><th scope="row">NF</th><td>0</td><th scope="row">NF'</th><td>0</td></tr>
+                        <tr><th scope="row">CF</th><td>0</td><th scope="row">CF'</th><td>0</td></tr>
+                    </table>
+                </div>
+            </section>
+            <section id="r-ay">
+                <h2>Ayuda</h2>
+                <div>
+                    <div id="pan"></div>
+                    <div id="panst"></div>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <ul aria-label="Entorno" role="menubar">
+                <li class="hint--top-right" aria-label="Tema"><output>Sistema</output>
+                    <ul role="group">
+                        <li role="menuitemradio" aria-checked="true"><span>Sistema</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>Claro</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>Oscuro</span></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul aria-label="Máquina" role="menubar">
+                <li class="hint--top" aria-label="Estado"><output>Ejecutando...</output></li>
+                <li role="menuitem" class="hint--top" aria-label="Velocidad de reloj"><output>2 MHz</output></li>
+                <li role="menuitem" class="hint--top" aria-label="Tamaño de memoria"><output>64KiB</output>
+                    <ul role="group">
+                        <li role="menuitemradio" aria-checked="false"><span>256 B (0x00FF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>512 B (0x01FF)</span></li>
+                        <li role="menuitemradio" aria-checked="true"><span>1 KiB (0x03FF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>2 KiB (0x07FF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>4 KiB (0x0FFF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>8 KiB (0x1FFF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>16 KiB (0x3FFF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>32 KiB (0x7FFF)</span></li>
+                        <li role="menuitemradio" aria-checked="false"><span>64 KiB (0xFFFF)</span></li>
+                    </ul>
+                </li>
+            </ul>
+            <ul aria-label="Archivo" role="menubar">
+                <li class="hint--top-left" aria-label="Tamaño"><output></output></li>
+                <li class="hint--top-left" aria-label="Línea"><output></output></li>
+                <li class="hint--top-left" aria-label="Columna"><output></output></li>
+            </ul>
+        </footer>
+    </body>
+</html>

@@ -20,12 +20,13 @@ function onInputCMI(cm){
 window.addEventListener("DOMContentLoaded", (e) => {
     /* Ubicaciones globales */
     window.g = {
+        log: document.querySelector("#r-msg ul"),
         mem: document.querySelector("#r-mem table"),
     };
 
     /* Iniciar memoria */
     for (let i=0; i<0x3ff; i++){
-        var nFila   = g.mem.insertRow();
+        var nFila   = g.mem.children[1].insertRow();
         nFila.insertCell().appendChild(document.createTextNode(i.toString(16).toUpperCase().padStart(4, "0")));
         nFila.insertCell().appendChild(document.createTextNode("00"));
         nFila.insertCell().appendChild(document.createTextNode("␀"));
@@ -36,6 +37,7 @@ window.addEventListener("DOMContentLoaded", (e) => {
         gutters: ["CodeMirror-linenumbers", "breakpoints"],
         tabSize: 2 // TODO: Una opción para ajustar esto
     });
+    cmi.setSize("100%", "100%");
     cmi.on("gutterClick", (cm, n) => {
         var info = cm.lineInfo(n);
         cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : makeMarker());

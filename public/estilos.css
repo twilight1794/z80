@@ -77,6 +77,7 @@ main>section>div {
     padding: .5rem;
 }
 #r-cod { grid-area: cod; }
+#r-cod>div, #codemirror { height: 100% }
 #r-cod .bp {
     text-decoration: none;
     color: var(--f-a);
@@ -89,6 +90,11 @@ main>section>div {
 }
 #r-mem { grid-area: mem; }
 #r-mem>div { overflow: scroll; }
+#r-mem thead tr {
+    position: sticky;
+    top: 0;
+    background-color: var(--f-m);
+}
 #r-vars { grid-area: vars; }
 #r-reg { grid-area: reg; }
 #r-reg>div { overflow: scroll; }

@@ -1,5 +1,16 @@
 "use strict"
 
+// Enums
+class TipoLog {
+    static INFO = new TipoLog("info")
+    static AVISO = new TipoLog("aviso")
+    static ERROR = new TipoLog("error")
+    constructor(name) {
+      this.name = name
+    }
+}
+
+// Excepciones
 class BaseError extends Error {
     linea(lnum){
         this.lnum = lnum;
@@ -185,5 +196,26 @@ class Plataforma {
     toggleBandera(band){
         var el = document.getElementById("v-"+reg[0].toLowerCase()+((band.length>1)?"a":""))
         el.textContent = ((el.textContent == 1)?"0":"1");
+    }
+
+    // Envía un mensaje al registro de mensajes, o log
+    escribirLog(tipo, mensaje){
+        let li = document.createElement("li");
+        switch (tipo){
+            case TipoLog.INFO:
+                li.className = "info";
+                break;
+            case TipoLog.AVISO:
+                li.className = "aviso";
+                break;
+            case TipoLog.ERROR:
+                li.className = "error";
+                break;
+        }
+        let ins = document.createElement("ins");
+        ins.dateTime = (new Date()).toISOString();
+        ins.textContent = mensaje;
+        li.appendChild(ins);
+        log.appendChild(li);
     }
 }

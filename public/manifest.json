@@ -1,0 +1,22 @@
+{
+  "name": "Emulador Z80",
+  "short_name": "Z80",
+  "start_url": ".",
+  "categories": [ "utilities", "development", "education" ],
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "Emulador y ensamblador de un microprocesador Zilog Z80.",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg"
+    }
+  ]
+}

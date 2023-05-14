@@ -2,11 +2,11 @@
 
 // Enums
 class TipoLog {
-    static INFO = new TipoLog("info")
-    static AVISO = new TipoLog("aviso")
-    static ERROR = new TipoLog("error")
+    static INFO = new TipoLog("info");
+    static AVISO = new TipoLog("aviso");
+    static ERROR = new TipoLog("error");
     constructor(name) {
-      this.name = name
+      this.name = name;
     }
 }
 
@@ -52,6 +52,15 @@ class ExpresionInvalidaError extends SintaxisError {
         this.message = "La expresión \""+sim+"\" es inválida.";
     }
 }
+class NumeroParametrosIncorrectoError extends SintaxisError {
+    constructor (ins, nc, nr){
+        super();
+        this.ins = ins;
+        this.nc = nc;
+        this.nr = nr;
+        this.message = "La instrucción \""+ins+"\" esperaba "+nc.toString()+" parámetros, pero ha recibido "+nr.toString()+".";
+    }
+}
 
 class ReferenciaError extends BaseError {
     constructor (){
@@ -89,18 +98,30 @@ class Plataforma {
         else
             throw new DireccionInvalidaError(dir, -1);
     }
+    // Lee dos bytes de la memoria, los interpreta como una palabra, y devuelve su valor
+    leerPalabra(dir){
+        let m = g.mem.tBodies[0].children;
+        if (dir < m.length && dir+1 < m.length){
+            let l = m[dir].children[1].textContent;
+            let h = m[dir+1].children[1].textContent;
+            return parseInt(h+l, 16);
+        } else
+            throw new DireccionInvalidaError(dir, -1);
+        }
 
     // Escribe sobre un byte de la memoria
     escribirMemoria(dir, val){
         let m = g.mem.tBodies[0].children;
-        if (val > 255) throw new ValorTamanoError(val, 1);
-        if (dir < m.length){
-            let p = m[dir].children;
-            p[1].textContent = val.toString(16).toUpperCase();
-            p[2].textContent = "-"; // FIX: Colocar función para obtener ASCII
-            return;
-        } else
-            throw new DireccionInvalidaError(dir);
+        val.forEach(b => {
+            if (b > 255) throw new ValorTamanoError(b, 1);
+            if (dir < m.length){
+                let p = m[dir].children;
+                p[1].textContent = b.toString(16).toUpperCase();
+                p[2].textContent = "-"; // FIX: Colocar función para obtener ASCII
+                return;
+            } else
+                throw new DireccionInvalidaError(dir);
+        });
     }
 
     // Lee un registro, y devuelve su valor

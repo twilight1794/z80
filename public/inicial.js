@@ -1,5 +1,30 @@
 "use strict"
 
+/* Funciones útiles generales */
+// Devuelve los bytes a escribir en memoria
+// Considera tanto el signo como el endianness
+function obtLittleEndianNum(x){
+    // Signo
+    var n, t;
+    if (x>-1){
+        n = x.toString(16);
+        t = n.length+((n.length%2==0)?0:1);
+        n = n.padStart(t, 0);
+    } else { // Ej para 31
+        n = Math.abs(x).toString(2);
+        t = Math.ceil(n.length/8)*8;
+        n = (parseInt(Array.from(n.padStart(t, 0)).map((d) => { return ((d=="1")?0:1); }).join(""), 2) + 1).toString(16);
+    }
+    // Endianness
+    return n.match(/.{2}/g).reverse().map((n) => { return parseInt(n, 16)} );
+}
+
+function valorSignado(hex){
+    var n = parseInt(hex, 16);
+    var b = 2**(hex.length*4);
+    return (n >= b/2)?("-"+(b-n).toString()):n.toString();
+}
+
 /* Eventos del editor */
 function onChangeCMI(cm){
     let t = cm.getValue().length;

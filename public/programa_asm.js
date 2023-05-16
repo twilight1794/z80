@@ -486,22 +486,25 @@ class ProgramaAsm {
             case "jp":
                 if (lop.length == 1){
                     try {
-                        this.esTipo(TipoParam.NN);
+                        this.esTipo(TipoParam.NN, lop[1]);
                         bytes.push(0xc3, ...obtLittleEndianNum(lop[0].valor));
                         break;
                     } catch (e) {}
                     try {
-                        this.esTipo(TipoParam.HL);
+                        this.esTipo(TipoParam.HL, lop[1]);
+                        if (lop[1].valor != 0) throw new BaseError();
                         bytes.push(0xe9);
                         break;
                     } catch (e) {}
                     try {
-                        this.esTipo(TipoParam.IX);
+                        this.esTipo(TipoParam.IX, lop[1]);
+                        if (lop[1].valor != 0) throw new BaseError();
                         bytes.push(0xdd, 0xe9);
                         break;
                     } catch (e) {}
                     try {
-                        this.esTipo(TipoParam.IY);
+                        this.esTipo(TipoParam.IY, lop[1]);
+                        if (lop[1].valor != 0) throw new BaseError();
                         bytes.push(0xfd, 0xe9);
                         break;
                     } catch (e) {}
@@ -518,44 +521,27 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     this.esTipo(TipoParam.E, lop[0]);
                     bytes.push(0x18, ...obtLittleEndianNum(lop[0].valor-2));
+                    break;
                 } else if (lop.length == 2){
-                    try {
-                        this.esTipo(TipoParam.CC, lop[0]);
-                        this.esTipo(TipoParam.E, lop[1]);
-                        switch (lop[0].valor){
-                            case "c":
-                                bytes.push(0x38, ...obtLittleEndianNum(lop[1].valor-2));
-                                break;
-                            case "nc":
-                                bytes.push(0x30, ...obtLittleEndianNum(lop[1].valor-2));
-                                break;
-                            case "z":
-                                bytes.push(0x20, ...obtLittleEndianNum(lop[1].valor-2));
-                                break;
-                            case "nz":
-                                bytes.push(0x28, ...obtLittleEndianNum(lop[1].valor-2));
-                                break;
-                            default:
-                                throw new BaseError();
-                        }
-                        break; 
-                    } catch (e) { /* FIX: Debe fallar si llegamos al default */ }
-                    try {
-                        this.esTipo(TipoParam.HL);
-                        bytes.push(0xe9);
-                        break;
-                    } catch (e) {} // FIX: Debe fallar si hay desplazamiento
-                    try {
-                        this.esTipo(TipoParam.IX);
-                        bytes.push(0xdd, 0xe9);
-                        break;
-                    } catch (e) {}
-                    try {
-                        this.esTipo(TipoParam.IY);
-                        bytes.push(0xfd, 0xe9);
-                        break;
-                    } catch (e) {}
-                    throw new BaseError();
+                    this.esTipo(TipoParam.CC, lop[0]);
+                    this.esTipo(TipoParam.E, lop[1]);
+                    switch (lop[0].valor){
+                        case "c":
+                            bytes.push(0x38, ...obtLittleEndianNum(lop[1].valor-2));
+                            break;
+                        case "nc":
+                            bytes.push(0x30, ...obtLittleEndianNum(lop[1].valor-2));
+                            break;
+                        case "z":
+                            bytes.push(0x20, ...obtLittleEndianNum(lop[1].valor-2));
+                            break;
+                        case "nz":
+                            bytes.push(0x28, ...obtLittleEndianNum(lop[1].valor-2));
+                            break;
+                        default:
+                            throw new BaseError();
+                    }
+                    break;
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "ld":
                 if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);

@@ -99,7 +99,7 @@ class ProgramaAsm {
     esTipo(t, v){
         switch (t){
             case TipoParam.R:
-                if (v.tipo != TipoVal.REGISTRO || v.tipo != TipoVal.AMB_C) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO && v.tipo != TipoVal.AMB_C) throw new BaseError();
                 if (Object.keys(this.ValsR).indexOf(v.valor) == -1) throw new BaseError();
                 break;
             case TipoParam.N:
@@ -135,7 +135,7 @@ class ProgramaAsm {
                 if (v.valor > 129 || v.valor < -126) throw new BaseError();
                 break;
             case TipoParam.CC:
-                if (v.tipo != TipoVal.AMB_C || v.tipo != TipoVal.BANDERA) throw new BaseError();
+                if (v.tipo != TipoVal.AMB_C && v.tipo != TipoVal.BANDERA) throw new BaseError();
                 if (Object.keys(this.ValsCC).indexOf(v.valor) == -1) throw new BaseError();
                 break;
             case TipoParam.QQ:
@@ -232,7 +232,7 @@ class ProgramaAsm {
         switch (ins){
             case "adc":
                 if (lop.length == 1){
-                    bytes = getCodigoOp("add", lop);
+                    bytes = this.getCodigoOp("add", lop);
                     bytes[0] = bytes[0]+8;
                     break;
                 } else if (lop.length == 2){
@@ -262,7 +262,7 @@ class ProgramaAsm {
                         break;
                     } catch (e) {}
                     try {
-                        this.esTipo(TipoParam.IX, lop[0]);
+                        this.esTipo(TipoParam.IY, lop[0]);
                         bytes.push(0xfd, 134, ...obtLittleEndianNum(lop[0].valor));
                         break;
                     } catch (e) {}
@@ -291,7 +291,7 @@ class ProgramaAsm {
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "and":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = getCodigoOp("add", lop);
+                bytes = this.getCodigoOp("add", lop);
                 bytes[0] = bytes[0]+32;
                 break;
             case "bit":
@@ -331,7 +331,7 @@ class ProgramaAsm {
                 break;
             case "cp":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = getCodigoOp("add", lop);
+                bytes = this.getCodigoOp("add", lop);
                 bytes[0] = bytes[0]+56;
                 break;
             case "cpd":
@@ -778,7 +778,7 @@ class ProgramaAsm {
                 break;
             case "or":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = getCodigoOp("add", lop);
+                bytes = this.getCodigoOp("add", lop);
                 bytes[0] = bytes[0]+48;
                 break;
             case "otdr":
@@ -830,7 +830,7 @@ class ProgramaAsm {
                 } catch (e) {}
                 throw new BaseError();
             case "res":
-                bytes = getCodigoOp("set", lop);
+                bytes = this.getCodigoOp("set", lop);
                 bytes[3] = bytes[3]+64;
                 break;
             case "ret":
@@ -848,7 +848,7 @@ class ProgramaAsm {
                 bytes.push(0xed, 0x45);
                 break;
             case "rl":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(2<<3);
                 break;
             case "rla":
@@ -876,14 +876,14 @@ class ProgramaAsm {
                 bytes.push(0xed, 0x6f);
                 break;
             case "rr":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(3<<3);
                 break;
             case "rra":
                 bytes.push(0x1f);
                 break;
             case "rrc":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(1<<3);
                 break;
             case "rrca":
@@ -901,9 +901,9 @@ class ProgramaAsm {
                 break;
             case "sbc":
                 if (lop.length == 1){
-                    bytes = getCodigoOp("add", lop);
+                    bytes = this.getCodigoOp("add", lop);
                     bytes[0] = bytes[0]+24;
-                    break;    
+                    break;
                 } else if (lop.length == 2){
                     try {
                         this.esTipo(TipoParam.RHL, lop[0]);
@@ -917,29 +917,29 @@ class ProgramaAsm {
                 bytes.push(0x37);
                 break;
             case "set":
-                bytes = getCodigoOp("set", lop);
+                bytes = this.getCodigoOp("set", lop);
                 bytes[3] = bytes[3]+128;
                 break;
             case "sla":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(4<<3);
                 break;
             case "sra":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(5<<3);
                 break;
             case "srl":
-                bytes = getCodigoOp("rlc", lop);
+                bytes = this.getCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(7<<3);
                 break;
             case "sub":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = getCodigoOp("add", lop);
+                bytes = this.getCodigoOp("add", lop);
                 bytes[0] = bytes[0]+16;
                 break;
             case "xor":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = getCodigoOp("add", lop);
+                bytes = this.getCodigoOp("add", lop);
                 bytes[0] = bytes[0]+40;
                 break;
             default:

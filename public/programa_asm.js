@@ -52,6 +52,14 @@ class TipoParam {
     static RST = new TipoParam("rst");
     static RIX = new TipoParam("rix");
     static RIY = new TipoParam("riy");
+    static RI = new TipoParam("ri");
+    static RR = new TipoParam("rr");
+    static DBC = new TipoParam("dbc");
+    static DDE = new TipoParam("dde");
+    static RSP = new TipoParam("rsp");
+    static RAF = new TipoParam("raf");
+    static RDE = new TipoParam("rde");
+    static DSP = new TipoParam("dsp");
 }
 
 // Analizador de valores, para ensamblador
@@ -99,15 +107,15 @@ class ProgramaAsm {
                 if (v.valor > 0xff || v.valor < 0) throw new BaseError();
                 break;
             case TipoParam.HL:
-                if (v.tipo != TipoVal.DIRECCION) throw new BaseError();
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
                 if (v.registro != "hl");
                 break;
             case TipoParam.IX:
-                if (v.tipo != TipoVal.DIRECCION) throw new BaseError();
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
                 if (v.registro != "ix") throw new BaseError();;
                 break;
             case TipoParam.IY:
-                if (v.tipo != TipoVal.DIRECCION) throw new BaseError();
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
                 if (v.registro != "iy") throw new BaseError();;
                 break;
             case TipoParam.NN:
@@ -179,6 +187,41 @@ class ProgramaAsm {
                 if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
                 if (v.valor == "iy") throw new BaseError();
                 break;
+            /* Para registros raros de LD */
+            case TipoParam.RI:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor == "i") throw new BaseError();
+                break;
+            case TipoParam.RR:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor == "r") throw new BaseError();
+                break;
+            case TipoParam.RA:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor == "a") throw new BaseError();
+                break;
+            case TipoParam.DBC:
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
+                if (v.valor != 0) throw new BaseError();
+                if (v.registro != "bc") throw new BaseError();
+                break;
+            case TipoParam.DDE:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor != 0) throw new BaseError();
+                if (v.registro != "de") throw new BaseError();
+                break;
+            case TipoParam.RSP:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor == "sp") throw new BaseError();
+                break;
+            /* Para registros aún más raros de EX */
+            case TipoParam.RAF:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor != "af") throw new BaseError();
+                break;
+            case TipoParam.RDE:
+                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
+                if (v.valor != "de") throw new BaseError();
         }
         return true;
     }
@@ -188,36 +231,68 @@ class ProgramaAsm {
         let bytes = [];
         switch (ins){
             case "adc":
-                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-                try {
-                    this.esTipo(TipoParam.RHL, lop[0]);
-                    this.esTipo(TipoParam.SS, lop[1]);
-                    bytes.push(0xed, 74+(this.ValsSS[lop[1].valor]<<4));
+                if (lop.length == 1){
+                    bytes = getCodigoOp("add", lop);
+                    bytes[0] = bytes[0]+8;
                     break;
-                } catch (e) {}
-                throw new BaseError();
+                } else if (lop.length == 2){
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[0]);
+                        this.esTipo(TipoParam.SS, lop[1]);
+                        bytes.push(0xed, 74+(this.ValsSS[lop[1].valor]<<4));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "add":
-                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-                try {
-                    this.esTipo(TipoParam.RHL, lop[0]);
-                    this.esTipo(TipoParam.SS, lop[1]);
-                    bytes.push(9+(this.ValsSS[lop[1].valor]<<4));
-                    break;
-                } catch (e) {}
-                try {
-                    this.esTipo(TipoParam.RIX, lop[0]);
-                    this.esTipo(TipoParam.PP, lop[1]);
-                    bytes.push(0xdd, 9+(this.ValsPP[lop[1].valor]<<4));
-                    break;
-                } catch (e) {}
-                try {
-                    this.esTipo(TipoParam.RIY, lop[0]);
-                    this.esTipo(TipoParam.RR, lop[1]);
-                    bytes.push(0xfd, 9+(this.ValsRR[lop[1].valor]<<4));
-                    break;
-                } catch (e) {}
-                throw new BaseError();
+                if (lop.length == 1){
+                    try {
+                        this.esTipo(TipoParam.R, lop[0]);
+                        bytes.push(128+this.ValsR[lop[0].valor]);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[0]);
+                        bytes.push(198, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.IX, lop[0]);
+                        bytes.push(0xdd, 134, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.IX, lop[0]);
+                        bytes.push(0xfd, 134, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } else if (lop.length == 2){
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[0]);
+                        this.esTipo(TipoParam.SS, lop[1]);
+                        bytes.push(9+(this.ValsSS[lop[1].valor]<<4));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIX, lop[0]);
+                        this.esTipo(TipoParam.PP, lop[1]);
+                        bytes.push(0xdd, 9+(this.ValsPP[lop[1].valor]<<4));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIY, lop[0]);
+                        this.esTipo(TipoParam.RR, lop[1]);
+                        bytes.push(0xfd, 9+(this.ValsRR[lop[1].valor]<<4));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                }
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "and":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                bytes = getCodigoOp("add", lop);
+                bytes[0] = bytes[0]+32;
                 break;
             case "bit":
                 if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
@@ -255,6 +330,9 @@ class ProgramaAsm {
                 bytes.push(0x3f);
                 break;
             case "cp":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                bytes = getCodigoOp("add", lop);
+                bytes[0] = bytes[0]+56;
                 break;
             case "cpd":
                 bytes.push(0xed, 0xa9);
@@ -277,12 +355,24 @@ class ProgramaAsm {
             case "dec":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes.push(5+(this.ValsR(lop[0].valor)<<3));
+                } catch (e) {}
+                try {
                     this.esTipo(TipoParam.IX, lop[0]);
+                    bytes.push(0xdd, 0x35, ...obtLittleEndianNum(lop[0].valor));
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes.push(0xfd, 0x35, ...obtLittleEndianNum(lop[0].valor));
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
                     bytes.push(0xdd, 0x2b);
                     break;
                 } catch (e) {}
                 try {
-                    this.esTipo(TipoParam.IY, lop[0]);
+                    this.esTipo(TipoParam.RIY, lop[0]);
                     bytes.push(0xfd, 0x2b);
                     break;
                 } catch (e) {}
@@ -307,6 +397,33 @@ class ProgramaAsm {
                 bytes.push(0xfb);
                 break;
             case "ex":
+                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+                try {
+                    this.esTipo(TipoParam.RAF, lop[0]);
+                    this.esTipo(TipoParam.RAF, lop[1]);
+                    bytes.push(0x08);
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RDE, lop[0]);
+                    this.esTipo(TipoParam.RHL, lop[1]);
+                    bytes.push(0xeb);
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.SP, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1]);
+                        bytes.push(0xe3);
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIX, lop[1]);
+                        bytes.push(0xdd, 0xe3);
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIY, lop[1]);
+                        bytes.push(0xfd, 0xe3);
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
                 break;
             case "exx":
                 bytes.push(0xd9);
@@ -327,12 +444,24 @@ class ProgramaAsm {
             case "inc":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes.push(4+(this.ValsR(lop[0].valor)<<3));
+                } catch (e) {}
+                try {
                     this.esTipo(TipoParam.IX, lop[0]);
+                    bytes.push(0xdd, 0x34, ...obtLittleEndianNum(lop[0].valor));
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes.push(0xfd, 0x34, ...obtLittleEndianNum(lop[0].valor));
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
                     bytes.push(0xdd, 0x23);
                     break;
                 } catch (e) {}
                 try {
-                    this.esTipo(TipoParam.IY, lop[0]);
+                    this.esTipo(TipoParam.RIY, lop[0]);
                     bytes.push(0xfd, 0x23);
                     break;
                 } catch (e) {}
@@ -355,7 +484,29 @@ class ProgramaAsm {
                 bytes.push(0xed, 0xb2);
                 break;
             case "jp":
-                if (lop.length == 1 && this.esTipo(TipoParam.NN)) bytes.push(0xc3, ...obtLittleEndianNum(lop[0].valor));
+                if (lop.length == 1){
+                    try {
+                        this.esTipo(TipoParam.NN);
+                        bytes.push(0xc3, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.HL);
+                        bytes.push(0xe9);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.IX);
+                        bytes.push(0xdd, 0xe9);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.IY);
+                        bytes.push(0xfd, 0xe9);
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                }
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.NN, lop[1]);
@@ -402,15 +553,211 @@ class ProgramaAsm {
                     try {
                         this.esTipo(TipoParam.IY);
                         bytes.push(0xfd, 0xe9);
+                        break;
                     } catch (e) {}
                     throw new BaseError();
-                } else
-                    throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-                break;
-            case "inc":
-                break; 
+                } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "ld":
-                break;
+                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+                try {
+                    this.esTipo(TipoParam.RA, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.RI, lop[1]);
+                        bytes.push(0xed, 0x57);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RR, lop[1]);
+                        bytes.push(0xed, 0x5f);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DBC, lop[1]);
+                        bytes.push(0x0a);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DDE, lop[1]);
+                        bytes.push(0x1a);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        bytes.push(0x3a, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.R, lop[1]);
+                        bytes.push(0xdd, 112+ValsR(lop[1].valor), ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1]);
+                        bytes.push(0xdd, 0x36, ...obtLittleEndianNum(lop[1].valor), ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1]);
+                        bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.R, lop[1]);
+                        bytes.push(0xfd, 112+ValsR(lop[1].valor), ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1]);
+                        bytes.push(0xfd, 0x36, ...obtLittleEndianNum(lop[1].valor), ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1]);
+                        bytes.push(0xdf, 0x2a, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.IX, lop[1]);
+                        bytes.push(0xdd, 70 + ValsR(lop[0].valor)<<3, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.IY, lop[1]);
+                        bytes.push(0xfd, 70 + ValsR(lop[0].valor)<<3, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1]);
+                        bytes.push(6 + ValsR(lop[0].valor)<<3, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.R, lop[1]);
+                        bytes.push(64 + ValsR(lop[0].valor)<<3 + ValsR(lop[1].valor)<<3);
+                        break;
+                    } catch (e) {}
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.SP, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1]);
+                        bytes.push(0xf9);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIX, lop[1]);
+                        bytes.push(0xdd, 0xf9);
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIY, lop[1]);
+                        bytes.push(0xfd, 0xf9);
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.SS, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1]);
+                        bytes.push(1 + this.ValsSS(lop[1].valor)<<4, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        bytes.push(0xed, 75 + this.ValsSS(lop[1].valor)<<4, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.DIRECCION, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.RA, lop[1]);
+                        bytes.push(0x32, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1]);
+                        bytes.push(0x22, ...obtLittleEndianNum(lop[1].valor))
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.SS, lop[1]);
+                        bytes.push(0xed, 67 + this.ValsSS(lop[1].valor)<<4, ...obtLittleEndianNum(lop[1].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIX, lop[1]);
+                        bytes.push(0xdd, 0x22, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.RIY, lop[1]);
+                        bytes.push(0xfd, 0x22, ...obtLittleEndianNum(lop[0].valor));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1]);
+                        bytes.push(0xdd, 0x21, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0]);
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1]);
+                        bytes.push(0xfd, 0x21, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        bytes.push(0xfd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
+                    } catch (e) {}
+                    throw new BaseError();
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RI, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[0]);
+                    bytes.push(0xed, 0x47);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RR, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[0]);
+                    bytes.push(0xed, 0x4f);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.DBC, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[0]);
+                    bytes.push(0x02);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.DDE, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[0]);
+                    bytes.push(0x12);
+                    break;
+                } catch (e) {}
+                throw new BaseError();
             case "ldd":
                 bytes.push(0xed, 0xa8);
                 break;
@@ -430,6 +777,9 @@ class ProgramaAsm {
                 bytes.push(0x00);
                 break;
             case "or":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                bytes = getCodigoOp("add", lop);
+                bytes[0] = bytes[0]+48;
                 break;
             case "otdr":
                 bytes.push(0xed, 0xbb);
@@ -444,9 +794,41 @@ class ProgramaAsm {
                 bytes.push(0xed, 0xa3);
                 break;
             case "pop":
-                break;
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
+                    bytes.push(0xdd, 0xe1);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0]);
+                    bytes.push(0xfd, 0xe1);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.QQ, lop[0]);
+                    bytes.push(193 + ValsQQ[lop[0].valor]<<4);
+                    break;
+                } catch (e) {}
+                throw new BaseError();
             case "push":
-                break;
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
+                    bytes.push(0xdd, 0xe5);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0]);
+                    bytes.push(0xfd, 0xe5);
+                    break;
+                } catch (e) {}
+                try {
+                    this.esTipo(TipoParam.QQ, lop[0]);
+                    bytes.push(197 + ValsQQ[lop[0].valor]<<4);
+                    break;
+                } catch (e) {}
+                throw new BaseError();
             case "res":
                 bytes = getCodigoOp("set", lop);
                 bytes[3] = bytes[3]+64;
@@ -473,7 +855,7 @@ class ProgramaAsm {
                 bytes.push(0x17);
                 break;
             case "rlc":
-                if (lop.length == 1 && this.esTipo(TipoParam.R)) bytes.push(0xcb, this.ValsR(lop[0]));
+                if (lop.length == 1 && this.esTipo(TipoParam.R)) bytes.push(0xcb, this.ValsR[lop[0].valor]);
                 else if (lop.length == 2){
                     try {
                         this.esTipo(TipoParam.IX, lop[0]);
@@ -518,14 +900,19 @@ class ProgramaAsm {
                 else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 break;
             case "sbc":
-                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-                try {
-                    this.esTipo(TipoParam.RHL, lop[0]);
-                    this.esTipo(TipoParam.SS, lop[1]);
-                    bytes.push(0xed, 66+(this.ValsSS[lop[1].valor]<<4));
-                    break;
-                } catch (e) {}
-                throw new BaseError();
+                if (lop.length == 1){
+                    bytes = getCodigoOp("add", lop);
+                    bytes[0] = bytes[0]+24;
+                    break;    
+                } else if (lop.length == 2){
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[0]);
+                        this.esTipo(TipoParam.SS, lop[1]);
+                        bytes.push(0xed, 66+(this.ValsSS[lop[1].valor]<<4));
+                        break;
+                    } catch (e) {}
+                    throw new BaseError();
+                } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "scf":
                 bytes.push(0x37);
                 break;
@@ -546,8 +933,14 @@ class ProgramaAsm {
                 bytes[3] = bytes[3]+(7<<3);
                 break;
             case "sub":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                bytes = getCodigoOp("add", lop);
+                bytes[0] = bytes[0]+16;
                 break;
             case "xor":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                bytes = getCodigoOp("add", lop);
+                bytes[0] = bytes[0]+40;
                 break;
             default:
                 throw new NoImplementadoError(ins, lnum);

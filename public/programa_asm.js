@@ -934,29 +934,319 @@ class ProgramaAsm {
         return bytes;
     }
 
-    // Realiza el análisis léxico y sintáctico de una línea de ensamblador
-    analizar(l, lnum){
-        console.log("Lexing: "+lnum);
-        var el = l.trim();
-        if (!el.length) { return; }
-        while (el.length > 0){
-            if (this.#r_ins.test(el)){
-                // Es posiblemente una instrucción o directiva
-                var res = this.#r_ins.exec(el);
-                var ins = res[1];
-                el = el.substring(res[0].length);
-                var exp = this.parseVals(el);
-                return this.getCodigoOp(ins, el);
-            } else if (this.#r_var.test(cexp)){
-                // Es una directiva de variable o constante
-                var res = this.#r_var.exec(cexp);
-                return;
-            } else if (this.#r_eti.test()){
-                // Es una etiqueta
-                return;
+    checkSintax (l, lnum, cl) {
+        /*
+            NOTA: Recordar que la traducción a través de una pasada y media funciona de la manera siguiente:
+            - Se va ensamblando y validando las instrucciones línea por línea
+            - Si en una línea se encuentra un declarador de etiqueta, se agrega la etiqueta a una lista de etiquetas disponibles
+            - En caso de que la etiqueta se encuentra como referencia externa, habrá que analizar si dicha etiqueta ya se encuentra dentro
+              de la lista de etiquetas, en caso contrario, colocar un marcador
+            - Generar código hexadecimal
+
+            Por lo tanto, tenemos que realizar lo siguiente por cada línea de código:
+            1. Determinar la estructura -> eti:_instr_op1,op2
+            2. Separar la estructura en los elementos necesarios
+            3. Determinar si la etiqueta es una definición o una referencia externa
+            4. En caso de ser una definición de etiqueta se deberá de almacenar en una lista de etiquetas
+            5. En caso contrario, se deberá de validar que la etiqueta ya exista definida en la lista de etiquetas 
+            6. Si no lo está, colocaremos un marcador en la etiqueta y se compararán las siguientes definiciones de etiquetas 
+               con las etiquetas pendientes,  asignando la dirección en hexadecimal
+            
+            OJO -> Estamos pensando en un simulador que no contemple las directiva ORG, por lo tanto el CL siempre
+                   iniciará en 0 (pensando en el contador como número decimal) -> Para la asignación de valor a las  
+                   etiquetas, se tendrá que convertir de decimal a hexadecimal
+
+            La función tiene los siguientes parámetros:
+            - l -> Contiene la línea a procesar
+            - lnum -> El número de línea (Nos servirá como índice para validar las instrucciones pendientes)
+            - cl -> Es el contador de localidades, nos servirá para identificar la dirección de una etiqueta
+            - tableOfSymbols -> Nos permitirá asignar las etiquetas necesarias en la hora de traducción
+            - earrings -> Nos permite llevar una lista de instrucciones pendientes de traducir (debido a falta de etiquetas referenciadas)
+            
+            
+            NOTA: En este caso, se van a simular un ensamblador de 1 pasada y media, ya que, sabemos que las etiquetas son asignadas con 
+            direcciones de memoria en hexadecimal, es decir, tiene valores nn -> 2 bytes, por lo que seguiremos el conteo y traducción. Una 
+            vez terminado el proceso, se procederá a traducir las instrucciones faltantes considerando que la tabla de symbolos 
+            sea correcta 
+        */
+       
+        /*
+            1) Analizamos la sintaxis de la línea ingresada. Hay dos opciones:
+                a) etiqueta:_instrucción_operandos
+                b) instrucción_operandos
+        */
+        // Para los modos de direccionamiento indirecto
+        let trad = new Object();
+        // El format y format2 nos permite determinar desplazamientos o accesos a memoria
+        let format = /\(\s*(\w+)\s*\)/i;
+        let format2 = /\(\s*(\w+)\s*\+\s*(\w+)\s*\)/i;
+        let format3 = /\(\s*(\w+)\s*\-\s*(\w+)\s*\)/i;
+        // Expresión regular para determinar si hay definición de etiquetas
+        let expRegTag = /^\w+:$/;
+        //let line = l.trim().toUpperCase();
+        let line = l.trim().toLowerCase();
+        if (line.includes("+")) {
+            line = line.replace(format2,"($1+$2)");
+        } else if (line.includes("-")) {
+            line = line.replace(format3,"($1-$2)");
+        } else {
+            line = line.replace(format,"($1)");
+        }
+        let symbol = new Object(); // Nos representa una definición: nombre, bool y dirección
+        let instr = new String();
+        let tag = new String();
+        let operands = [];
+        let tagOn = false;
+        let text = new String();
+        if (!line.length) { return 0; }; // 0 nos indicará que se puede seguir con la traducción
+        // En caso de que la línea no esté vacía, se analiza su estructura
+        line = line.replace(","," ");
+        let elementos = line.split(" ");
+        let el = elementos.filter(word => word.length > 0);
+        // Por el momento la variable el contiene un arreglo de la instrucción dividida
+        // En este punto, si el primer elemento contiene la estructura eti:, se procede a analizar etiquetas
+        if (expRegTag.test(el[0])) {
+            // Si hay etiqueta
+            // Como es definición de etiqueta, validamos que la etiqueta no esté ya definida, en caso contrario, error
+            /*
+                Estructura de la tabla de símbolos
+                tableOfSymbols = [symbol]
+                symbol = {
+                    name: nameOfTag,
+                    def: false|true,
+                    dir: memoryAddress (if defined)
+                }
+            */
+           // Debemos de validar que la etiqueta no exista
+            el[0] = el[0].replace(":","");
+            let checkTag = this.checkTableOfSymbols(el[0],"definition");
+            if (checkTag) { return -1; } // -1 nos determina un error de etiquetas de doble declaración
+            else {
+                // Necesitamos obtener la dirección en hexadecimal con base en el contador de localidades
+                if (checkTag === false) {
+                    symbol = {
+                        name: el[0],
+                        def: true,
+                        dir: cl
+                        // Hay que contemplar como ir aumentando el contador de localidades en decimal
+                    }
+                    this.tableOfSymbols.push(symbol); // Se agrega el símbolo a la lista
+                } 
+                else { // Ya está el símbolo, pero no se encontraba definido, por lo que se define en el momento
+                    // para posterior análisis
+                    this.tableOfSymbols[checkTag].def = true;
+                    this.tableOfSymbols[checkTag].dir = cl;
+                }
+                tag = `${el[0]}:`;
+                instr = el[1];
+                operands = el.slice(2);
+                tagOn = true;
+            };
+        } else {
+            // Si no hay etiqueta 
+            instr = el[0];
+            operands = el.slice(1);
+        }
+
+        /*
+            En este punto se tienen separados los elementos de la instrucción completa, por lo que se procede a 
+            realizar el análisis de operandos para validar que la operación es una posible instrucción válida
+            y se pueda generar su código de operación
+        */
+        // En caso de haber referencia a etiqueta que no se haya definido, deberemos ingresar la instrucción a la lista 
+        // de instrucciones pendientes
+        if (operands.length === 0) {
+            // Cero operadores -> Únicamente se tiene que validar que exista la instrucción
+            text = (tagOn === true)?`${tag} ${instr}`:`${instr}`;
+            trad = {
+                tag: (tagOn === true)?tag:null,
+                instr,
+                operands: null,
+                text
+            }
+            // En caso contrario, retornar un error
+        } else if (operands.length === 1) {
+            // Hay un operando -> Se debe de analizar el tipo de operando y posteriormente toda la instrucción
+            text = (tagOn === true)?`${tag} ${instr} ${operands[0]}`:`${instr} ${operands[0]}`;
+            operands[0] = this.parseVar(operands[0]);
+            trad = {
+                tag: (tagOn === true)?tag:null,
+                instr,
+                operands,
+                text
+            }
+            if (operands[0][1] === 0) {
+                // En este caso, la instrucción se manda a la lista de pendientes
+                this.earrings.push([lnum,trad]);
+                // Igualmente se deberá de meter a la lista de código del programa, considerando que la etiquetas
+                // son valores numéricos de 16 bits (ya que representan localidades de memoria)
+            }
+        } else if (operands.length === 2) {
+            // Hay dos operandos -> Se deben de analizar ambos operandos y la existencia de la instrucción
+            // Debemos de guardar el valor de los operandos así como el tipo de operando que es
+            text = (tagOn === true)?`${tag} ${instr} ${operands[0]},${operands[1]}`:`${instr} ${operands[0]},${operands[1]}`;
+            operands[0] = this.parseVar(operands[0]);
+            operands[1] = this.parseVar(operands[1]);
+            trad = {
+                tag: (tagOn === true)?tag:null,
+                instr,
+                operands,
+                text
+            }
+            if (operands[0][1] === 0 | operands[1][1] === 0) {
+                // En este caso, la instrucción se deberá de mandar a la lista de instrucciones pendientes
+                this.earrings.push([lnum,trad]);
+            } 
+        } else { return -2; } // Inexistencia de instrucción con mas de 3 operandos 
+        // Una vez obtenido el análisis sintáctico, se obtiene el  código de operación
+        return trad;
+    }
+
+    parseVar (valor) {
+        valor = valor.toLowerCase();
+        let tipo = "";
+        let symbolExists;
+        let symbol = new Object();
+        let op = new Object();
+        // Realizamos una expresión regular para validar que sea un registro
+        let regExpR = /^[A|B|D|E|H|L|I|R]$/i;
+        // Realizamos una expresión para banderas
+        let regExpCC = /^[Z|P|M]$|NZ$|NC$|PO$|PE$/i;
+        // Pares de registros de la forma 16 bits
+        let regExpSS = /^BC$|^DE$|^HL$|^SP$|^AF$|^IX$|^IY$/i;
+        // La siguiente expresión regular ya contempla cualquier tipo de número
+        let regExpNumber = /^[01]+[B]$|^[0-7]+[O]$|^[0-9]+$|^\-[0-9]+$|^[0-9ABCDEF]+[H]$|^\-[01]+[B]$|^\-[0-7]+[O]$|^\-[0-9ABCDEF]+[H]$/i;
+        // Para los registros de índice indirectos (IX|IY + d)
+        let regExpInd = /^\(\s*IX\s*[\+|\-]\s*[0-9]+\)$|^\(\s*IY\s*[\+|\-]\s*[0-9]+\)$|^\(\s*IX\s*[\+|\-]\s*[0-9]+[B|O]\)$|^\(\s*IY\s*[\+|\-]\s*[0-9]+[B|O]\)$|^\(\s*IX\s*[\+|\-]\s*[0-9A-F]+[H]\)$|^\(\s*IY\s*[\+|\-]\s*[0-9A-F]+[H]\)$/i;
+        // Para los registros de desplazamiento
+        let regExpSSI = /^\(BC\)$|^\(DE\)$|^\(HL\)$/i;
+        // Para direcciones numéricas
+        let regExpNNI = /^\([0-9]+[BO]\)$|^\([0-9]+\)$|^\([0-9ABCDEF]+[H]\)$/i;
+        // Y por último, las etiquetas
+        let regExpTag = /^[A-Z][\w]+$/i;  
+
+        // Contemplar a (ss) como desplazamiento
+        // Contemplar a I y R como registros
+        // Cambiar cadenas de números a valor decimal
+        // Ajustar todos los tipos a los señalados en la clase tipoVal
+        // Se analiza el tipo de operando
+        if (valor === 'C') {
+            tipo = TipoVal.AMB_C;
+        } else if (regExpNumber.test(valor)) {
+            // El valor encontrado es un número
+            tipo = TipoVal.NUMERO;
+            // Hay que obtener el valor numérico
+            valor = this.getNumericValue(valor);
+        } else if (regExpR.test(valor)) {
+            // El valor encontrado es un registro
+            tipo = TipoVal.REGISTRO;
+        } else if (regExpCC.test(valor)) {
+            // El valor encontrado es una bandera
+            tipo = TipoVal.BANDERA;
+        } else if (regExpSS.test(valor)) {
+            // El valor encontrado es un registro de 16 bits
+            tipo = TipoVal.REGISTRO;
+        } else if (regExpInd.test(valor)) {
+            // { tipo: TipoVal.DESPLAZAMIENTO, valor: n, registro: "x" }
+            op = this.getDisplacementAndRegister(valor);
+            return op;
+        } else if (regExpSSI.test(valor)) {
+            // Es un acceso a memoria de 16 bits -> (BC),(DE) o (HL)
+            tipo = TipoVal.DESPLAZAMIENTO;
+        } else if (regExpNNI.test(valor)) {
+            // Se trata de un acceso de memoria numérica
+            tipo = TipoVal.DIRECCION;
+            // Necesitamos obtener el valor numérico de la dirección
+            valor = valor.replace("(","");
+            valor = valor.replace(")","");
+            valor = this.getNumericValue(valor);
+        } else if (regExpTag.test(valor)) {
+            // En caso de una posible etiqueta, analizamos si dicha etiqueta existe en la tabla de símbolos
+            symbolExists = this.checkTableOfSymbols(valor,"reference");
+            if (symbolExists === -1) {
+                // Se debe de agregar la instrucción a la lista de pendientes
+                return [valor,0]; 
+            } else if (symbolExists === false) {
+                symbol = {
+                    name: valor,
+                    def: false,
+                    dir: null
+                }
+                this.tableOfSymbols.push(symbol);
+                // Se agrega el símbolo a la tabla de símbolos, considerando que no está definida su dirección
+                return [valor,0];
             } else {
-                throw new SintaxisError().linea(lnum);
+                // El símbolo existe en la posición i
+                tipo = TipoVal.NUMERO;
+                valor = this.tableOfSymbols[symbolExists].dir;// OJO, DEBO DE PASAR LITERALMENTE EL OPERANDO EN DECIMAL
+            } 
+            // Se trata de una posible etiqueta que habrá que analizar su existencia en la tabla de símbolos o en caso contrario
+            // agregar la línea de instrucción en instrucciones pendientes
+        } else { return -3; } // ERROR -> NO EXISTE EL TIPO DE OPERANDO ESPECIFICADO  
+        
+        // En caso de que el tipo de dato sea numérico, se deberá de convertir a decimal -> operando
+        return op = {
+            tipo: tipo,
+            valor: valor
+        }
+    }
+
+    decimalToHex(decimal, padding) {
+        // Función para transformar a hexadecimal de 16 bits
+        var hex = decimal.toString(16);
+        padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+    
+        while (hex.length < padding) {
+            hex = "0" + hex;
+        }
+    
+        return hex;
+    }
+
+    checkTableOfSymbols(symbol,type) {
+        for (let i = 0; i < this.tableOfSymbols.length; i++) {
+            if (this.tableOfSymbols[i].name === symbol) {
+                if (this.tableOfSymbols[i].def === true) {
+                    if (type === "reference") { return i; }// Retornamos el índice donde se encuentra el símbolo
+                    else { return true; }
+                }
+                else {
+                    if (type === "reference") { return -1; } // No regresamos nada, ya que no se puede realizar nada
+                    else { return i; } // Debemos de regresar el índice para modificar la etiqueta en caso de definición
+                }
             }
         }
+        // En caso de no existir 
+        return false;
+    }
+
+    getDisplacementAndRegister(operand) {
+        let elements = operand.replace("(","");
+        elements = elements.replace(")","");
+        if (elements.includes("+")) { elements = elements.split("+"); }
+        else { elements = elements.split("-"); }
+        let register = elements[0];
+        let valor = elements[1];
+        valor = this.getNumericValue(valor);
+        if (operand.includes("-")) { valor = valor * -1; }
+        operand = {
+            valor: valor,
+            registro,
+            tipo: TipoVal.DESPLAZAMIENTO
+        }
+        return operand;
+    }
+
+    getNumericValue(number) {
+        // La función recibe la cadena de texto numérica, la cual se deberá de convertir a un número en decimal
+        let regExpDecimal = /^[0-9]+$|^\-[0-9]+$/i;
+        let regExpOctal = /^[0-7]+[O]$|^\-[0-7]+[O]$/i;
+        let regExpBin = /^[01]+[B]$|^\-[01]+[B]$/i;
+        let regExpHex = /^[0-9ABCDEF]+[H]$|^\-[0-9ABCDEF]+[H]/i;
+        if(regExpDecimal.test(number)) { return parseInt(number); }
+        if(regExpBin.test(number)) { return parseInt(number,2); }
+        if(regExpOctal.test(number)) { return parseInt(number,8); }
+        if(regExpHex.test(number)) { return parseInt(number,16); }
+        return false; // EL número ingresado no es ningún tipo de número válido
     }
 }

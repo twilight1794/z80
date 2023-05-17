@@ -77,4 +77,22 @@ window.addEventListener("DOMContentLoaded", (e) => {
     cmi.on("cursorActivity", onInputCMI);
     onChangeCMI(cmi);
     onInputCMI(cmi);
+
+    // Temporal: marco para pruebas
+    // Esta estructura es para pruebas, sin embargo, más o menos así será al final
+    document.getElementById("btnEnsamblar").addEventListener("click", () => {
+        window.p = new ProgramaAsm();
+        let i = 0;
+        let l = cmi.getLineHandle(i);
+        window.lins = [];
+        while (l) {
+            lins.push(p.analLexSint(l.text));
+            i++;
+            l = cmi.getLineHandle(i);
+        }
+        window.cods = [];
+        lins.forEach(e => {
+            cods.push(p.getCodigoOp(e.mnemo, e.ops));
+        });
+    });
 });

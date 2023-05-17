@@ -31,18 +31,18 @@ class NoImplementadoError extends SintaxisError {
         this.message = "El mnemotécnico o directiva "+cmd+" no ha sido implementado aún.";
     }
 }
-class VariableFueraError extends SintaxisError {
+/*class EtiquetaFueraError extends SintaxisError {
     constructor (id){
         super();
         this.id = id;
         this.message = "La variable \""+id+"\" debe ser definida antes de cualquier instrucción.";
     }
-}
-class VariableExistenteError extends SintaxisError {
+}*/
+class EtiquetaExistenteError extends SintaxisError {
     constructor (id){
         super();
         this.id = id;
-        this.message = "La variable \""+id+"\" ya fue declarada anteriormente.";
+        this.message = "La etiqueta \""+id+"\" ya fue declarada anteriormente.";
     }
 }
 class ExpresionInvalidaError extends SintaxisError {
@@ -50,6 +50,13 @@ class ExpresionInvalidaError extends SintaxisError {
         super();
         this.sim = sim;
         this.message = "La expresión \""+sim+"\" es inválida.";
+    }
+}
+// QUESTION: ¿Se mantendrá esto? Las directivas sí podrán aceptar más de dos parámetros
+class NumeroParametrosExcedidoError extends SintaxisError {
+    constructor(){
+       super();
+       this.message = "Se han recibido más de 2 parámetros en una instrucción";
     }
 }
 class NumeroParametrosIncorrectoError extends SintaxisError {
@@ -81,7 +88,7 @@ class TipoError extends BaseError {
         this.message = "Error de tipo desconocido.";
     }
 }
-class TipoVariableError extends TipoError {
+class TipoValorError extends TipoError {
     constructor (id){
         super();
         this.id = id;

@@ -147,8 +147,8 @@ class programHex {
                 this.hexCode.push("37");
                 this.asmCode.push("SCF");
                 break;
-            case "ED":
-                switch(bytes[0]) {
+            case /^ED$/.test(moreSignificant):
+                switch(true) {
                     // Seguir analizando otros posibles casos
                     case "67":
                         this.hexCode.push("ED67");
@@ -173,6 +173,21 @@ class programHex {
                     case "4D":
                         this.hexCode.push("ED4D");
                         this.asmCode.push("RETI");
+                        bytes.shift();
+                        break;
+                     case /^4A$|^5A$|^6A$|^7A$/.test(bytes[0]):
+                        let binary;                                          
+                        this.hexCode.push(`ED${bytes[0]}`);
+                        //Se divide cada digito del byte
+                        binary = bytes[0].split("");
+                        //Se pasa a decimal y de decimal a binario
+                        //En este caso solo se ocupa el primer digito del byte porque todos terminan en A
+                        let binary1 = binary[0]
+                        binary1 = parseInt(binary1,16).toString(2);
+                        //Tomar solo los ultimos dos bits de la primer mitad
+                        let lastPosition = binary1.length - 1 ;
+                        binary1 = `${binary1[lastPosition-1]}${binary1[lastPosition]}`                  
+                        this.asmCode.push(`ADC HL,${this.ValSS[parseInt(binary1,2)]}`)
                         bytes.shift();
                         break;
                 }

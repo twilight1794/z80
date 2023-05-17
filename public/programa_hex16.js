@@ -139,6 +139,10 @@ class programHex {
         // console.log(bytes);
         switch(true) {
             // Primero analizaremos los inmediatos
+            case "00":
+                this.hexCode.push("00");
+                this.asmCode.push("NOP");
+                break;
             case "37":
                 this.hexCode.push("37");
                 this.asmCode.push("SCF");
@@ -154,6 +158,11 @@ class programHex {
                     case "6F":
                         this.hexCode.push("ED6F");
                         this.asmCode.push("RLD");
+                        bytes.shift();
+                        break;
+                     case "44":
+                        this.hecCode.push("ED44");
+                        this.asmCode.push("NEG");
                         bytes.shift();
                         break;
                     case "45":
@@ -176,6 +185,14 @@ class programHex {
                 this.hexCode.push("1F");
                 this.asmCode.push("RRA");
                 break;
+             case "2F":
+                this.hexCode.push("2F");
+                this.asmCode.push("CPL");
+                break;
+             case "3F":
+                this.hexCode.push("3F");
+                this.asmCode.push("CCF");
+                break;
             case "07":
                 this.hexCode.push("07");
                 this.asmCode.push("RLCA");
@@ -196,6 +213,14 @@ class programHex {
             case "76":
                 this.hexCode.push("76");
                 this.asmCode.push("HALT");
+                break;
+             case "F3":
+                this.hexCode.push("F3");
+                this.asmCode.push("DI");
+                break;
+            case "FB":
+                this.hexCode.push("FB");
+                this.asmCode.push("EI");
                 break;
             default:
                 console.log("NO EXISTE LA INSTRUCCIÓN");

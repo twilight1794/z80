@@ -92,7 +92,10 @@ window.addEventListener("DOMContentLoaded", (e) => {
         }
         window.cods = [];
         lins.forEach(e => {
-            cods.push(p.getCodigoOp(e.mnemo, e.ops));
+            try{cods.push(p.getCodigoOp(e.mnemo, e.ops));} catch (e) {console.log(e);}
         });
+        window.lcod = cods.map((a) => {
+            return a.map((b) => {return b.toString(16).padStart(2, "0")});
+          })
     });
 });

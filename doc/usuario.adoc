@@ -1,0 +1,17 @@
+= Emulador Z80: Manual de usuario
+@twilight1794 <rapunzel@disroot.org>
+@kilomilo <>
+
+v1.0, 2023-05-20
+
+:doctype: book
+:toc:
+
+== Introducción
+== Instalación
+== Elementos de interfaz
+=== Barra de menú
+=== Barra de actividades
+=== Espacio de trabajo
+=== Barra de estado
+== Sobre este documento

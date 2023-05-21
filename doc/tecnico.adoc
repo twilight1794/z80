@@ -1,0 +1,23 @@
+= Emulador Z80: Manual técnico
+@twilight1794 <rapunzel@disroot.org>
+@kilomilo <>
+
+v1.0, 2023-05-20
+
+:doctype: book
+:toc:
+
+== Introducción
+== Flujo de programa
+== Formato de trabajo: ensamblador
+=== Sintaxis básica
+=== Directivas
+=== Instrucciones
+== Formatos auxiliares
+=== Hexadecimal de 8 bits (.hex)
+=== Listado (.lst)
+=== Archivo de proyecto (.xml)
+== Códigos de error
+== Glosario
+== Bibliografía
+== Sobre este documento

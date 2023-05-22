@@ -3,14 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" role="application">
     <head>
         <title>Emulador Z80</title>
+        <meta name="versionNumero" content="1.0.0" />
+        <meta name="versionFecha" content="2023-05-19" />
+        <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
         <link rel="stylesheet" type="text/css" href="codemirror.min.css" />
         <link rel="stylesheet" type="text/css" href="monokai.min.css" />
         <link rel="icon" type="image/svg" href="icon.svg" />
         <link rel="manifest" href="manifest.json" />
-        <script>/*<![CDATA[*/window.pumahat = {};/*]]>*/</script>
         <script src="codemirror.min.js"></script>
+        <script src="archivos.js"></script>
         <script src="plataforma.js"></script>
         <script src="programa_hex16.js"></script>
         <script src="programa_asm.js"></script>
@@ -19,17 +22,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </head>
     <body>
-        <header>
-            <input type="file" id="archivo" hidden="hidden" aria-label="Carga de archivo" accept=".asm,.hex,.xml" />
+        <header id="menuBarra">
+            <input type="file" id="archivoAsm" multiple="multiple" hidden="hidden" aria-label="Carga de archivo en ensamblador" accept=".asm, .z80" />
+            <input type="file" id="archivoHex" multiple="multiple" hidden="hidden" aria-label="Carga de archivo en hexadecimal" accept=".hex" />
+            <input type="file" id="archivoProj" hidden="hidden" aria-label="Carga de archivo de proyecto" accept=".xml, .z80p" />
             <ul aria-label="Principal" role="menubar">
                 <li><span>Archivo</span>
                     <ul>
+                        <li><button role="menuitem" id="btnNuevo">Nuevo archivo <kbd>M-f n</kbd></button></li>
                         <li><button role="menuitem" id="btnAbrirAsm">Abrir archivo en ensamblador... <kbd>M-f a</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardarAsm">Guardar archivo en ensamblador... <kbd>M-f b</kbd></button></li>
-                        <li><button role="menuitem" id="btnAbrirHex">Abrir archivo hex... <kbd>M-f c</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardarHex">Guardar archivo hex... <kbd>M-f d</kbd></button></li>
-                        <li><button role="menuitem" id="btnAbrirMem">Abrir archivo de estado de máquina... <kbd>M-f e</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardarMem">Guardar archivo de estado de máquina... <kbd>M-f f</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirHex">Abrir archivo hex... <kbd>M-f b</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirProj">Abrir proyecto... <kbd>M-f c</kbd></button></li>
+                        <li role="separator"></li>
+                        <li><button role="menuitem" id="btnGuardarAsm">Guardar archivo en ensamblador... <kbd>M-f d</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardarHex">Guardar archivo hex... <kbd>M-f e</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardarProj">Guardar proyecto... <kbd>M-f f</kbd></button></li>
+                        <li role="separator"></li>
+                        <li><button role="menuitem" id="btnCerrarArchivo">Cerrar archivo <kbd>M-f x</kbd></button></li>
+                        <li><button role="menuitem" id="btnCerrarProj">Cerrar proyecto <kbd>M-f y</kbd></button></li>
                     </ul>
                 </li>
                 <li><span>Editar</span>
@@ -37,6 +47,8 @@
                         <li><button role="menuitem" id="btnCortar">Cortar <kbd>C-x</kbd></button></li>
                         <li><button role="menuitem" id="btnCopiar">Copiar <kbd>C-c</kbd></button></li>
                         <li><button role="menuitem" id="btnPegar">Pegar <kbd>C-v</kbd></button></li>
+                        <li role="separator"></li>
+                        <li><button role="menuitem" id="btnBuscar">Buscar y reemplazar... <kbd>C-b</kbd></button></li>
                         <li role="separator"></li>
                         <li><button role="menuitem" id="btnInsEti">Insertar etiqueta</button></li>
                         <li><span>Insertar directiva</span>
@@ -163,7 +175,7 @@
                 </li>
                 <li><span>Ejecutar</span>
                     <ul>
-                        <li><button role="menuitem" id="btnEnsamblar">Ensamblar <kbd>M-e c</kbd></button></li>
+                        <li><button role="menuitem" id="btnEnsamblar">Ensamblar proyecto <kbd>M-e c</kbd></button></li>
                         <li><button role="menuitem" id="btnEjecutar">Ejecutar <kbd>M-e e</kbd></button></li>
                         <li><button role="menuitem" id="btnAvanzar">Ejecutar una instrucción <kbd>M-e a</kbd></button></li>
                         <li><button role="menuitem" id="btnDetener">Detener ejecución <kbd>M-e d</kbd></button></li>
@@ -185,93 +197,238 @@
                         <li><a role="menuitem" target="_blank" href="https://twilight1794.github.io/z80/docs">Manual de usuario <kbd>M-a a</kbd></a></li>
                         <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">Informar sobre un problema <kbd>M-a p</kbd></a></li>
                         <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">Repositorio <kbd>M-a r</kbd></a></li>
+                        <li><button role="menuitem" id="btnComprobarActs">Buscar actualizaciones... <kbd>M-a m</kbd></button></li>
                         <li><button role="menuitem" id="btnAcercaDe">Acerca de... <kbd>M-a s</kbd></button></li>
                     </ul>
                 </li>
             </ul>
         </header>
         <main>
+            <section id="r-act">
+                <nav id="menuActividades" role="tablist" aria-orientation="vertical" aria-label="Actividades">
+                    <button role="tab" aria-controls="r-exp" id="btnMenuExplorador">Explorador</button>
+                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar">Buscar y reemplazar</button>
+                    <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion">Ejecución</button>
+                    <button role="tab" aria-controls="r-msg" id="btnMenuMensajes">Consola de mensajes</button>
+                    <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas">Etiquetas</button>
+                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros">Macros</button>
+                    <button role="tab" aria-controls="r-man" id="btnMenuManual">Manual</button>
+                    <button role="tab" aria-controls="r-cfg" id="btnMenuConfig">Configuración</button>
+                </nav>
+                <section role="tabpanel" id="r-exp">
+                    <h2>Explorador</h2>
+                    <div>
+                        <div role="toolbar" aria-label="Acciones" id="menuArchivoAcciones">
+                            <button id="btnAccionesNuevo">Nuevo archivo</button>
+                            <button id="btnAccionesVisualizar">Visualizar</button>
+                            <button id="btnAccionesGuardar">Guardar</button>
+                            <button id="btnAccionesDescargar">Descargar</button>
+                            <button id="btnAccionesDuplicar">Duplicar</button>
+                            <button id="btnAccionesBorrar">Borrar</button>
+                            <button id="btnAccionesRenombrar">Renombrar</button>
+                        </div>
+                        <ul id="archivos"></ul>
+                    </div>
+                </section>
+                <section role="tabpanel" id="r-byr">
+                    <h2>Buscar y reemplazar</h2>
+                    <div>
+                        <label for="txtByrBuscar">Buscar:</label><input type="search" id="txtByrBuscar" />
+                        <label for="txtByrReemplazar">Reemplazar por:</label><input type="text" id="txtByrReemplazar" />
+                        <div><button id="btnByrBuscar">Buscar siguiente</button><button id="btnByrReemplazar">Reemplazar</button><button id="btnByrReemplazarTodo">Reemplazar todo</button></div>
+                        <fieldset>
+                            <legend>Modos de búsqueda</legend>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqNormal" value="normal" /><label for="rdByrModoBusqNormal">Normal</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqEscape" value="escape" /><label for="rdByrModoBusqEscape">Caracteres de escape (\r, \n, \s, ...)</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqRegex" value="regex" /><label for="rdByrModoBusqRegex">Normal</label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Opciones</legend>
+                            <input type="checkbox" id="chkByrOpcCase" checked="checked" /><label for="chkByrOpcCase">Diferenciar capitalización</label>
+                            <input type="checkbox" id="chkByrOpcToda" /><label for="chkByrOpcToda">Solo palabras completas</label>
+                        </fieldset>
+                    </div>
+                </section>
+                <section role="tabpanel" id="r-eje">
+                    <h2>Ejecución</h2>
+                    <div>
+                        <table>
+                            <tr><th id="t-ip">IP</th><td id="v-ip">0000</td><th>Instrucción actual</th><td id="instAct">—</td></tr>
+                            <tr><th>Tamaño</th><td><output id="numTam">—</output> bytes</td><th>Próxima instrucción</th><td id="instProx">—</td></tr>
+                            <tr><th>Ciclos</th><td id="v-re"><output id="numCiclos">—</output> ciclos</td><td colspan="2">Instrucción <output id="numInst">—</output> de <output id="numTot">—</output></td></tr>
+                        </table>
+                    </div>
+                </section>
+                <section role="tabpanel" id="r-msg">
+                    <h2>Consola de mensajes</h2>
+                    <div>
+                        <ul role="log"></ul>
+                    </div>
+                </section>
+                <section role="tabpanel" id="r-eti">
+                    <h2>Etiquetas</h2>
+                    <div><dl class="lvars"></dl></div>
+                </section>
+                <section role="tabpanel" id="r-mac">
+                    <h2>Macros</h2>
+                    <div></div>
+                </section>
+                <section role="tabpanel" id="r-man">
+                    <h2>Manual</h2>
+                    <div>
+                        <ol role="navigation"><li><button>Inicio</button></li></ol>
+                        <div id="panini">
+                            <button>Manual de usuario</button>
+                            <button>Manual técnico</button>
+                        </div>
+                        <div id="panay"></div>
+                    </div>
+                </section>
+                <section role="tabpanel" id="r-cfg">
+                    <h2>Configuración</h2>
+                    <div>
+                        <h3>Tema</h3>
+                        <fieldset>
+                            <legend><label for="selTemaTema">Tema a escoger</label></legend>
+                            <p>Tema de colores a usar.</p>
+                            <select id="selTemaTema">
+                                <option selected="selected">Sistema</option>
+                                <option>Claro</option>
+                                <option>Oscuro</option>
+                            </select>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Tema claro</legend>
+                            <p>Esquema de colores del tema claro.</p>
+                            <dl class="natural">
+                                <dt><label for="colorClaroCM">Principal, texto</label></dt><dd><input type="color" id="colorClaroCM" value="#323232" /></dd>
+                                <dt><label for="colorClaroFM">Principal, fondo</label></dt><dd><input type="color" id="colorClaroFM" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroCA">Secundario, texto</label></dt><dd><input type="color" id="colorClaroCA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorClaroFA" value="#4b0081" /></dd>
+                                <dt><label for="colorClaroCT">Terciario, texto</label></dt><dd><input type="color" id="colorClaroCT" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorClaroFT" value="#323232" /></dd>
+                                <dt><label for="colorClaroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorClaroActT" value="#808080" /></dd>
+                                <dt><label for="colorClaroBW">Widget, borde</label></dt><dd><input type="color" id="colorClaroBW" value="#d3d3d3"></dd>
+                                <dt><label for="colorClaroFB">Botón regular, fondo</label></dt><dd><input type="color" id="colorClaroFB" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFdB">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdB" value="#808080" /></dd>
+                                <dt><label for="colorClaroCB">Botón regular, texto</label></dt><dd><input type="color" id="colorClaroCB" value="#000000" /></dd>
+                                <dt><label for="colorClaroCdB">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdB" value="#000000" /></dd>
+                                <dt><label for="colorClaroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorClaroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorClaroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorClaroCInfo" value="#1e90ff" /></dd>
+                                <dt><label for="colorClaroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorClaroFInfo" value="#add8e6" /></dd>
+                                <dt><label for="colorClaroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorClaroCAviso" value="#ffa500" /></dd>
+                                <dt><label for="colorClaroFAviso">Mensaje de advertencia, fondo</label></dt><dd><input type="color" id="colorClaroFAviso" value="#ffdead" /></dd>
+                                <dt><label for="colorClaroCError">Mensaje de error, texto</label></dt><dd><input type="color" id="colorClaroCError" value="#ff0000" /></dd>
+                                <dt><label for="colorClaroFError">Mensaje de error, fondo</label></dt><dd><input type="color" id="colorClaroFError" value="#f08080" /></dd>
+                            </dl>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Tema oscuro</legend>
+                            <p>Esquema de colores del tema oscuro.</p>
+                            <dl class="natural">
+                                <dt><label for="colorOscuroCM">Principal, texto</label></dt><dd><input type="color" id="colorOscuroCM" value="#323232" /></dd>
+                                <dt><label for="colorOscuroFM">Principal, fondo</label></dt><dd><input type="color" id="colorOscuroFM" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroCA">Secundario, texto</label></dt><dd><input type="color" id="colorOscuroCA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorOscuroFA" value="#4b0081" /></dd>
+                                <dt><label for="colorOscuroCT">Terciario, texto</label></dt><dd><input type="color" id="colorOscuroCT" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorOscuroFT" value="#323232" /></dd>
+                                <dt><label for="colorOscuroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorOscuroActT" value="#808080" /></dd>
+                                <dt><label for="colorOscuroBW">Widget, borde</label></dt><dd><input type="color" id="colorOscuroBW" value="#d3d3d3"></dd>
+                                <dt><label for="colorOscuroFB">Botón regular, fondo</label></dt><dd><input type="color" id="colorOscuroFB" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFdB">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdB" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCB">Botón regular, texto</label></dt><dd><input type="color" id="colorOscuroCB" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCdB">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdB" value="#000000" /></dd>
+                                <dt><label for="colorOscuroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorOscuroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorOscuroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorOscuroCInfo" value="#1e90ff" /></dd>
+                                <dt><label for="colorOscuroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorOscuroFInfo" value="#add8e6" /></dd>
+                                <dt><label for="colorOscuroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorOscuroCAviso" value="#ffa500" /></dd>
+                                <dt><label for="colorOscuroFAviso">Mensaje de advertencia, fondo</label></dt><dd><input type="color" id="colorOscuroFAviso" value="#ffdead" /></dd>
+                                <dt><label for="colorOscuroCError">Mensaje de error, texto</label></dt><dd><input type="color" id="colorOscuroCError" value="#ff0000" /></dd>
+                                <dt><label for="colorOscuroFError">Mensaje de error, fondo</label></dt><dd><input type="color" id="colorOscuroFError" value="#f08080" /></dd>
+                            </dl>
+                        </fieldset>
+                        <h3>Editor</h3>
+                        <fieldset>
+                            <legend><label for="txtEdAutoGuardadoTiempo">Autoguardado</label></legend>
+                            <p>Define el tiempo en el que guardará automáticamente un archivo, en segundos. 0 para desactivar.</p>
+                            <input type="number" id="txtEdAutoGuardadoTiempo" value="0" min="0" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtEdTipo">Tipografía</label></legend>
+                            <p>Define la tipografía a usar dentro del editor de código.</p>
+                            <input type="text" id="txtEdTipo" value="monospace" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtEdTipoTam">Tamaño de tipografía</label></legend>
+                            <p>Define el tamaño de la tipografía a usar dentro del editor de código.</p>
+                            <input type="text" id="txtEdTipoTam" value="1rem" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtEdTab">Tamaño de tabulador (⇥)</label></legend>
+                            <p>Define el número de espacios equivalentes a una tabulación.</p>
+                            <input type="number" id="txtEdTab" value="4" min="1" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtEdSalto">Caracter de salto de línea</label></legend>
+                            <p>Define el caracter que se usará como salto de línea al salvar y copiar el texto del editor.</p>
+                            <select id="txtEdSalto">
+                                <option value="lf" selected="selected">LF (Unix)</option>
+                                <option value="crlf">CR LF (Windows)</option>
+                            </select>
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="chkDOSNombre">Ajustar nombres de archivo al formato 8.3</label></legend>
+                            <p>Si está habilitado, el formato de los nombres de archivo se limitarán al formato 8.3, para facilitar la compatibilidad con ensambladores para plataformas DOS.</p>
+                            <input type="checkbox" id="chkDOSNombre" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtExtAsm">Extensión para archivos en ensamblador</label></legend>
+                            <p>Define la extensión a utilizar al crear un nuevo archivo, o descargar uno.</p>
+                            <input type="text" id="txtExtAsm" value=".z80" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtExtProj">Extensión para archivos de proyecto</label></legend>
+                            <p>Define la extensión a utilizar al crear un nuevo archivo de proyecto.</p>
+                            <input type="text" id="txtExtProj" value=".z80p" />
+                        </fieldset>
+                        <h3>Plataforma</h3>
+                        <fieldset>
+                            <legend><label for="selPlatMem">Tamaño de memoria</label></legend>
+                            <p>Define el tamaño de la memoria de trabajo que estará disponible durante la ejecución del programa.</p>
+                            <p class="aviso">¡Cambiar el tamaño de la memoria reinicializará su contenido!</p>
+                            <select id="selPlatMem">
+                                <option value="256">256 B (0x00FF)</option>
+                                <option value="512">512 B (0x01FF)</option>
+                                <option value="1024" selected="selected">1 KiB (0x03FF)</option>
+                                <option value="2048">2 KiB (0x07FF)</option>
+                                <option value="4096">4 KiB (0x0FFF)</option>
+                                <option value="8192">8 KiB (0x1FFF)</option>
+                                <option value="16384">16 KiB (0x3FFF)</option>
+                                <option value="32768">32 KiB (0x7FFF)</option>
+                                <option value="65536">64 KiB (0xFFFF)</option>
+                            </select>
+                        </fieldset>
+                        <h3>Interfaz</h3>
+                        <fieldset>
+                            <legend><label for="chkIntTitulo">Cambiar título según el archivo abierto</label></legend>
+                            <p>Si está habilitado, el título cambiará para mostrar el nombre del archivo abierto actualmente, y mostrará el ícono ★ si el archivo tiene cambios no salvados.</p>
+                            <input type="checkbox" id="chkIntTitulo" checked="checked" />
+                        </fieldset>
+                    </div>
+                </section>
+            </section>
             <section id="r-cod">
                 <h2>Código</h2>
                 <div><div id="codemirror"></div></div>
             </section>
-            <section id="r-msg" role="log">
-                <h2>Consola de mensajes</h2>
-                <div>
-                    <ul>
-                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
-                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
-                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
-                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
-                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
-                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
-                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
-                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
-                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
-                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
-                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
-                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
-                        <li class="info"><ins datetime="2023-05-07T00:00:00Z">Archivo 'e.asm' guardado correctamente</ins></li>
-                        <li class="aviso"><ins datetime="2023-05-07T00:00:01Z">La etiqueta 'eti5' no se ha usado</ins></li>
-                        <li class="error"><ins datetime="2023-05-07T00:01:00Z">El mnemotécnico 'MOV' no se reconoce</ins></li>
-                    </ul>
-                </div>
-            </section>
             <section id="r-mem">
                 <h2>Memoria</h2>
-                <div>
-                <table>
-                    <thead><tr><th>Dirección</th><th>Valor</th><th>ASCII</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-                </div>
-            </section>
-            <section id="r-vars">
-                <h2>Variables y etiquetas</h2>
-                <div><dl class="lvars"></dl></div>
-            </section><!--
-            <section id="r-ins">
-                <h2>Instrucción a ejecutar</h2>
-                <div>
-                    <table>
-                        <tr><th id="t-ip">IP</th><td id="v-ip">0000</td><th>Instrucción actual</th><td id="instAct">—</td></tr>
-                        <tr><th>Tamaño</th><td><output id="numTam">—</output> bytes<th>Próxima instrucción</th><td id="instProx">—</td></tr>
-                        <tr><th>Ciclos</th><td id="v-re"><output id="numTam">—</output> ciclos</td><td colspan="2">Instrucción <output id="numInst">—</output> de <output id="numTot">—</output></td></tr>
-                    </table>
-                </div>
-            </section>-->
-            <section id="r-reg">
-                <h2>Registros</h2>
-                <div>
-                    <table>
-                        <tr><th scope="col" colspan="4">Registros principales</th></tr>
-                        <tr><th scope="row">A</th><td>00</td><td colspan="2"></td></tr>
-                        <tr><th scope="row">B</th><td>00</td><th scope="row">C</th><td>00</td></tr>
-                        <tr><th scope="row">D</th><td>00</td><th scope="row">E</th><td>00</td></tr>
-                        <tr><th scope="row">H</th><td>00</td><th scope="row">L</th><td>00</td></tr>
-                        <tr><th scope="col" colspan="4">Registros alternativos</th></tr>
-                        <tr><th scope="row">A'</th><td>00</td><td colspan="2"></td></tr>
-                        <tr><th scope="row">B'</th><td>00</td><th scope="row">C'</th><td>00</td></tr>
-                        <tr><th scope="row">D'</th><td>00</td><th scope="row">E'</th><td>00</td></tr>
-                        <tr><th scope="row">H'</th><td>00</td><th scope="row">L'</th><td>00</td></tr>
-                        <tr><th scope="col" colspan="4">Registros de 16 bits</th></tr>
-                        <tr><th scope="row" colspan="2">IX</th><td colspan="2">0000</td></tr>
-                        <tr><th scope="row" colspan="2">IY</th><td colspan="2">0000</td></tr>
-                        <tr><th scope="row" colspan="2">SP</th><td colspan="2">0000</td></tr>
-                        <tr><th scope="row" colspan="2">PC</th><td colspan="2">0000</td></tr>
-                        <tr><th scope="col" colspan="4">Registros especiales</th></tr>
-                        <tr><th scope="row">I</th><td>00</td><th scope="row">R</th><td>00</td></tr>
-                        <tr><th scope="col" colspan="2">Registro F</th><th scope="col" colspan="2">Registro F'</th></tr>
-                        <tr><th scope="row">SF</th><td>0</td><th scope="row">SF'</th><td>0</td></tr>
-                        <tr><th scope="row">ZF</th><td>0</td><th scope="row">ZF'</th><td>0</td></tr>
-                        <tr><th scope="row">YF</th><td>0</td><th scope="row">YF'</th><td>0</td></tr>
-                        <tr><th scope="row">HF</th><td>0</td><th scope="row">HF'</th><td>0</td></tr>
-                        <tr><th scope="row">XF</th><td>0</td><th scope="row">XF'</th><td>0</td></tr>
-                        <tr><th scope="row">PF</th><td>0</td><th scope="row">PF'</th><td>0</td></tr>
-                        <tr><th scope="row">NF</th><td>0</td><th scope="row">NF'</th><td>0</td></tr>
-                        <tr><th scope="row">CF</th><td>0</td><th scope="row">CF'</th><td>0</td></tr>
-                    </table>
-                </div>
+                <div><table>
+                    <thead>
+                        <tr><th rowspan="2">Dir</th><th colspan="16">Bytes</th><th colspan="16">ASCII</th></tr>
+                        <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>
+                        <tbody></tbody>
+                </table></div>
             </section>
             <section id="r-ay">
                 <h2>Ayuda</h2>
@@ -280,38 +437,73 @@
                     <div id="panst"></div>
                 </div>
             </section>
+            <section id="r-pila">
+                <h2>Pila</h2>
+                <div>
+                    <table>
+                        <thead><tr><th>#</th><th>Dirección</th><th>Valor</th></tr></thead>
+                        <tbody><tr><td>0</td><td>FFFE</td><td>0065</td></tr></tbody>
+                        <tbody><tr><td>1</td><td>FFFC</td><td>0066</td></tr></tbody>
+                        <tbody><tr><td>2</td><td>FFFA</td><td>0067</td></tr></tbody>
+                        <tbody><tr><td>3</td><td>FFF8</td><td>0068</td></tr></tbody>
+                        <tbody><tr><td>4</td><td>FFF6</td><td>0069</td></tr></tbody>
+                        <tbody><tr><td>5</td><td>FFF4</td><td>006A</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="r-reg">
+                <h2>Registros</h2>
+                <div>
+                    <table>
+                        <tbody id="r-r">
+                            <tr><th scope="col" colspan="4">Registros principales</th></tr>
+                            <tr><th scope="row" id="t-a">A</th><td id="v-a">00</td><td colspan="2"></td></tr>
+                            <tr><th scope="row" id="t-b">B</th><td id="v-b">00</td><th scope="row" id="r-c">C</th><td id="v-c">00</td></tr>
+                            <tr><th scope="row" id="t-d">D</th><td id="v-d">00</td><th scope="row" id="r-e">E</th><td id="v-e">00</td></tr>
+                            <tr><th scope="row" id="t-h">H</th><td id="v-h">00</td><th scope="row" id="r-l">L</th><td id="v-l">00</td></tr>
+                        </tbody>
+                        <tbody id="r-rx">
+                            <tr><th scope="col" colspan="4">Registros alternativos</th></tr>
+                            <tr><th scope="row" id="t-ax">A'</th><td id="v-ax">00</td><td colspan="2"></td></tr>
+                            <tr><th scope="row" id="t-bx">B'</th><td id="v-bx">00</td><th scope="row" id="t-cx">C'</th><td id="v-cx">00</td></tr>
+                            <tr><th scope="row" id="t-dx">D'</th><td id="v-dx">00</td><th scope="row" id="t-ex">E'</th><td id="v-ex">00</td></tr>
+                            <tr><th scope="row" id="t-hx">H'</th><td id="v-hx">00</td><th scope="row" id="t-lx">L'</th><td id="v-lx">00</td></tr>
+                        </tbody>
+                        <tbody id="r-16b">
+                            <tr><th scope="col" colspan="4">Registros de 16 bits</th></tr>
+                            <tr><th scope="row" colspan="2" id="t-ix">IX</th><td colspan="2" id="v-ix">0000</td></tr>
+                            <tr><th scope="row" colspan="2" id="t-iy">IY</th><td colspan="2" id="v-iy">0000</td></tr>
+                            <tr><th scope="row" colspan="2" id="t-sp">SP</th><td colspan="2" id="v-sp">0000</td></tr>
+                            <tr><th scope="row" colspan="2" id="t-pc">PC</th><td colspan="2" id="v-pc">0000</td></tr>    
+                        </tbody>
+                        <tbody id="r-e">
+                            <tr><th scope="col" colspan="4">Registros especiales</th></tr>
+                            <tr><th scope="row" id="t-i">I</th><td id="v-i">00</td><th scope="row" id="t-r">R</th><td id="v-r">00</td></tr>
+                        </tbody>
+                        <tbody id="r-f">
+                            <tr><th scope="col" colspan="2">Registro F</th><th scope="col" colspan="2">Registro F'</th></tr>
+                            <tr><th scope="row" id="t-sf">SF</th><td id="v-sf">💡</td><th scope="row" id="t-sfx">SF'</th><td id="v-sfx">💡</td></tr>
+                            <tr><th scope="row" id="t-zf">ZF</th><td id="v-zf">💡</td><th scope="row" id="t-zfx">ZF'</th><td id="v-zfx">💡</td></tr>
+                            <tr><th scope="row" id="t-yf">YF</th><td id="v-yf">💡</td><th scope="row" id="t-yfx">YF'</th><td id="v-yfx">💡</td></tr>
+                            <tr><th scope="row" id="t-hf">HF</th><td id="v-hf">💡</td><th scope="row" id="t-hfx">HF'</th><td id="v-hfx">💡</td></tr>
+                            <tr><th scope="row" id="t-xf">XF</th><td id="v-xf">💡</td><th scope="row" id="t-xfx">XF'</th><td id="v-xfx">💡</td></tr>
+                            <tr><th scope="row" id="t-pf">PF</th><td id="v-pf">💡</td><th scope="row" id="t-pfx">PF'</th><td id="v-pfx">💡</td></tr>
+                            <tr><th scope="row" id="t-nf">NF</th><td id="v-nf">💡</td><th scope="row" id="t-nfx">NF'</th><td id="v-nfx">💡</td></tr>
+                            <tr><th scope="row" id="t-cf">CF</th><td id="v-cf">💡</td><th scope="row" id="t-cfx">CF'</th><td id="v-cfx">💡</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
         <footer>
-            <ul aria-label="Entorno" role="menubar">
-                <li class="hint--top-right" aria-label="Tema"><output>Sistema</output>
-                    <ul role="group">
-                        <li role="menuitemradio" aria-checked="true"><span>Sistema</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>Claro</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>Oscuro</span></li>
-                    </ul>
-                </li>
-            </ul>
             <ul aria-label="Máquina" role="menubar">
-                <li class="hint--top" aria-label="Estado"><output>Ejecutando...</output></li>
-                <li role="menuitem" class="hint--top" aria-label="Velocidad de reloj"><output>2 MHz</output></li>
-                <li role="menuitem" class="hint--top" aria-label="Tamaño de memoria"><output>64KiB</output>
-                    <ul role="group">
-                        <li role="menuitemradio" aria-checked="false"><span>256 B (0x00FF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>512 B (0x01FF)</span></li>
-                        <li role="menuitemradio" aria-checked="true"><span>1 KiB (0x03FF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>2 KiB (0x07FF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>4 KiB (0x0FFF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>8 KiB (0x1FFF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>16 KiB (0x3FFF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>32 KiB (0x7FFF)</span></li>
-                        <li role="menuitemradio" aria-checked="false"><span>64 KiB (0xFFFF)</span></li>
-                    </ul>
-                </li>
+                <li class="hint--top" aria-label="Estado"><output id="outEstado"></output></li>
+                <li class="hint--top" aria-label="Tamaño de memoria"><output id="outMemTam"></output></li>
             </ul>
             <ul aria-label="Archivo" role="menubar">
-                <li class="hint--top-left" aria-label="Tamaño"><output></output></li>
-                <li class="hint--top-left" aria-label="Línea"><output></output></li>
-                <li class="hint--top-left" aria-label="Columna"><output></output></li>
+                <li class="hint--top-left" aria-label="Tamaño"><output id="outArcTam"></output></li>
+                <li class="hint--top-left" aria-label="Línea"><output id="outArcLin"></output></li>
+                <li class="hint--top-left" aria-label="Columna"><output id="outArcCol"></output></li>
             </ul>
         </footer>
     </body>

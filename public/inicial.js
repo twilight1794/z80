@@ -11,16 +11,26 @@ window.funsConfig = {
     },
     colorClaroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-m", v); },
     colorClaroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-m", v); },
+    colorClaroBM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-b-m", v); },
     colorClaroCA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-a", v); },
     colorClaroFA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-a", v); },
+    colorClaroHA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-h-a", v); },
     colorClaroCT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-t", v); },
     colorClaroFT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-t", v); },
     colorClaroActT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-act-t", v); },
     colorClaroBW: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-b-w", v); },
-    colorClaroFB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-b", v); },
-    colorClaroFdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fd-b", v); },
-    colorClaroCB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-b", v); },
-    colorClaroCdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-cd-b", v); },
+    colorClaroCBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-br", v); },
+    colorClaroCActBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-cact-br", v); },
+    colorClaroCdBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-cd-br", v); },
+    colorClaroFBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-br", v); },
+    colorClaroFActBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fact-br", v); },
+    colorClaroFdBr: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fd-br", v); },
+    colorClaroCBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-bbh", v); },
+    colorClaroCActBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-cact-bbh", v); },
+    colorClaroCdBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-cd-bbh", v); },
+    colorClaroFBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-bbh", v); },
+    colorClaroFActBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fact-bbh", v); },
+    colorClaroFdBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fd-bbh", v); },
     colorClaroSBand: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-s-band", v); },
     colorClaroCInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-info", v); },
     colorClaroFInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-info", v); },
@@ -30,16 +40,18 @@ window.funsConfig = {
     colorClaroFError: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-error", v); },
     colorOscuroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-m", v); },
     colorOscuroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-m", v); },
+    colorOscuroBM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-b-m", v); },
     colorOscuroCA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-a", v); },
     colorOscuroFA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-a", v); },
+    colorOscuroHA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-h-a", v); },
     colorOscuroCT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-t", v); },
     colorOscuroFT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-t", v); },
     colorOscuroActT: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-act-t", v); },
     colorOscuroBW: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-b-w", v); },
-    colorOscuroFB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-b", v); },
-    colorOscuroFdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-fd-b", v); },
     colorOscuroCB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-b", v); },
     colorOscuroCdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-cd-b", v); },
+    colorOscuroFB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-b", v); },
+    colorOscuroFdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-fd-b", v); },
     colorOscuroSBand: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-s-band", v); },
     colorOscuroCInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-info", v); },
     colorOscuroFInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-info", v); },
@@ -65,10 +77,15 @@ window.funsConfig = {
 /* Lista de funciones asociadas a una combinación de teclas */
 // TODO: ¿volver esto una opción configurable?
 window.combTeclas = {
-    "M-f n": null,
+    "M-f n": btnAccionesNuevo,
     "M-f a": btnAbrirAsm,
     "M-f b": btnAbrirHex,
     "M-f c": btnAbrirProj,
+    "M-f g": btnAccionesVisualizar,
+    "M-f h": btnAccionesGuardar,
+    "M-f i": btnAccionesDuplicar,
+    "M-f j": btnAccionesBorrar,
+    "M-f k": btnAccionesRenombrar,
     "M-f d": null,
     "M-f e": null,
     "M-f f": null,
@@ -122,7 +139,7 @@ function valorSignado(hex){
     return (n >= b/2)?("-"+(b-n).toString()):n.toString();
 }
 
-/* Funciones de interfaz */
+/* Funciones de Barra de menú */
 function btnAbrirAsm(){
     document.getElementById("archivoAsm").click();
 }
@@ -133,11 +150,49 @@ function btnAbrirProj(){
     document.getElementById("archivoProj").click();
 }
 
+/* Funciones de Barra de herramientas de Navegación */
+function btnAccionesNuevo(){
+    let nom = window.prompt("Escribe el nombre del nuevo archivo");
+    if (nom) proy.crearArchivo(nom);
+}
+function btnAccionesVisualizar(){
+    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    proy.visualizarArchivo(nom);
+}
+function btnAccionesGuardar(){
+    let noms = Array.from(document.querySelectorAll("#archivos [type=checkbox]")).forEach((e) => {
+        proy.guardarArchivo(e.nextElementSibling.textContent);
+    });
+}
+function btnAccionesDescargar(){
+    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    proy.guardarArchivo(nom);
+}
+function btnAccionesDuplicar(){
+    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    let nom2 = window.prompt("Escribe el nombre del nuevo archivo");
+    if (nom2) proy.duplicarArchivo(nom, nom2);
+}
+function btnAccionesBorrar(){
+    let noms = Array.from(document.querySelectorAll("#archivos [type=checkbox]")).forEach((e) => {
+        proy.borrarArchivo(e.nextElementSibling.textContent);
+    });
+}
+function btnAccionesRenombrar(){
+    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    proy.renombrarArchivo(nom);
+}
+
 /* Eventos de CodeMirror */
 function onChangeCMI(cm){
     let t = cm.getValue().length;
     let u = (t >= 1000)?(t.toFixed(1) + " KB"):(t + " byte" + (t!=1?"s":""));
     document.getElementById("outArcTam").textContent = u;
+    let e = document.querySelector("#archivos [aria-selected]");
+    if (e){
+        e.classList.add("guardar");
+        sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
+    }
 }
 function onInputCMI(cm){
     let c = cm.getCursor();
@@ -145,6 +200,7 @@ function onInputCMI(cm){
     document.getElementById("outArcCol").textContent = "Columna " + (c.ch + 1);
 }
 
+/* Configuración */
 /**
  * Establece y aplica un valor en la configuración.
  *
@@ -171,6 +227,19 @@ function estConfig(p, v){
     } catch { console.error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
 }
 
+function estConfigIni(d){
+    for (let e of document.querySelectorAll("#r-cfg :is(select, input)")){
+        if (e.tagName == "INPUT" && e.type == "checkbox")
+            estConfig(e.id, d?e.checked:null);
+        else estConfig(e.id, d?e.value:null);
+        e.addEventListener("change", (e2) => {
+            if (e2.target.tagName == "INPUT" && e2.target.type == "checkbox")
+                estConfig(e2.target.id, e2.target.checked);
+            else estConfig(e2.target.id, e2.target.value);
+        });
+    }
+}
+
 /* Inicialización de memoria */
 function iniMem(){
     let t = parseInt(localStorage.getItem("selPlatMem"));
@@ -185,21 +254,21 @@ function iniMem(){
     }
 }
 
-/* Eventos de botones de interfaz */
+/* Eventos de botones de Barra de actividades */
 function btnMenuActividades(e){
-    let act = e.target.getAttribute("aria-selected") == "true";
-    Array.from(e.target.parentNode.children).forEach((ee) => {
+    let act = e.target.parentNode.getAttribute("aria-selected") == "true";
+    Array.from(e.target.parentNode.parentNode.children).forEach((ee) => {
         if (ee.getAttribute("aria-selected") == "true") ee.removeAttribute("aria-selected");
     });
-    Array.from(e.target.parentNode.parentNode.getElementsByTagName("section")).forEach((ee) => {
+    Array.from(e.target.parentNode.parentNode.parentNode.getElementsByTagName("section")).forEach((ee) => {
         ee.removeAttribute("aria-current");
     });
     if (act){
-        e.target.removeAttribute("aria-selected");
-        document.getElementById(e.target.getAttribute("aria-controls")).removeAttribute("aria-current");
+        e.target.parentNode.removeAttribute("aria-selected");
+        document.getElementById(e.target.parentNode.getAttribute("aria-controls")).removeAttribute("aria-current");
     } else {
-        e.target.setAttribute("aria-selected", "true");
-        document.getElementById(e.target.getAttribute("aria-controls")).setAttribute("aria-current", "page");
+        e.target.parentNode.setAttribute("aria-selected", "true");
+        document.getElementById(e.target.parentNode.getAttribute("aria-controls")).setAttribute("aria-current", "page");
     }
 }
 
@@ -234,14 +303,11 @@ window.addEventListener("DOMContentLoaded", () => {
     onInputCMI(cmi);
 
     /* Configuración */
-    for (let e of document.querySelectorAll("#r-cfg :is(select, input)")){
-        estConfig(e.id);
-        e.addEventListener("change", (e2) => {
-            if (e2.target.tagName == "INPUT" && e2.target.type == "checkbox")
-                estConfig(e2.target.id, e2.target.checked);
-            else estConfig(e2.target.id, e2.target.value);
-        });
-    }
+    estConfigIni();
+    document.getElementById("btnRestConfig").addEventListener("click", (e) => {
+        e.target.form.reset();
+        estConfigIni(true);
+    });
 
     /* Creación de proyecto de inicio */
     window.proy = new Proyecto();
@@ -266,9 +332,36 @@ window.addEventListener("DOMContentLoaded", () => {
     /* Asignación de eventos Actividades */
     Array.from(document.querySelectorAll("#menuActividades button")).forEach((e) => {
         e.addEventListener("click", btnMenuActividades);
-        e.addEventListener("mouseover", (e) => { e.target.title = e.target.textContent.trim(); });
-        e.addEventListener("mouseout", (e) => { e.target.title = undefined; });
+        e.addEventListener("mouseover", (e2) => {
+            e2.target.parentNode.classList.add("hint--right");
+            e2.target.parentNode.setAttribute("aria-label", e2.target.textContent.trim());
+        });
+        e.addEventListener("mouseout", (e2) => {
+            e2.target.parentNode.classList.remove("hint--right");
+            e2.target.parentNode.removeAttribute("aria-label");
+        });
     });
+
+    /* Asignación de eventos Barra de herramientas Explorador */
+    Array.from(document.querySelectorAll("#menuArchivoAcciones button")).forEach((e) => {
+        e.addEventListener("mouseover", (e2) => {
+            e2.target.parentNode.classList.add("hint--bottom-right");
+            e2.target.parentNode.setAttribute("aria-label", e2.target.textContent.trim());
+        });
+        e.addEventListener("mouseout", (e2) => {
+            e2.target.parentNode.classList.remove("hint--bottom-right");
+            e2.target.parentNode.removeAttribute("aria-label");
+        });
+        if (e.getAttribute("aria-disabled") == "true") e.disabled = true;
+    });
+
+    document.getElementById("btnAccionesNuevo").addEventListener("click", btnAccionesNuevo);
+    document.getElementById("btnAccionesVisualizar").addEventListener("click", btnAccionesVisualizar);
+    document.getElementById("btnAccionesGuardar").addEventListener("click", btnAccionesGuardar);
+    document.getElementById("btnAccionesDescargar").addEventListener("click", btnAccionesDescargar);
+    document.getElementById("btnAccionesDuplicar").addEventListener("click", btnAccionesDuplicar);
+    document.getElementById("btnAccionesBorrar").addEventListener("click", btnAccionesBorrar);
+    document.getElementById("btnAccionesRenombrar").addEventListener("click", btnAccionesRenombrar);
 
     /* Combinaciones de teclas */
     document.addEventListener("keydown", (e) => {

@@ -34,12 +34,17 @@
                         <li><button role="menuitem" id="btnAbrirHex">Abrir archivo hex... <kbd>M-f b</kbd></button></li>
                         <li><button role="menuitem" id="btnAbrirProj">Abrir proyecto... <kbd>M-f c</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnGuardarAsm">Guardar archivo en ensamblador... <kbd>M-f d</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardarHex">Guardar archivo hex... <kbd>M-f e</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardarProj">Guardar proyecto... <kbd>M-f f</kbd></button></li>
+                        <li><button role="menuitem" id="btnVisualizar">Visualizar <kbd>M-f g</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardar">Guardar <kbd>M-f h</kbd></button></li>
+                        <li><button role="menuitem" id="btnDuplicar">Duplicar <kbd>M-f i</kbd></button></li>
+                        <li><button role="menuitem" id="btnBorrar">Borrar <kbd>M-f j</kbd></button></li>
+                        <li><button role="menuitem" id="btnRenombrar">Renombrar <kbd>M-f k</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnCerrarArchivo">Cerrar archivo <kbd>M-f x</kbd></button></li>
-                        <li><button role="menuitem" id="btnCerrarProj">Cerrar proyecto <kbd>M-f y</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarAsm">Descargar archivo en ensamblador... <kbd>M-f d</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarHex">Descargar archivo hex... <kbd>M-f e</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarProj">Descargar proyecto... <kbd>M-f f</kbd></button></li>
+                        <li role="separator"></li>
+                        <li><button role="menuitem" id="btnCerrarProj">Cerrar proyecto <kbd>M-f x</kbd></button></li>
                     </ul>
                 </li>
                 <li><span>Editar</span>
@@ -206,26 +211,26 @@
         <main>
             <section id="r-act">
                 <nav id="menuActividades" role="tablist" aria-orientation="vertical" aria-label="Actividades">
-                    <button role="tab" aria-controls="r-exp" id="btnMenuExplorador">Explorador</button>
-                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar">Buscar y reemplazar</button>
-                    <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion">Ejecución</button>
-                    <button role="tab" aria-controls="r-msg" id="btnMenuMensajes">Consola de mensajes</button>
-                    <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas">Etiquetas</button>
-                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros">Macros</button>
-                    <button role="tab" aria-controls="r-man" id="btnMenuManual">Manual</button>
-                    <button role="tab" aria-controls="r-cfg" id="btnMenuConfig">Configuración</button>
+                    <button role="tab" aria-controls="r-exp" id="btnMenuExplorador"><span>Explorador</span></button>
+                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar"><span>Buscar y reemplazar</span></button>
+                    <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion"><span>Ejecución</span></button>
+                    <button role="tab" aria-controls="r-msg" id="btnMenuMensajes"><span>Consola de mensajes</span></button>
+                    <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas"><span>Etiquetas</span></button>
+                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>Macros</span></button>
+                    <button role="tab" aria-controls="r-man" id="btnMenuManual"><span>Manual</span></button>
+                    <button role="tab" aria-controls="r-cfg" id="btnMenuConfig"><span>Configuración</span></button>
                 </nav>
                 <section role="tabpanel" id="r-exp">
                     <h2>Explorador</h2>
                     <div>
                         <div role="toolbar" aria-label="Acciones" id="menuArchivoAcciones">
-                            <button id="btnAccionesNuevo">Nuevo archivo</button>
-                            <button id="btnAccionesVisualizar">Visualizar</button>
-                            <button id="btnAccionesGuardar">Guardar</button>
-                            <button id="btnAccionesDescargar">Descargar</button>
-                            <button id="btnAccionesDuplicar">Duplicar</button>
-                            <button id="btnAccionesBorrar">Borrar</button>
-                            <button id="btnAccionesRenombrar">Renombrar</button>
+                            <button id="btnAccionesNuevo"><span>Nuevo archivo</span></button>
+                            <button id="btnAccionesVisualizar" aria-disabled="true"><span>Visualizar</span></button>
+                            <button id="btnAccionesGuardar" aria-disabled="true"><span>Guardar</span></button>
+                            <button id="btnAccionesDescargar" aria-disabled="true"><span>Descargar</span></button>
+                            <button id="btnAccionesDuplicar" aria-disabled="true"><span>Duplicar</span></button>
+                            <button id="btnAccionesBorrar" aria-disabled="true"><span>Borrar</span></button>
+                            <button id="btnAccionesRenombrar" aria-disabled="true"><span>Renombrar</span></button>
                         </div>
                         <ul id="archivos"></ul>
                     </div>
@@ -286,11 +291,20 @@
                 </section>
                 <section role="tabpanel" id="r-cfg">
                     <h2>Configuración</h2>
-                    <div>
+                    <div><form>
                         <h3>Tema</h3>
                         <fieldset>
                             <legend><label for="selTemaTema">Tema a escoger</label></legend>
                             <p>Tema de colores a usar.</p>
+                            <details>
+                                <summary>Más sobre los esquemas de colores...</summary>
+                                Los esquemas de colores tienen diversas categorías, según el uso que se les dé a cada color. Aquí explicamos
+                                <dl class="natural">
+                                    <dt>Principal</dt><dd>Lo usamos para colorear el elemento principal (EP): el contenido de los paneles</dd>
+                                    <dt>Secundario</dt><dd>Lo usamos para colorear elementos dentro del EP, y distinguirlos del mismo: por ejemplo, el área de título de cada elemento.</dd>
+                                    <dt>Terciario</dt><dd>Lo usamos para elementos complementarios de la interfaz, como las barras de menú, de pie, y de actividades.</dd>
+                                </dl>
+                            </details>
                             <select id="selTemaTema">
                                 <option selected="selected">Sistema</option>
                                 <option>Claro</option>
@@ -300,19 +314,29 @@
                         <fieldset>
                             <legend>Tema claro</legend>
                             <p>Esquema de colores del tema claro.</p>
-                            <dl class="natural">
+                            <dl class="natural form">
                                 <dt><label for="colorClaroCM">Principal, texto</label></dt><dd><input type="color" id="colorClaroCM" value="#323232" /></dd>
-                                <dt><label for="colorClaroFM">Principal, fondo</label></dt><dd><input type="color" id="colorClaroFM" value="#f5f5f5" /></dd>
-                                <dt><label for="colorClaroCA">Secundario, texto</label></dt><dd><input type="color" id="colorClaroCA" value="#f5f5f5" /></dd>
-                                <dt><label for="colorClaroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorClaroFA" value="#4b0081" /></dd>
+                                <dt><label for="colorClaroFM">Principal, fondo</label></dt><dd><input type="color" id="colorClaroFM" value="#ffffff" /></dd>
+                                <dt><label for="colorClaroBM">Principal, borde</label></dt><dd><input type="color" id="colorClaroBM" value="#d3d3d3" /></dd></dt>
+                                <dt><label for="colorClaroCA">Secundario, texto</label></dt><dd><input type="color" id="colorClaroCA" value="#323232" /></dd>
+                                <dt><label for="colorClaroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorClaroFA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroHA">Secundario, fondo hover</label></dt><dd><input type="color" id="colorClaroHA" value="#d3d3d3" /></dd>
                                 <dt><label for="colorClaroCT">Terciario, texto</label></dt><dd><input type="color" id="colorClaroCT" value="#f5f5f5" /></dd>
                                 <dt><label for="colorClaroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorClaroFT" value="#323232" /></dd>
                                 <dt><label for="colorClaroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorClaroActT" value="#808080" /></dd>
                                 <dt><label for="colorClaroBW">Widget, borde</label></dt><dd><input type="color" id="colorClaroBW" value="#d3d3d3"></dd>
-                                <dt><label for="colorClaroFB">Botón regular, fondo</label></dt><dd><input type="color" id="colorClaroFB" value="#d3d3d3" /></dd>
-                                <dt><label for="colorClaroFdB">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdB" value="#808080" /></dd>
-                                <dt><label for="colorClaroCB">Botón regular, texto</label></dt><dd><input type="color" id="colorClaroCB" value="#000000" /></dd>
-                                <dt><label for="colorClaroCdB">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdB" value="#000000" /></dd>
+                                <dt><label for="colorClaroCBr">Botón regular, texto</label></dt><dd><input type="color" id="colorClaroCBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroCActBr">Botón regular, texto activo</label></dt><dd><input type="color" id="colorClaroCActBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroCdBr">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroFBr">Botón regular, fondo</label></dt><dd><input type="color" id="colorClaroFBr" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFActBr">Botón regular, fondo activo</label></dt><dd><input type="color" id="colorClaroFActBr" value="#808080" /></dd>
+                                <dt><label for="colorClaroFdBr">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdBr" value="#808080" /></dd>
+                                <dt><label for="colorClaroCBbh">Botón de barra de herramientas, texto</label></dt><dd><input type="color" id="colorClaroCBbh" value="#808080" /></dd>
+                                <dt><label for="colorClaroCActBbh">Botón de barra de herramientas, texto activo</label></dt><dd><input type="color" id="colorClaroCActBbh" value="#808080" /></dd>
+                                <dt><label for="colorClaroCdBbh">Botón de barra de herramientas, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFBbh">Botón de barra de herramientas, fondo</label></dt><dd><input type="color" id="colorClaroFBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorClaroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorClaroFActBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdBbh" value="#ffffff" /></dd>
                                 <dt><label for="colorClaroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorClaroSBand" value="#ffd983" /></dd>
                                 <dt><label for="colorClaroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorClaroCInfo" value="#1e90ff" /></dd>
                                 <dt><label for="colorClaroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorClaroFInfo" value="#add8e6" /></dd>
@@ -325,19 +349,29 @@
                         <fieldset>
                             <legend>Tema oscuro</legend>
                             <p>Esquema de colores del tema oscuro.</p>
-                            <dl class="natural">
+                            <dl class="natural form">
                                 <dt><label for="colorOscuroCM">Principal, texto</label></dt><dd><input type="color" id="colorOscuroCM" value="#323232" /></dd>
-                                <dt><label for="colorOscuroFM">Principal, fondo</label></dt><dd><input type="color" id="colorOscuroFM" value="#f5f5f5" /></dd>
-                                <dt><label for="colorOscuroCA">Secundario, texto</label></dt><dd><input type="color" id="colorOscuroCA" value="#f5f5f5" /></dd>
-                                <dt><label for="colorOscuroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorOscuroFA" value="#4b0081" /></dd>
+                                <dt><label for="colorOscuroFM">Principal, fondo</label></dt><dd><input type="color" id="colorOscuroFM" value="#ffffff" /></dd>
+                                <dt><label for="colorOscuroBM">Principal, borde</label></dt><dd><input type="color" id="colorOscuroBM" value="#d3d3d3" /></dd></dt>
+                                <dt><label for="colorOscuroCA">Secundario, texto</label></dt><dd><input type="color" id="colorOscuroCA" value="#323232" /></dd>
+                                <dt><label for="colorOscuroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorOscuroFA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroHA">Secundario, fondo hover</label></dt><dd><input type="color" id="colorOscuroHA" value="#d3d3d3" /></dd>
                                 <dt><label for="colorOscuroCT">Terciario, texto</label></dt><dd><input type="color" id="colorOscuroCT" value="#f5f5f5" /></dd>
                                 <dt><label for="colorOscuroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorOscuroFT" value="#323232" /></dd>
                                 <dt><label for="colorOscuroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorOscuroActT" value="#808080" /></dd>
                                 <dt><label for="colorOscuroBW">Widget, borde</label></dt><dd><input type="color" id="colorOscuroBW" value="#d3d3d3"></dd>
-                                <dt><label for="colorOscuroFB">Botón regular, fondo</label></dt><dd><input type="color" id="colorOscuroFB" value="#d3d3d3" /></dd>
-                                <dt><label for="colorOscuroFdB">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdB" value="#808080" /></dd>
-                                <dt><label for="colorOscuroCB">Botón regular, texto</label></dt><dd><input type="color" id="colorOscuroCB" value="#000000" /></dd>
-                                <dt><label for="colorOscuroCdB">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdB" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCBr">Botón regular, texto</label></dt><dd><input type="color" id="colorOscuroCBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCActBr">Botón regular, texto activo</label></dt><dd><input type="color" id="colorOscuroCActBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCdBr">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroFBr">Botón regular, fondo</label></dt><dd><input type="color" id="colorOscuroFBr" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFActBr">Botón regular, fondo activo</label></dt><dd><input type="color" id="colorOscuroFActBr" value="#808080" /></dd>
+                                <dt><label for="colorOscuroFdBr">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdBr" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCBbh">Botón de barra de herramientas, texto</label></dt><dd><input type="color" id="colorOscuroCBbh" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCActBbh">Botón de barra de herramientas, texto activo</label></dt><dd><input type="color" id="colorOscuroCActBbh" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCdBbh">Botón de barra de herramientas, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFBbh">Botón de barra de herramientas, fondo</label></dt><dd><input type="color" id="colorOscuroFBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorOscuroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorOscuroFActBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdBbh" value="#ffffff" /></dd>
                                 <dt><label for="colorOscuroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorOscuroSBand" value="#ffd983" /></dd>
                                 <dt><label for="colorOscuroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorOscuroCInfo" value="#1e90ff" /></dd>
                                 <dt><label for="colorOscuroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorOscuroFInfo" value="#add8e6" /></dd>
@@ -410,11 +444,21 @@
                         </fieldset>
                         <h3>Interfaz</h3>
                         <fieldset>
+                            <legend><label for="selIntIdioma"></label></legend>
+                            <p>Establece el idioma del programa.</p>
+                            <select id="selIntIdioma">
+                                <option selected="selected">Sistema</option>
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                            </select>
+                        </fieldset>
+                        <fieldset>
                             <legend><label for="chkIntTitulo">Cambiar título según el archivo abierto</label></legend>
                             <p>Si está habilitado, el título cambiará para mostrar el nombre del archivo abierto actualmente, y mostrará el ícono ★ si el archivo tiene cambios no salvados.</p>
                             <input type="checkbox" id="chkIntTitulo" checked="checked" />
                         </fieldset>
-                    </div>
+                        <fieldset><button type="reset" id="btnRestConfig">Restablecer valores</button></fieldset>
+                    </form></div>
                 </section>
             </section>
             <section id="r-cod">

@@ -15,6 +15,7 @@
         <link rel="manifest" href="manifest.json" />
         <script src="neutralino.js"></script>
         <script src="codemirror.min.js"></script>
+        <script src="errores.js"></script>
         <script src="archivos.js"></script>
         <script src="plataforma.js"></script>
         <script src="programa_hex16.js"></script>
@@ -240,14 +241,21 @@
                 <section role="tabpanel" id="r-byr">
                     <h2>Buscar y reemplazar</h2>
                     <div>
-                        <label for="txtByrBuscar">Buscar:</label><input type="search" id="txtByrBuscar" />
-                        <label for="txtByrReemplazar">Reemplazar por:</label><input type="text" id="txtByrReemplazar" />
-                        <div><button id="btnByrBuscar">Buscar siguiente</button><button id="btnByrReemplazar">Reemplazar</button><button id="btnByrReemplazarTodo">Reemplazar todo</button></div>
+                        <fieldset>
+                            <label for="txtByrBuscar">Buscar:</label><input type="search" id="txtByrBuscar" />
+                            <label for="txtByrReemplazar">Reemplazar por:</label><input type="text" id="txtByrReemplazar" />
+    
+                        </fieldset>
+                        <fieldset>
+                            <button id="btnByrBuscar">Buscar siguiente</button>
+                            <button id="btnByrReemplazar">Reemplazar</button>
+                            <button id="btnByrReemplazarTodo">Reemplazar todo</button>
+                        </fieldset>
                         <fieldset>
                             <legend>Modos de búsqueda</legend>
-                            <input type="radio" name="modoBusq" id="rdByrModoBusqNormal" value="normal" /><label for="rdByrModoBusqNormal">Normal</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqNormal" value="normal" checked="checked" /><label for="rdByrModoBusqNormal">Normal</label>
                             <input type="radio" name="modoBusq" id="rdByrModoBusqEscape" value="escape" /><label for="rdByrModoBusqEscape">Caracteres de escape (\r, \n, \s, ...)</label>
-                            <input type="radio" name="modoBusq" id="rdByrModoBusqRegex" value="regex" /><label for="rdByrModoBusqRegex">Normal</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqRegex" value="regex" /><label for="rdByrModoBusqRegex">Expresión regular</label>
                         </fieldset>
                         <fieldset>
                             <legend>Opciones</legend>
@@ -340,6 +348,7 @@
                                 <dt><label for="colorClaroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorClaroFActBbh" value="#d3d3d3" /></dd>
                                 <dt><label for="colorClaroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdBbh" value="#ffffff" /></dd>
                                 <dt><label for="colorClaroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorClaroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorClaroIArc">Archivo sin guardar, indicador</label></dt><dd><input type="color" id="colorClaroIArc" value="#dc143c" /></dd>
                                 <dt><label for="colorClaroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorClaroCInfo" value="#1e90ff" /></dd>
                                 <dt><label for="colorClaroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorClaroFInfo" value="#add8e6" /></dd>
                                 <dt><label for="colorClaroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorClaroCAviso" value="#ffa500" /></dd>
@@ -375,6 +384,7 @@
                                 <dt><label for="colorOscuroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorOscuroFActBbh" value="#d3d3d3" /></dd>
                                 <dt><label for="colorOscuroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdBbh" value="#ffffff" /></dd>
                                 <dt><label for="colorOscuroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorOscuroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorOscuroIArc">Archivo sin guardar, indicador</label></dt><dd><input type="color" id="colorOscuroIArc" value="#dc143c" /></dd>
                                 <dt><label for="colorOscuroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorOscuroCInfo" value="#1e90ff" /></dd>
                                 <dt><label for="colorOscuroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorOscuroFInfo" value="#add8e6" /></dd>
                                 <dt><label for="colorOscuroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorOscuroCAviso" value="#ffa500" /></dd>
@@ -570,7 +580,7 @@
         </form></dialog>
         <dialog id="dlgDescargar" data-botones="a"><form method="dialog">
             <p>Seleccione el formato a descargar:</p>
-            <div><button id="btnDlgDescargarAsm">Ensamblador (%ext)</button><button id="btnDlgDescargarHex">Hexadecimal (.hex)</button></div>
+            <div id="contDlgDescargar"><button id="btnDlgDescargarAsm">Ensamblador (%ext)</button><button id="btnDlgDescargarHex">Hexadecimal (.hex)</button></div>
         </form></dialog>
         <dialog id="dlgAcercaDe" data-botones="a"><form method="dialog">
             <div id="dlgAcercaDeEsque">

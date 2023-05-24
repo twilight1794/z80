@@ -44,6 +44,7 @@ window.funsConfig = {
     colorClaroFActBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fact-bbh", v); },
     colorClaroFdBbh: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-fd-bbh", v); },
     colorClaroSBand: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-s-band", v); },
+    colorClaroIArc: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-i-arc", v); },
     colorClaroCInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-info", v); },
     colorClaroFInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-info", v); },
     colorClaroCAviso: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-aviso", v); },
@@ -65,6 +66,7 @@ window.funsConfig = {
     colorOscuroFB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-b", v); },
     colorOscuroFdB: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-fd-b", v); },
     colorOscuroSBand: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-s-band", v); },
+    colorOscuroIArc: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-i-arc", v); },
     colorOscuroCInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-info", v); },
     colorOscuroFInfo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-info", v); },
     colorOscuroCAviso: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-aviso", v); },
@@ -80,10 +82,11 @@ window.funsConfig = {
     txtEdTipoTam: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--txtEdTipoTam", v); },
     txtEdTab: (v) => { cmi.setOption("tabSize", v); },
     txtEdSalto: (v) => { cmi.setOption("lineSeparator", ((v == "crlf")?"\r":"")+"\n"); },
-    selPlatMem: (v) => {
+    selPlatMem: () => {
         iniMem();
         document.getElementById("outMemTam").textContent = document.getElementById("selPlatMem").selectedOptions[0].textContent.split(" ").slice(0, -1).join(" ");
     },
+    chkIntTitulo: (v) => { if(!v) document.title = "Emulador Z80"; }
 }
 
 /* Lista de funciones asociadas a una combinación de teclas */
@@ -234,7 +237,10 @@ function btnAccionesBorrar(){
 }
 function btnAccionesRenombrar(){
     let nom = document.querySelector("#archivos :checked");
-    proy.renombrarArchivo(nom);
+    mostrarDialogo("dlgNuevoArchivo", null, (o) => {
+        if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
+            proy.renombrarArchivo(nom.nextElementSibling.textContent, o.txtDlgNuevoArchivoNombre);
+    });
 }
 
 /* Eventos de CodeMirror */
@@ -246,6 +252,9 @@ function onChangeCMI(cm){
     if (e && !cambioCMI){
         e.classList.add("guardar");
         sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
+        if (document.getElementById("chkIntTitulo").checked && document.title.indexOf("★") == -1){
+            document.title = "★ " + document.title;
+        }
     }
 }
 function onInputCMI(cm){
@@ -376,7 +385,7 @@ function mostrarDialogo(id, params, fun, evs){
     }
     if (evs)
         for (let r of evs)
-            dlg.getElementById(r[0]).addEventListener(r[1], r[2]);
+            document.getElementById(r[0]).addEventListener(r[1], r[2]);
     dlg.children[0].appendChild(pie);
     if (fun) dlg.addEventListener("close", () => {
         let ret = { "@": dlg.returnValue };

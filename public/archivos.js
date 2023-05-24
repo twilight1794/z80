@@ -14,6 +14,9 @@ function cargarArchivoEditor(e) {
         if (tmp) cmi.setValue(tmp);
         else cmi.setValue(localStorage.getItem("archivo_"+e.target.textContent));
         cambioCMI = false;
+        if (document.getElementById("chkIntTitulo").checked){
+            document.title = e.target.textContent + " | Emulador Z80";
+        }
     }
 }
 
@@ -81,6 +84,7 @@ class Proyecto {
         let ss = sessionStorage.getItem("archivo_"+nom);
         localStorage.setItem("archivo_"+nom, ss);
         document.getElementById("archivo_"+nom).classList.remove("guardar");
+        document.title = document.title.replace("★ ", "");
     }
     descargarArchivo(nom){
         // FIX: manejar los dos tipos de archivos ya implementados
@@ -104,6 +108,7 @@ class Proyecto {
         localStorage.removeItem("archivo_"+nom);
         localStorage.setItem("archivos", localStorage.getItem("archivos").split("/").filter((e) => e != nom).join("/"));
         if (document.getElementById("archivos").childElementCount == 0) this.crearArchivo("programa");
+        manejarCasillasToolbar();
     }
     renombrarArchivo(nom, nom2){
         this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));

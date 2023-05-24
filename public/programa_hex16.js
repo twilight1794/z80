@@ -1,3 +1,5 @@
+"use strict"
+
 class numBytesError extends Error {
     constructor(lnum) {
         super();

@@ -1,5 +1,17 @@
 "use strict"
 
+/* Enums */
+
+/**
+ *
+ * Designa el formato de descarga de un archivo
+ * @class TipoDescarga
+ */
+class TipoDescarga {
+    static Asm = new TipoParam("asm");
+    static Hex = new TipoParam("hex");
+}
+
 /* Arrays y diccionarios de datos */
 
 /* Lista de acciones asociadas a una configuración */
@@ -89,22 +101,22 @@ window.combTeclas = {
     "M-f d": null,
     "M-f e": null,
     "M-f f": null,
-    "M-f x": null,
+    "M-f x": btnCerrarProj,
     "M-f y": null,
 /*    "C-x": null,
     "C-c": null,
     "C-v": null,*/
-    "C-b": null,
+    "C-b": btnBuscar,
     "M-e c": null,
     "M-e e": null,
     "M-e a": null,
     "M-e d": null,
     "M-e r": null,
-    "M-a a": null,
+    "M-a a": btnManual,
     "M-a p": null,
     "M-a r": null,
     "M-a m": null,
-    "M-a s": null,
+    "M-a s": btnAcercaDe,
 }
 
 
@@ -149,37 +161,79 @@ function btnAbrirHex(){
 function btnAbrirProj(){
     document.getElementById("archivoProj").click();
 }
+function btnCerrarProj(){
+    let guardar = Array.from(document.querySelectorAll("#archivos .guardar"));
+    if (guardar.length > 0) mostrarDialogo("dlgCerrarNoGuardadoConfirmacion", { "nom": nom }, (o) => {
+        switch (o["@"]){
+            case "s":
+                guardar.forEach((e) => proy.guardarArchivo(e.children[1].textContent));
+            case "n":
+                guardar.forEach((e) => proy.borrarArchivo(e.children[1].textContent));
+        }
+    });
+    else mostrarDialogo("dlgCerrarConfirmacion", { "nom": nom }, (o) => {
+        if (o["@"] == "s") guardar.forEach((e) => proy.borrarArchivo());
+    });
+    // QUESTION: ¿basta con comprobar los archivos?
+    // FIX: comprobar que no haya nada en ejecución
+}
+function btnBuscar(){
+    document.getElementById("btnMenuBuscar").children[0].click();
+}
+function btnManual(){
+    document.getElementById("btnMenuManual").children[0].click();
+}
+function btnAcercaDe(){
+    mostrarDialogo("dlgAcercaDe", {
+        "version": document.querySelector("meta[name=versionNumero]").getAttribute("content"),
+        "fecha": document.querySelector("meta[name=versionFecha]").getAttribute("content"),
+        "commit": document.querySelector("meta[name=versionCommit]").getAttribute("content"),
+        "sistema": window?.NL_OS || "Web",
+        "neu": window?.NL_VERSION || "N/A",
+        "ua": navigator.userAgent,
+    });
+}
 
 /* Funciones de Barra de herramientas de Navegación */
 function btnAccionesNuevo(){
-    let nom = window.prompt("Escribe el nombre del nuevo archivo");
-    if (nom) proy.crearArchivo(nom);
+    mostrarDialogo("dlgNuevoArchivo", null, (o) => {
+        if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
+            proy.crearArchivo(o.txtDlgNuevoArchivoNombre);
+    });
 }
 function btnAccionesVisualizar(){
-    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    let nom = document.querySelector("#archivos :checked");
     proy.visualizarArchivo(nom);
 }
 function btnAccionesGuardar(){
-    let noms = Array.from(document.querySelectorAll("#archivos [type=checkbox]")).forEach((e) => {
+    Array.from(document.querySelectorAll("#archivos :checked")).forEach((e) => {
         proy.guardarArchivo(e.nextElementSibling.textContent);
     });
 }
 function btnAccionesDescargar(){
-    let nom = document.querySelector("#archivos [type=checkbox]:checked");
-    proy.guardarArchivo(nom);
+    let nom = document.querySelector("#archivos :checked");
+    mostrarDialogo("dlgDescargar", {"ext": localStorage.getItem("txtExtAsm")}, null, [
+        ["btnDlgDescargarAsm", "click", () => proy.descargarArchivo(nom, TipoDescarga.Asm)],
+        ["btnDlgDescargarHex", "click", () => proy.descargarArchivo(nom, TipoDescarga.Hex)]
+    ]);
 }
 function btnAccionesDuplicar(){
-    let nom = document.querySelector("#archivos [type=checkbox]:checked");
-    let nom2 = window.prompt("Escribe el nombre del nuevo archivo");
-    if (nom2) proy.duplicarArchivo(nom, nom2);
-}
-function btnAccionesBorrar(){
-    let noms = Array.from(document.querySelectorAll("#archivos [type=checkbox]")).forEach((e) => {
-        proy.borrarArchivo(e.nextElementSibling.textContent);
+    let nom = document.querySelector("#archivos :checked");
+    mostrarDialogo("dlgNuevoArchivo", null, (o) => {
+        if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
+            proy.duplicarArchivo(nom.nextElementSibling.textContent, o.txtDlgNuevoArchivoNombre);
     });
 }
+function btnAccionesBorrar(){
+    let noms = Array.from(document.querySelectorAll("#archivos :checked"));
+    let nog = noms.some((e) => { return e.parentNode.classList.contains("guardar"); });
+    if (nog) mostrarDialogo("dlgBorrarConfirmacion", null, (o) => {
+        if (o["@"] == "s") noms.forEach((e) => proy.borrarArchivo(e.nextElementSibling.textContent));
+    });
+    else noms.forEach((e) => proy.borrarArchivo(e.nextElementSibling.textContent));
+}
 function btnAccionesRenombrar(){
-    let nom = document.querySelector("#archivos [type=checkbox]:checked");
+    let nom = document.querySelector("#archivos :checked");
     proy.renombrarArchivo(nom);
 }
 
@@ -189,7 +243,7 @@ function onChangeCMI(cm){
     let u = (t >= 1000)?(t.toFixed(1) + " KB"):(t + " byte" + (t!=1?"s":""));
     document.getElementById("outArcTam").textContent = u;
     let e = document.querySelector("#archivos [aria-selected]");
-    if (e){
+    if (e && !cambioCMI){
         e.classList.add("guardar");
         sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
     }
@@ -272,6 +326,69 @@ function btnMenuActividades(e){
     }
 }
 
+/**
+ * Muestra y maneja un cuadro de diálogo
+ *
+ * @param {String} id ID del cuadro de diálogo a mostrar
+ * @param {Object} params Diccionario de valores a substituir
+ * @param {Function} fun Función a llamar con el valor retornado por el diálogo
+ * @param {Array} evs Array con eventos a asignar, con la forma [id, evento, función]
+ */
+function mostrarDialogo(id, params, fun, evs){
+    let dlgO = document.getElementById(id);
+    if (!dlgO) throw Error("AL");
+    let btn = dlgO.dataset?.botones;
+    if (!btn) throw Error("AL");
+    let dlg = document.createElement("dialog");
+    let html = dlgO.innerHTML;
+    if (params)
+        for (let r of Object.entries(params))
+            html = html.replaceAll("%"+r[0], r[1]);
+    dlg.innerHTML = html;
+    let pie = document.createElement("footer");
+    for (let c of btn){
+        let btn = document.createElement("button");
+        switch (c){
+            case "a":
+                btn.textContent = "Aceptar";
+                btn.value = "a";
+                break;
+            case "c":
+                btn.textContent = "Cancelar";
+                btn.value = "c";
+                break;
+            case "k":
+                btn.textContent = "Confirmar";
+                btn.value = "k";
+                break;
+            case "n":
+                btn.textContent = "No";
+                btn.value = "n";
+                break;
+            case "s":
+                btn.textContent = "Sí";
+                btn.value = "s";
+                break;
+            default:
+                throw Error("AL");
+        }
+        pie.appendChild(btn);
+    }
+    if (evs)
+        for (let r of evs)
+            dlg.getElementById(r[0]).addEventListener(r[1], r[2]);
+    dlg.children[0].appendChild(pie);
+    if (fun) dlg.addEventListener("close", () => {
+        let ret = { "@": dlg.returnValue };
+        Array.from(dlg.querySelectorAll(":is(select, input)[id]")).forEach((e) => {
+            ret[e.id] = (e.tagName == "INPUT" && e.type == "checkbox")?e.checked:e.value;
+        });
+        fun(ret);
+    });
+    document.body.appendChild(dlg);
+    dlg.showModal();
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     /* Ubicaciones globales */
     window.g = {
@@ -301,6 +418,9 @@ window.addEventListener("DOMContentLoaded", () => {
     cmi.on("cursorActivity", onInputCMI);
     onChangeCMI(cmi);
     onInputCMI(cmi);
+    // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo
+    // Esta bandera evita ese comportamiento
+    window.cambioCMI = false;
 
     /* Configuración */
     estConfigIni();
@@ -328,6 +448,10 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnAbrirAsm").addEventListener("click", btnAbrirAsm);
     document.getElementById("btnAbrirHex").addEventListener("click", btnAbrirHex);
     document.getElementById("btnAbrirProj").addEventListener("click", btnAbrirProj);
+    document.getElementById("btnCerrarProj").addEventListener("click", btnCerrarProj);
+    document.getElementById("btnBuscar").addEventListener("click", btnBuscar);
+    document.getElementById("btnManual").addEventListener("click", btnManual);
+    document.getElementById("btnAcercaDe").addEventListener("click", btnAcercaDe);
 
     /* Asignación de eventos Actividades */
     Array.from(document.querySelectorAll("#menuActividades button")).forEach((e) => {
@@ -372,7 +496,7 @@ window.addEventListener("DOMContentLoaded", () => {
             if (e.shiftKey) c += "s-";
             c += e.key.toLowerCase();
             if (!window.comb) window.comb = c;
-            else comb += " "+c;
+            else comb += " " + c;
             for (let i of Object.keys(combTeclas)){
                 if (i == comb){
                     e.preventDefault();

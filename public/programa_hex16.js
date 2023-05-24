@@ -1126,7 +1126,7 @@ class programHex {
         }
     }
 }
-
+/*
 let hex = new programHex();
 let prueba = [];
 prueba[0] = ":1001B0003A0002470516000E0058DD210A027AB8FF";
@@ -1140,4 +1140,4 @@ for (let i = 0; i < prueba.length; i++) {
 }
 hex.translate(hex.bytes);
 console.log(hex.asmCode);
-console.log(hex.hexCode);
+console.log(hex.hexCode);*/

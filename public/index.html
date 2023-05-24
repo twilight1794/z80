@@ -3,8 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" role="application">
     <head>
         <title>Emulador Z80</title>
-        <meta name="versionNumero" content="1.0.0" />
-        <meta name="versionFecha" content="2023-05-19" />
+        <meta name="versionNumero" content="%%versionNumero%%" />
+        <meta name="versionFecha" content="%%versionFecha%%" />
+        <meta name="versionCommit" content="%%versionCommit%%" />
         <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
@@ -12,6 +13,7 @@
         <link rel="stylesheet" type="text/css" href="monokai.min.css" />
         <link rel="icon" type="image/svg" href="icon.svg" />
         <link rel="manifest" href="manifest.json" />
+        <script src="neutralino.js"></script>
         <script src="codemirror.min.js"></script>
         <script src="archivos.js"></script>
         <script src="plataforma.js"></script>
@@ -199,7 +201,7 @@
                 </li>
                 <li><span>Ayuda</span>
                     <ul>
-                        <li><a role="menuitem" target="_blank" href="https://twilight1794.github.io/z80/docs">Manual de usuario <kbd>M-a a</kbd></a></li>
+                        <li><button role="menuitem" id="btnManual">Manual de usuario <kbd>M-a a</kbd></button></li>
                         <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">Informar sobre un problema <kbd>M-a p</kbd></a></li>
                         <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">Repositorio <kbd>M-a r</kbd></a></li>
                         <li><button role="menuitem" id="btnComprobarActs">Buscar actualizaciones... <kbd>M-a m</kbd></button></li>
@@ -550,5 +552,59 @@
                 <li class="hint--top-left" aria-label="Columna"><output id="outArcCol"></output></li>
             </ul>
         </footer>
+        <!-- Cuadros de diálogo -->
+        <dialog id="dlgNuevoArchivo" data-botones="ck"><form method="dialog">
+            <fieldset>
+                <legend><label for="txtDlgNuevoArchivoNombre">Escribe el nombre del nuevo archivo:</label></legend>
+                <input id="txtDlgNuevoArchivoNombre" type="text" />
+            </fieldset>
+        </form></dialog>
+        <dialog id="dlgBorrarConfirmacion" data-botones="ns"><form method="dialog">
+            <p>¿Estás seguro? Esta operación es irreversible.</p>
+        </form></dialog>
+        <dialog id="dlgCerrarConfirmacion" data-botones="ns"><form method="dialog">
+            <p>¿Estás seguro? Cerrar el proyecto quitará todos tus archivos de Emulador Z80.</p>
+        </form></dialog>
+        <dialog id="dlgCerrarNoGuardadoConfirmacion" data-botones="cns"><form method="dialog">
+            <p>Tienes cambios sin guardar en %nom. ¿Deseas guardarlos antes de cerrar el proyecto?</p>
+        </form></dialog>
+        <dialog id="dlgDescargar" data-botones="a"><form method="dialog">
+            <p>Seleccione el formato a descargar:</p>
+            <div><button id="btnDlgDescargarAsm">Ensamblador (%ext)</button><button id="btnDlgDescargarHex">Hexadecimal (.hex)</button></div>
+        </form></dialog>
+        <dialog id="dlgAcercaDe" data-botones="a"><form method="dialog">
+            <div id="dlgAcercaDeEsque">
+                <figure>
+                    <img src="icon.svg" alt="Icono de Emulador Z80" />
+                    <figcaption>Emulador Z80</figcaption>
+                </figure>
+                <dl class="natural">
+                    <dt>Versión</dt><dd>%version</dd>
+                    <dt>Fecha</dt><dd>%fecha</dd>
+                    <dt>Commit</dt><dd>%commit</dd>
+                    <dt>Sistema</dt><dd>%sistema</dd>
+                    <dt>Neutralino</dt><dd>%neu</dd>
+                    <dt>User-agent</dt><dd>%ua</dd>
+                </dl>
+                <div>
+                    <h2>Autores</h2>
+                    <ul>
+                        <li>Emilio Cruz</li>
+                        <li>Giovanni Garciliano</li>
+                        <li>Ernesto López</li>
+                        <li>Santiago Rodríguez</li>
+                        <li>Carlos Villaseñor</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Sitio web</h3>
+                    <p><a href="https://twilight1794.github.io/z80">https://twilight1794.github.io/z80</a></p>
+                    <h3>Código fuente</h3>
+                    <p><a href="https://github.com/twilight1794/z80">https://github.com/twilight1794/z80</a></p>
+                    <h3>Licencia</h3>
+                    <p><a href="https://raw.githubusercontent.com/twilight1794/z80/main/COPYING">GPLv3+</a></p>
+                </div>
+            </div>
+        </form></dialog>
     </body>
 </html>

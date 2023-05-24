@@ -4,7 +4,9 @@
     padding: 0;
     border: 0;
 }
-:root {}
+:root, html {
+    font-size: 16px;
+}
 @media (prefers-color-scheme: light){
     body:not(.tema-c, .tema-o) {
         --c-m: var(--c-c-m);
@@ -258,7 +260,7 @@ body>footer {
     display: flex;
     position: relative;
 }
-#archivos li:hover { background-color: var(--h-a); }
+#archivos :is(li:hover, [aria-selected=true]) { background-color: var(--h-a); }
 #archivos li.guardar::after {
     content: "•";
     color: crimson; /* FIX: agregar a colores */
@@ -510,3 +512,40 @@ dl.natural dd::after {
     filter: opacity(.6);
     font-style: italic;
 }
+
+/* Cuadros de diálogo */
+dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 60%;
+}
+dialog form {
+    padding: 1rem;
+}
+dialog footer {
+    display: flex;
+    justify-content: end;
+    gap: .5rem;
+    margin-top: 1rem;
+}
+dialog input:is([type=text], [type=search], [type=number]) {
+    padding: .5rem;
+    width: 100%;
+}
+
+/* Cuadro de diálogo Acerca de */
+#dlgAcercaDeEsque {
+    display: grid;
+    grid-template-areas: "figu natu" "autr siti";
+    gap: 1rem;
+    text-align: center;
+}
+#dlgAcercaDeEsque > :nth-child(1) { grid-area: figu; }
+#dlgAcercaDeEsque > :nth-child(2) { grid-area: natu; }
+#dlgAcercaDeEsque > :nth-child(3) { grid-area: autr; }
+#dlgAcercaDeEsque > :nth-child(4) { grid-area: siti; }
+#dlgAcercaDeEsque figcaption { font-size :x-large; font-weight: bold; }
+#dlgAcercaDeEsque a { color: dodgerblue; }
+#dlgAcercaDeEsque ul { list-style-type: none; }

@@ -2,6 +2,7 @@
 
 function cargarArchivoEditor(e) {
     if (!("aria-selected" in e.target.parentNode.getAttributeNames())){
+        cambioCMI = true;
         Array.from(e.target.parentNode.parentNode.children).forEach((e2) => {
             if (e2.getAttribute("aria-selected") == "true"){
                 sessionStorage.setItem("archivo_"+e2.textContent, cmi.getValue());
@@ -12,6 +13,7 @@ function cargarArchivoEditor(e) {
         let tmp = sessionStorage.getItem("archivo_"+e.target.textContent);
         if (tmp) cmi.setValue(tmp);
         else cmi.setValue(localStorage.getItem("archivo_"+e.target.textContent));
+        cambioCMI = false;
     }
 }
 
@@ -25,7 +27,7 @@ function manejarCasillasToolbar() {
         btn[2].disabled = false;
         btn[3].disabled = (c>1);
         btn[4].disabled = (c>1);
-        btn[5].disabled = false;
+        btn[5].disabled = (cas.length == 1);
         btn[6].disabled = (c>1);
     } else btn.forEach((e) => { if (e.id != "btnAccionesNuevo") e.disabled = true; });
 }
@@ -62,7 +64,7 @@ class Proyecto {
         let la = localStorage.getItem("archivos");
         if (la) {
             localStorage.setItem("archivos", la + "/" + n);
-            if (la.split("/").find((e) => e == n)) throw Error("AL");
+            if (la.split("/").find((e) => e == n)) throw Error("Archivo existente");
         } else localStorage.setItem("archivos", n);
         localStorage.setItem("archivo_"+n, c);
     }
@@ -81,28 +83,33 @@ class Proyecto {
         document.getElementById("archivo_"+nom).classList.remove("guardar");
     }
     descargarArchivo(nom){
+        // FIX: manejar los dos tipos de archivos ya implementados
         let a = document.createElement("a");
         a.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(localStorage.getItem("archivo_"+nom)));
-        a.setAttribute("download", this.obtNombre());
+        a.setAttribute("download", "ddd");
         a.style.display = "none";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
     }
-    duplicarArchivo(nom, nom2){ console.log("Duplicado!"); }
+    duplicarArchivo(nom, nom2){
+        this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));
+        this.anadirArchivo(nom2);
+        document.querySelector("#archivo_"+nom2+" button").click();
+     }
     borrarArchivo(nom){
-        let nodo = document.getElementById("archivo_"+nom);
-        if (
-            (nodo.classList.contains("guardar") && window.confirm("Tienes cambios sin guardar en "+nom+". ¿deseas borrarlos?"))
-            || !(nodo.classList.contains("guardar"))
-        ){
-            nodo.parentNode.removeChild(nodo);
-            sessionStorage.removeItem("archivo_"+nom);
-            localStorage.removeItem("archivo_"+nom);
-            if (document.getElementById("archivos").childElementCount == 0) this.crearArchivo();
-        }
+        let nodo = document.querySelector("#archivo_"+nom);
+        nodo.parentNode.removeChild(nodo);
+        sessionStorage.removeItem("archivo_"+nom);
+        localStorage.removeItem("archivo_"+nom);
+        localStorage.setItem("archivos", localStorage.getItem("archivos").split("/").filter((e) => e != nom).join("/"));
+        if (document.getElementById("archivos").childElementCount == 0) this.crearArchivo("programa");
     }
-    renombrarArchivo(nom, nom2){ console.log("Renombrado!"); }
+    renombrarArchivo(nom, nom2){
+        this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));
+        this.anadirArchivo(nom2);
+        this.borrarArchivo(nom);
+     }
 
     salvar(){}
     constructor(d){
@@ -113,7 +120,7 @@ class Proyecto {
             if (l){
                 for (let i of l.split("/")){ this.anadirArchivo(i); }
                 document.querySelector("#archivos button").click();
-            } else this.crearArchivo("programa"+localStorage.getItem("txtExtAsm"));
+            } else this.crearArchivo("programa");
         }
     }
 }

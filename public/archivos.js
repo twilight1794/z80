@@ -45,6 +45,7 @@ class Proyecto {
     anadirArchivo(n){
         let li = document.createElement("li");
         let chk = document.createElement("input");
+        let arcs = document.getElementById("archivos");
         chk.type = "checkbox";
         chk.addEventListener("change", manejarCasillasToolbar);
         let btn = document.createElement("button");
@@ -52,7 +53,8 @@ class Proyecto {
         btn.addEventListener("click", cargarArchivoEditor);
         li.append(chk, btn);
         li.id = "archivo_"+n;
-        document.getElementById("archivos").appendChild(li);
+        arcs.appendChild(li);
+        if (arcs.childElementCount == 1) li.classList.add("entrada");
         sessionStorage.setItem("archivo_"+n, localStorage.getItem("archivo_"+n));
     }
 

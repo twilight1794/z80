@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" role="application">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:l="https://campanita.xyz/ns/log" xml:lang="es" role="application">
     <head>
-        <title>Emulador Z80</title>
+        <title>$nombre_app</title>
         <meta name="versionNumero" content="%%versionNumero%%" />
         <meta name="versionFecha" content="%%versionFecha%%" />
         <meta name="versionCommit" content="%%versionCommit%%" />
@@ -15,6 +15,7 @@
         <link rel="manifest" href="manifest.json" />
         <script src="neutralino.js"></script>
         <script src="codemirror.min.js"></script>
+        <script src="search.min.js"></script>
         <script src="errores.js"></script>
         <script src="archivos.js"></script>
         <script src="plataforma.js"></script>
@@ -26,57 +27,66 @@
     </head>
     <body>
         <header id="menuBarra">
-            <input type="file" id="archivoAsm" multiple="multiple" hidden="hidden" aria-label="Carga de archivo en ensamblador" accept=".asm, .z80" />
-            <input type="file" id="archivoHex" multiple="multiple" hidden="hidden" aria-label="Carga de archivo en hexadecimal" accept=".hex" />
-            <input type="file" id="archivoProj" hidden="hidden" aria-label="Carga de archivo de proyecto" accept=".xml, .z80p" />
-            <ul aria-label="Principal" role="menubar">
-                <li><span>Archivo</span>
+            <input type="file" id="archivoAsm" multiple="multiple" hidden="hidden" aria-label="$input_archivoasm_aria_label" accept=".asm, .z80" />
+            <input type="file" id="archivoHex" multiple="multiple" hidden="hidden" aria-label="$input_archivohex_aria_label" accept=".hex" />
+            <input type="file" id="archivoProj" hidden="hidden" aria-label="$input_archivoproj_aria_label" accept=".xml, .z80p" />
+            <ul aria-label="$menubar_principal" role="menubar">
+                <li><span>$menubar_principal_archivo</span>
                     <ul>
-                        <li><button role="menuitem" id="btnNuevo">Nuevo archivo <kbd>M-f n</kbd></button></li>
-                        <li><button role="menuitem" id="btnAbrirAsm">Abrir archivo en ensamblador... <kbd>M-f a</kbd></button></li>
-                        <li><button role="menuitem" id="btnAbrirHex">Abrir archivo hex... <kbd>M-f b</kbd></button></li>
-                        <li><button role="menuitem" id="btnAbrirProj">Abrir proyecto... <kbd>M-f c</kbd></button></li>
+                        <li><button role="menuitem" id="btnNuevo">$btn_nuevo <kbd>M-f n</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirAsm">$btn_abrirasm <kbd>M-f a</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirHex">$btn_abrirhex <kbd>M-f b</kbd></button></li>
+                        <li><button role="menuitem" id="btnAbrirProj">$btn_abrirproj <kbd>M-f c</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnVisualizar">Visualizar <kbd>M-f g</kbd></button></li>
-                        <li><button role="menuitem" id="btnGuardar">Guardar <kbd>M-f h</kbd></button></li>
-                        <li><button role="menuitem" id="btnDuplicar">Duplicar <kbd>M-f i</kbd></button></li>
-                        <li><button role="menuitem" id="btnBorrar">Borrar <kbd>M-f j</kbd></button></li>
-                        <li><button role="menuitem" id="btnRenombrar">Renombrar <kbd>M-f k</kbd></button></li>
+                        <li><button role="menuitem" id="btnVisualizar">$btn_visualizar <kbd>M-f g</kbd></button></li>
+                        <li><button role="menuitem" id="btnGuardar">$btn_guardar <kbd>M-f h</kbd></button></li>
+                        <li><button role="menuitem" id="btnDuplicar">$btn_duplicar <kbd>M-f i</kbd></button></li>
+                        <li><button role="menuitem" id="btnBorrar">$btn_borrar <kbd>M-f j</kbd></button></li>
+                        <li><button role="menuitem" id="btnRenombrar">$btn_renombrar <kbd>M-f k</kbd></button></li>
+                        <li><button role="menuitem" id="btnEntralizar">$btn_entralizar <kbd>M-f l</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnDescargarAsm">Descargar archivo en ensamblador... <kbd>M-f d</kbd></button></li>
-                        <li><button role="menuitem" id="btnDescargarHex">Descargar archivo hex... <kbd>M-f e</kbd></button></li>
-                        <li><button role="menuitem" id="btnDescargarProj">Descargar proyecto... <kbd>M-f f</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarAsm">$btn_descargarasm <kbd>M-f d</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarHex">$btn_descargarhex <kbd>M-f e</kbd></button></li>
+                        <li><button role="menuitem" id="btnDescargarProj">$btn_descargarproj <kbd>M-f f</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnCerrarProj">Cerrar proyecto <kbd>M-f x</kbd></button></li>
+                        <li><button role="menuitem" id="btnCerrarProj">$btn_cerrarproj <kbd>M-f x</kbd></button></li>
                     </ul>
                 </li>
-                <li><span>Editar</span>
+                <li><span>$menubar_principal_editar</span>
                     <ul>
-                        <li><button role="menuitem" id="btnCortar">Cortar <kbd>C-x</kbd></button></li>
-                        <li><button role="menuitem" id="btnCopiar">Copiar <kbd>C-c</kbd></button></li>
-                        <li><button role="menuitem" id="btnPegar">Pegar <kbd>C-v</kbd></button></li>
+                        <li><button role="menuitem" id="btnCortar">$btn_cortar <kbd>C-x</kbd></button></li>
+                        <li><button role="menuitem" id="btnCopiar">$btn_copiar <kbd>C-c</kbd></button></li>
+                        <li><button role="menuitem" id="btnPegar">$btn_pegar <kbd>C-v</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnBuscar">Buscar y reemplazar... <kbd>C-b</kbd></button></li>
+                        <li><button role="menuitem" id="btnBuscar">$btn_buscar <kbd>C-b</kbd></button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnInsEti">Insertar etiqueta</button></li>
-                        <li><span>Insertar directiva</span>
+                        <li><button role="menuitem" id="btnInsEti">$btn_inseti</button></li>
+                        <li><span>$menubar_principal_editar_insdir</span>
                             <ul id="f_dir">
-                                <li><button role="menuitem">EQU</button></li>
-                                <li><button role="menuitem">ORG</button></li>
-                                <li><button role="menuitem">DB</button></li>
+                                <li><button role="menuitem">CASE</button></li>
+                                <li><button role="menuitem">DFB</button></li>
+                                <li><button role="menuitem">DFS</button></li>
+                                <li><button role="menuitem">DWL</button></li>
+                                <li><button role="menuitem">DWM</button></li>
                                 <li><button role="menuitem">END</button></li>
+                                <li><button role="menuitem">EQU</button></li>
+                                <li><button role="menuitem">IF</button></li>
+                                <li><button role="menuitem">ELSE</button></li>
+                                <li><button role="menuitem">ENDI</button></li>
+                                <li><button role="menuitem">INCL</button></li>
+                                <li><button role="menuitem">ORG</button></li>
                             </ul>
                         </li>
-                        <li><span>Insertar mnemotécnico</span>
+                        <li><span>$menubar_principal_editar_insmnemo</span>
                             <ul id="f_mnemo">
-                                <li><span>Carga</span>
+                                <li><span>$f_mnemo_carga</span>
                                     <ul>
                                         <li><button role="menuitem">LD</button></li>
                                         <li><button role="menuitem">PUSH</button></li>
                                         <li><button role="menuitem">POP</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Intercambio, transferencia y búsqueda</span>
+                                <li><span>$f_mnemo_itb</span>
                                     <ul>
                                         <li><button role="menuitem">CPD</button></li>
                                         <li><button role="menuitem">CPDR</button></li>
@@ -90,7 +100,7 @@
                                         <li><button role="menuitem">LDIR</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Aritmético-lógico</span>
+                                <li><span>$f_mnemo_aritlog</span>
                                     <ul>
                                         <li><button role="menuitem">ADD</button></li>
                                         <li><button role="menuitem">ADC</button></li>
@@ -104,7 +114,7 @@
                                         <li><button role="menuitem">DEC</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Aritmético y control de CPU</span>
+                                <li><span>$f_mnemo_aritcpu</span>
                                     <ul>
                                         <li><button role="menuitem">CCF</button></li>
                                         <li><button role="menuitem">DAA</button></li>
@@ -120,7 +130,7 @@
                                         <li><button role="menuitem">CPL</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Rotación y desplazamiento</span>
+                                <li><span>$f_mnemo_rot</span>
                                     <ul>
                                         <li><button role="menuitem">RLCA</button></li>
                                         <li><button role="menuitem">RLA</button></li>
@@ -137,14 +147,14 @@
                                         <li><button role="menuitem">SRL</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Bits</span>
+                                <li><span>$f_mnemo_bits</span>
                                     <ul>
                                         <li><button role="menuitem">BIT</button></li>
                                         <li><button role="menuitem">SET</button></li>
                                         <li><button role="menuitem">RES</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Salto</span>
+                                <li><span>$f_mnemo_salto</span>
                                     <ul>
                                         <li><button role="menuitem">JP</button></li>
                                         <li><button role="menuitem">JRC</button></li>
@@ -154,7 +164,7 @@
                                         <li><button role="menuitem">DJNZ</button></li>
                                     </ul>
                                 </li>
-                                <li><span>Llamada y retorno</span>
+                                <li><span>$f_mnemo_ret</span>
                                     <ul>
                                         <li><button role="menuitem">RET</button></li>
                                         <li><button role="menuitem">RETI</button></li>
@@ -163,7 +173,7 @@
                                         <li><button role="menuitem">CALL</button></li>
                                     </ul>
                                 </li>
-                                <li><span>E/S</span>
+                                <li><span>$f_mnemo_es</span>
                                     <ul>
                                         <li><button role="menuitem">IN</button></li>
                                         <li><button role="menuitem">IND</button></li>
@@ -181,32 +191,32 @@
                         </li>
                     </ul>
                 </li>
-                <li><span>Ejecutar</span>
+                <li><span>$menubar_principal_ejecutar</span>
                     <ul>
-                        <li><button role="menuitem" id="btnEnsamblar">Ensamblar proyecto <kbd>M-e c</kbd></button></li>
-                        <li><button role="menuitem" id="btnEjecutar">Ejecutar <kbd>M-e e</kbd></button></li>
-                        <li><button role="menuitem" id="btnAvanzar">Ejecutar una instrucción <kbd>M-e a</kbd></button></li>
-                        <li><button role="menuitem" id="btnDetener">Detener ejecución <kbd>M-e d</kbd></button></li>
-                        <li><button role="menuitem" id="btnRestablecer">Restablecer <kbd>M-e r</kbd></button></li>
+                        <li><button role="menuitem" id="btnEnsamblar">$btn_ensamblar <kbd>M-e c</kbd></button></li>
+                        <li><button role="menuitem" id="btnEjecutar">$btn_ejecutar <kbd>M-e e</kbd></button></li>
+                        <li><button role="menuitem" id="btnAvanzar">$btn_avanzar <kbd>M-e a</kbd></button></li>
+                        <li><button role="menuitem" id="btnDetener">$btn_detener <kbd>M-e d</kbd></button></li>
+                        <li><button role="menuitem" id="btnRestablecer">$btn_restablecer <kbd>M-e r</kbd></button></li>
                     </ul>
                 </li>
-                <li><span>Macros</span>
+                <li><span>$menubar_principal_macros</span>
                     <ul>
                         <li><button role="menuitem" id="btnAnadMacro_001">WHILE</button></li>
                         <li><button role="menuitem" id="btnAnadMacro_002">DO .. WHILE</button></li>
                         <li><button role="menuitem" id="btnAnadMacro_003">FOR</button></li>
                         <li role="separator"></li>
-                        <li><button role="menuitem" id="btnCrearMacro">Crear macro...</button></li>
-                        <li><button role="menuitem" id="btnMacros">Macros...</button></li>
+                        <li><button role="menuitem" id="btnCrearMacro">$btn_crearmacro</button></li>
+                        <li><button role="menuitem" id="btnMacros">$btn_macros</button></li>
                     </ul>
                 </li>
-                <li><span>Ayuda</span>
+                <li><span>$menubar_principal_ayuda</span>
                     <ul>
-                        <li><button role="menuitem" id="btnManual">Manual de usuario <kbd>M-a a</kbd></button></li>
-                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">Informar sobre un problema <kbd>M-a p</kbd></a></li>
-                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">Repositorio <kbd>M-a r</kbd></a></li>
-                        <li><button role="menuitem" id="btnComprobarActs">Buscar actualizaciones... <kbd>M-a m</kbd></button></li>
-                        <li><button role="menuitem" id="btnAcercaDe">Acerca de... <kbd>M-a s</kbd></button></li>
+                        <li><button role="menuitem" id="btnManual">$btn_manual <kbd>M-a a</kbd></button></li>
+                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">$lnk_incidencias <kbd>M-a p</kbd></a></li>
+                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">$lnk_repositorio <kbd>M-a r</kbd></a></li>
+                        <li><button role="menuitem" id="btnComprobarActs">$btn_comprobaracts <kbd>M-a m</kbd></button></li>
+                        <li><button role="menuitem" id="btnAcercaDe">$btn_acercade <kbd>M-a s</kbd></button></li>
                     </ul>
                 </li>
             </ul>
@@ -214,234 +224,250 @@
         <main>
             <section id="r-act">
                 <nav id="menuActividades" role="tablist" aria-orientation="vertical" aria-label="Actividades">
-                    <button role="tab" aria-controls="r-exp" id="btnMenuExplorador"><span>Explorador</span></button>
-                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar"><span>Buscar y reemplazar</span></button>
-                    <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion"><span>Ejecución</span></button>
-                    <button role="tab" aria-controls="r-msg" id="btnMenuMensajes"><span>Consola de mensajes</span></button>
-                    <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas"><span>Etiquetas</span></button>
-                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>Macros</span></button>
-                    <button role="tab" aria-controls="r-man" id="btnMenuManual"><span>Manual</span></button>
-                    <button role="tab" aria-controls="r-cfg" id="btnMenuConfig"><span>Configuración</span></button>
+                    <button role="tab" aria-controls="r-exp" id="btnMenuExplorador"><span>$btn_menuexplorador</span></button>
+                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar"><span>$btn_menubuscar</span></button>
+                    <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion"><span>$btn_menuejecucion</span></button>
+                    <button role="tab" aria-controls="r-msg" id="btnMenuMensajes"><span>$btn_menumensajes</span></button>
+                    <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas"><span>$btn_menuetiquetas</span></button>
+                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>$btn_menumacros</span></button>
+                    <button role="tab" aria-controls="r-man" id="btnMenuManual"><span>$btn_menumanual</span></button>
+                    <button role="tab" aria-controls="r-cfg" id="btnMenuConfig"><span>$btn_menuconfig</span></button>
                 </nav>
                 <section role="tabpanel" id="r-exp">
-                    <h2>Explorador</h2>
+                    <h2>$r_exp</h2>
                     <div>
-                        <div role="toolbar" aria-label="Acciones" id="menuArchivoAcciones">
-                            <button id="btnAccionesNuevo"><span>Nuevo archivo</span></button>
-                            <button id="btnAccionesVisualizar" aria-disabled="true"><span>Visualizar</span></button>
-                            <button id="btnAccionesGuardar" aria-disabled="true"><span>Guardar</span></button>
-                            <button id="btnAccionesDescargar" aria-disabled="true"><span>Descargar</span></button>
-                            <button id="btnAccionesDuplicar" aria-disabled="true"><span>Duplicar</span></button>
-                            <button id="btnAccionesBorrar" aria-disabled="true"><span>Borrar</span></button>
-                            <button id="btnAccionesRenombrar" aria-disabled="true"><span>Renombrar</span></button>
+                        <div role="toolbar" aria-label="$tlb_archivoacciones" id="menuArchivoAcciones">
+                            <button id="btnAccionesNuevo"><span>$btn_nuevo</span></button>
+                            <button id="btnAccionesVisualizar" aria-disabled="true"><span>$btn_visualizar</span></button>
+                            <button id="btnAccionesGuardar" aria-disabled="true"><span>$btn_guardar</span></button>
+                            <button id="btnAccionesDescargar" aria-disabled="true"><span>$btn_accionesdescargar</span></button>
+                            <button id="btnAccionesDuplicar" aria-disabled="true"><span>$btn_duplicar</span></button>
+                            <button id="btnAccionesBorrar" aria-disabled="true"><span>$btn_borrar</span></button>
+                            <button id="btnAccionesRenombrar" aria-disabled="true"><span>$btn_renombrar</span></button>
+                            <button id="btnAccionesEntralizar" aria-disabled="true"><span>$btn_accionesentralizar</span></button>
                         </div>
                         <ul id="archivos"></ul>
                     </div>
                 </section>
                 <section role="tabpanel" id="r-byr">
-                    <h2>Buscar y reemplazar</h2>
+                    <h2>$r_byr</h2>
                     <div>
                         <fieldset>
-                            <label for="txtByrBuscar">Buscar:</label><input type="search" id="txtByrBuscar" />
-                            <label for="txtByrReemplazar">Reemplazar por:</label><input type="text" id="txtByrReemplazar" />
-    
+                            <label for="txtByrBuscar">$txt_byrbuscar</label><input type="text" id="txtByrBuscar" />
+                            <label for="txtByrReemplazar">$txt_byrreemplazar</label><input type="text" id="txtByrReemplazar" />
+                            <output id="outByr"></output>
                         </fieldset>
                         <fieldset>
-                            <button id="btnByrBuscar">Buscar siguiente</button>
-                            <button id="btnByrReemplazar">Reemplazar</button>
-                            <button id="btnByrReemplazarTodo">Reemplazar todo</button>
+                            <button id="btnByrBuscar">$btn_bytbuscar</button>
+                            <button id="btnByrReemplazar">$btn_bytreemplazar</button>
+                            <button id="btnByrReemplazarTodo">$btn_bytreemplazartodo</button>
                         </fieldset>
                         <fieldset>
-                            <legend>Modos de búsqueda</legend>
-                            <input type="radio" name="modoBusq" id="rdByrModoBusqNormal" value="normal" checked="checked" /><label for="rdByrModoBusqNormal">Normal</label>
-                            <input type="radio" name="modoBusq" id="rdByrModoBusqEscape" value="escape" /><label for="rdByrModoBusqEscape">Caracteres de escape (\r, \n, \s, ...)</label>
-                            <input type="radio" name="modoBusq" id="rdByrModoBusqRegex" value="regex" /><label for="rdByrModoBusqRegex">Expresión regular</label>
+                            <legend>$txt_byrmodos</legend>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqNormal" value="normal" checked="checked" /><label for="rdByrModoBusqNormal">$rd_byrmodobusqnormal</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqEscape" value="escape" /><label for="rdByrModoBusqEscape">$rd_byrmodobusqescape</label>
+                            <input type="radio" name="modoBusq" id="rdByrModoBusqRegex" value="regex" /><label for="rdByrModoBusqRegex">$rd_byrmodobusqregex</label>
                         </fieldset>
                         <fieldset>
-                            <legend>Opciones</legend>
-                            <input type="checkbox" id="chkByrOpcCase" checked="checked" /><label for="chkByrOpcCase">Diferenciar capitalización</label>
-                            <input type="checkbox" id="chkByrOpcToda" /><label for="chkByrOpcToda">Solo palabras completas</label>
+                            <legend>$txt_byropc</legend>
+                            <input type="checkbox" id="chkByrOpcCase" checked="checked" /><label for="chkByrOpcCase">$chk_byropccase</label><!--
+                            <input type="checkbox" id="chkByrOpcToda" /><label for="chkByrOpcToda">$chk_byropctoda</label>-->
                         </fieldset>
                     </div>
                 </section>
                 <section role="tabpanel" id="r-eje">
-                    <h2>Ejecución</h2>
+                    <h2>$r_eje</h2>
                     <div>
                         <table>
-                            <tr><th id="t-ip">IP</th><td id="v-ip">0000</td><th>Instrucción actual</th><td id="instAct">—</td></tr>
-                            <tr><th>Tamaño</th><td><output id="numTam">—</output> bytes</td><th>Próxima instrucción</th><td id="instProx">—</td></tr>
-                            <tr><th>Ciclos</th><td id="v-re"><output id="numCiclos">—</output> ciclos</td><td colspan="2">Instrucción <output id="numInst">—</output> de <output id="numTot">—</output></td></tr>
+                            <tr><th id="t-ip">IP</th><td id="v-ip">0000</td><th>$instact</th><td id="instAct">—</td></tr>
+                            <tr><th>$numtam</th><td><output id="numTam">—</output> bytes</td><th>$instprox</th><td id="instProx">—</td></tr>
+                            <tr><th>$numciclos</th><td id="v-re"><output id="numCiclos">—</output> $out_numciclos</td><td colspan="2">$inst <output id="numInst">—</output> $inst_de <output id="numTot">—</output></td></tr>
                         </table>
                     </div>
                 </section>
                 <section role="tabpanel" id="r-msg">
-                    <h2>Consola de mensajes</h2>
+                    <h2>$r_msg</h2>
                     <div>
+                        <div role="toolbar" aria-label="$tlb_mensajesacciones" id="menuMensajesAcciones">
+                            <button id="btnAccionesLimpiarMsgs"><span>$btn_limpiarmsgs</span></button>
+                            <input type="checkbox" id="chkAccionesMostrarInfo" checked="checked" />
+                            <label for="chkAccionesMostrarInfo"><span>$chk_mostrarinfo</span></label>
+                            <input type="checkbox" id="chkAccionesMostrarAviso" checked="checked" />
+                            <label for="chkAccionesMostrarAviso"><span>$chk_mostraraviso</span></label>
+                            <input type="checkbox" id="chkAccionesMostrarError" checked="checked" />
+                            <label for="chkAccionesMostrarError"><span>$chk_mostrarerror</span></label>
+                        </div>
                         <ul role="log"></ul>
                     </div>
                 </section>
                 <section role="tabpanel" id="r-eti">
-                    <h2>Etiquetas</h2>
+                    <h2>$r_eti</h2>
                     <div><dl class="lvars"></dl></div>
                 </section>
                 <section role="tabpanel" id="r-mac">
-                    <h2>Macros</h2>
+                    <h2>$r_mac</h2>
                     <div></div>
                 </section>
                 <section role="tabpanel" id="r-man">
-                    <h2>Manual</h2>
+                    <h2>$r_man</h2>
                     <div>
-                        <ol role="navigation"><li><button>Inicio</button></li></ol>
+                        <ol role="navigation"><li><button>$r_man_inicio</button></li></ol>
                         <div id="panini">
-                            <button>Manual de usuario</button>
-                            <button>Manual técnico</button>
+                            <button>$r_man_usuario</button>
+                            <button>$r_man_tecnico</button>
                         </div>
                         <div id="panay"></div>
                     </div>
                 </section>
                 <section role="tabpanel" id="r-cfg">
-                    <h2>Configuración</h2>
+                    <h2>$r_cfg</h2>
                     <div><form>
-                        <h3>Tema</h3>
+                        <h3>$r_cfg_tema</h3>
                         <fieldset>
-                            <legend><label for="selTemaTema">Tema a escoger</label></legend>
-                            <p>Tema de colores a usar.</p>
+                            <legend><label for="selTemaTema">$sel_tematema</label></legend>
+                            <p>$sel_tematema_d</p>
                             <details>
-                                <summary>Más sobre los esquemas de colores...</summary>
-                                Los esquemas de colores tienen diversas categorías, según el uso que se les dé a cada color. Aquí explicamos
+                                <summary>$exp_01_01</summary>
+                                $exp_01_02
                                 <dl class="natural">
-                                    <dt>Principal</dt><dd>Lo usamos para colorear el elemento principal (EP): el contenido de los paneles</dd>
-                                    <dt>Secundario</dt><dd>Lo usamos para colorear elementos dentro del EP, y distinguirlos del mismo: por ejemplo, el área de título de cada elemento.</dd>
-                                    <dt>Terciario</dt><dd>Lo usamos para elementos complementarios de la interfaz, como las barras de menú, de pie, y de actividades.</dd>
+                                    <dt>$exp_01_03</dt><dd>$exp_01_04</dd>
+                                    <dt>$exp_01_05</dt><dd>$exp_01_06</dd>
+                                    <dt>$exp_01_07</dt><dd>$exp_01_08</dd>
                                 </dl>
                             </details>
                             <select id="selTemaTema">
-                                <option selected="selected">Sistema</option>
-                                <option>Claro</option>
-                                <option>Oscuro</option>
+                                <option selected="selected">$sel_tematema_sistema</option>
+                                <option>$sel_tematema_claro</option>
+                                <option>$sel_tematema_oscuro</option>
                             </select>
                         </fieldset>
                         <fieldset>
-                            <legend>Tema claro</legend>
-                            <p>Esquema de colores del tema claro.</p>
+                            <legend>$color_temaclaro</legend>
+                            <p>$color_temaclaro_d</p>
                             <dl class="natural form">
-                                <dt><label for="colorClaroCM">Principal, texto</label></dt><dd><input type="color" id="colorClaroCM" value="#323232" /></dd>
-                                <dt><label for="colorClaroFM">Principal, fondo</label></dt><dd><input type="color" id="colorClaroFM" value="#ffffff" /></dd>
-                                <dt><label for="colorClaroBM">Principal, borde</label></dt><dd><input type="color" id="colorClaroBM" value="#d3d3d3" /></dd></dt>
-                                <dt><label for="colorClaroCA">Secundario, texto</label></dt><dd><input type="color" id="colorClaroCA" value="#323232" /></dd>
-                                <dt><label for="colorClaroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorClaroFA" value="#f5f5f5" /></dd>
-                                <dt><label for="colorClaroHA">Secundario, fondo hover</label></dt><dd><input type="color" id="colorClaroHA" value="#d3d3d3" /></dd>
-                                <dt><label for="colorClaroCT">Terciario, texto</label></dt><dd><input type="color" id="colorClaroCT" value="#f5f5f5" /></dd>
-                                <dt><label for="colorClaroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorClaroFT" value="#323232" /></dd>
-                                <dt><label for="colorClaroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorClaroActT" value="#808080" /></dd>
-                                <dt><label for="colorClaroBW">Widget, borde</label></dt><dd><input type="color" id="colorClaroBW" value="#d3d3d3"></dd>
-                                <dt><label for="colorClaroCBr">Botón regular, texto</label></dt><dd><input type="color" id="colorClaroCBr" value="#000000" /></dd>
-                                <dt><label for="colorClaroCActBr">Botón regular, texto activo</label></dt><dd><input type="color" id="colorClaroCActBr" value="#000000" /></dd>
-                                <dt><label for="colorClaroCdBr">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdBr" value="#000000" /></dd>
-                                <dt><label for="colorClaroFBr">Botón regular, fondo</label></dt><dd><input type="color" id="colorClaroFBr" value="#d3d3d3" /></dd>
-                                <dt><label for="colorClaroFActBr">Botón regular, fondo activo</label></dt><dd><input type="color" id="colorClaroFActBr" value="#808080" /></dd>
-                                <dt><label for="colorClaroFdBr">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdBr" value="#808080" /></dd>
-                                <dt><label for="colorClaroCBbh">Botón de barra de herramientas, texto</label></dt><dd><input type="color" id="colorClaroCBbh" value="#808080" /></dd>
-                                <dt><label for="colorClaroCActBbh">Botón de barra de herramientas, texto activo</label></dt><dd><input type="color" id="colorClaroCActBbh" value="#808080" /></dd>
-                                <dt><label for="colorClaroCdBbh">Botón de barra de herramientas, texto deshabilitado</label></dt><dd><input type="color" id="colorClaroCdBbh" value="#d3d3d3" /></dd>
-                                <dt><label for="colorClaroFBbh">Botón de barra de herramientas, fondo</label></dt><dd><input type="color" id="colorClaroFBbh" value="#ffffff" /></dd>
-                                <dt><label for="colorClaroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorClaroFActBbh" value="#d3d3d3" /></dd>
-                                <dt><label for="colorClaroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorClaroFdBbh" value="#ffffff" /></dd>
-                                <dt><label for="colorClaroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorClaroSBand" value="#ffd983" /></dd>
-                                <dt><label for="colorClaroIArc">Archivo sin guardar, indicador</label></dt><dd><input type="color" id="colorClaroIArc" value="#dc143c" /></dd>
-                                <dt><label for="colorClaroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorClaroCInfo" value="#1e90ff" /></dd>
-                                <dt><label for="colorClaroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorClaroFInfo" value="#add8e6" /></dd>
-                                <dt><label for="colorClaroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorClaroCAviso" value="#ffa500" /></dd>
-                                <dt><label for="colorClaroFAviso">Mensaje de advertencia, fondo</label></dt><dd><input type="color" id="colorClaroFAviso" value="#ffdead" /></dd>
-                                <dt><label for="colorClaroCError">Mensaje de error, texto</label></dt><dd><input type="color" id="colorClaroCError" value="#ff0000" /></dd>
-                                <dt><label for="colorClaroFError">Mensaje de error, fondo</label></dt><dd><input type="color" id="colorClaroFError" value="#f08080" /></dd>
+                                <dt><label for="colorClaroCM">$color_cm</label></dt><dd><input type="color" id="colorClaroCM" value="#323232" /></dd>
+                                <dt><label for="colorClaroFM">$color_fm</label></dt><dd><input type="color" id="colorClaroFM" value="#ffffff" /></dd>
+                                <dt><label for="colorClaroBM">$color_bm</label></dt><dd><input type="color" id="colorClaroBM" value="#d3d3d3" /></dd></dt>
+                                <dt><label for="colorClaroCA">$color_ca</label></dt><dd><input type="color" id="colorClaroCA" value="#323232" /></dd>
+                                <dt><label for="colorClaroFA">$color_fa</label></dt><dd><input type="color" id="colorClaroFA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroHA">$color_ha</label></dt><dd><input type="color" id="colorClaroHA" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroCT">$color_ct</label></dt><dd><input type="color" id="colorClaroCT" value="#f5f5f5" /></dd>
+                                <dt><label for="colorClaroFT">$color_ft</label></dt><dd><input type="color" id="colorClaroFT" value="#323232" /></dd>
+                                <dt><label for="colorClaroActT">$color_actt</label></dt><dd><input type="color" id="colorClaroActT" value="#808080" /></dd>
+                                <dt><label for="colorClaroBW">$color_bw</label></dt><dd><input type="color" id="colorClaroBW" value="#d3d3d3"></dd>
+                                <dt><label for="colorClaroCBr">$color_cbr</label></dt><dd><input type="color" id="colorClaroCBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroCActBr">$color_cactbr</label></dt><dd><input type="color" id="colorClaroCActBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroCdBr">$color_cdbr</label></dt><dd><input type="color" id="colorClaroCdBr" value="#000000" /></dd>
+                                <dt><label for="colorClaroFBr">$color_fbr</label></dt><dd><input type="color" id="colorClaroFBr" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFActBr">$color_factbr</label></dt><dd><input type="color" id="colorClaroFActBr" value="#808080" /></dd>
+                                <dt><label for="colorClaroFdBr">$color_fdbr</label></dt><dd><input type="color" id="colorClaroFdBr" value="#808080" /></dd>
+                                <dt><label for="colorClaroCBbh">$color_cbbh</label></dt><dd><input type="color" id="colorClaroCBbh" value="#808080" /></dd>
+                                <dt><label for="colorClaroCActBbh">$color_cactbbh</label></dt><dd><input type="color" id="colorClaroCActBbh" value="#808080" /></dd>
+                                <dt><label for="colorClaroCdBbh">$color_cdbbh</label></dt><dd><input type="color" id="colorClaroCdBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFBbh">$color_fbbh</label></dt><dd><input type="color" id="colorClaroFBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorClaroFActBbh">$color_factbbh</label></dt><dd><input type="color" id="colorClaroFActBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorClaroFdBbh">$color_fdbbh</label></dt><dd><input type="color" id="colorClaroFdBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorClaroSBand">$color_sband</label></dt><dd><input type="color" id="colorClaroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorClaroIArc">$color_iarc</label></dt><dd><input type="color" id="colorClaroIArc" value="#dc143c" /></dd>
+                                <dt><label for="colorClaroCInfo">$color_cinfo</label></dt><dd><input type="color" id="colorClaroCInfo" value="#1e90ff" /></dd>
+                                <dt><label for="colorClaroFInfo">$color_finfo</label></dt><dd><input type="color" id="colorClaroFInfo" value="#add8e6" /></dd>
+                                <dt><label for="colorClaroCAviso">$color_caviso</label></dt><dd><input type="color" id="colorClaroCAviso" value="#ffa500" /></dd>
+                                <dt><label for="colorClaroFAviso">$color_faviso</label></dt><dd><input type="color" id="colorClaroFAviso" value="#ffdead" /></dd>
+                                <dt><label for="colorClaroCError">$color_cerror</label></dt><dd><input type="color" id="colorClaroCError" value="#ff0000" /></dd>
+                                <dt><label for="colorClaroFError">$color_ferror</label></dt><dd><input type="color" id="colorClaroFError" value="#f08080" /></dd>
                             </dl>
                         </fieldset>
                         <fieldset>
-                            <legend>Tema oscuro</legend>
-                            <p>Esquema de colores del tema oscuro.</p>
+                            <legend>$color_temaoscuro</legend>
+                            <p>$color_temaoscuro_d</p>
                             <dl class="natural form">
-                                <dt><label for="colorOscuroCM">Principal, texto</label></dt><dd><input type="color" id="colorOscuroCM" value="#323232" /></dd>
-                                <dt><label for="colorOscuroFM">Principal, fondo</label></dt><dd><input type="color" id="colorOscuroFM" value="#ffffff" /></dd>
-                                <dt><label for="colorOscuroBM">Principal, borde</label></dt><dd><input type="color" id="colorOscuroBM" value="#d3d3d3" /></dd></dt>
-                                <dt><label for="colorOscuroCA">Secundario, texto</label></dt><dd><input type="color" id="colorOscuroCA" value="#323232" /></dd>
-                                <dt><label for="colorOscuroFA">Secundario, fondo</label></dt><dd><input type="color" id="colorOscuroFA" value="#f5f5f5" /></dd>
-                                <dt><label for="colorOscuroHA">Secundario, fondo hover</label></dt><dd><input type="color" id="colorOscuroHA" value="#d3d3d3" /></dd>
-                                <dt><label for="colorOscuroCT">Terciario, texto</label></dt><dd><input type="color" id="colorOscuroCT" value="#f5f5f5" /></dd>
-                                <dt><label for="colorOscuroFT">Terciario, fondo</label></dt><dd><input type="color" id="colorOscuroFT" value="#323232" /></dd>
-                                <dt><label for="colorOscuroActT">Terciario, fondo activo</label></dt><dd><input type="color" id="colorOscuroActT" value="#808080" /></dd>
-                                <dt><label for="colorOscuroBW">Widget, borde</label></dt><dd><input type="color" id="colorOscuroBW" value="#d3d3d3"></dd>
-                                <dt><label for="colorOscuroCBr">Botón regular, texto</label></dt><dd><input type="color" id="colorOscuroCBr" value="#000000" /></dd>
-                                <dt><label for="colorOscuroCActBr">Botón regular, texto activo</label></dt><dd><input type="color" id="colorOscuroCActBr" value="#000000" /></dd>
-                                <dt><label for="colorOscuroCdBr">Botón regular, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdBr" value="#000000" /></dd>
-                                <dt><label for="colorOscuroFBr">Botón regular, fondo</label></dt><dd><input type="color" id="colorOscuroFBr" value="#d3d3d3" /></dd>
-                                <dt><label for="colorOscuroFActBr">Botón regular, fondo activo</label></dt><dd><input type="color" id="colorOscuroFActBr" value="#808080" /></dd>
-                                <dt><label for="colorOscuroFdBr">Botón regular, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdBr" value="#808080" /></dd>
-                                <dt><label for="colorOscuroCBbh">Botón de barra de herramientas, texto</label></dt><dd><input type="color" id="colorOscuroCBbh" value="#808080" /></dd>
-                                <dt><label for="colorOscuroCActBbh">Botón de barra de herramientas, texto activo</label></dt><dd><input type="color" id="colorOscuroCActBbh" value="#808080" /></dd>
-                                <dt><label for="colorOscuroCdBbh">Botón de barra de herramientas, texto deshabilitado</label></dt><dd><input type="color" id="colorOscuroCdBbh" value="#d3d3d3" /></dd>
-                                <dt><label for="colorOscuroFBbh">Botón de barra de herramientas, fondo</label></dt><dd><input type="color" id="colorOscuroFBbh" value="#ffffff" /></dd>
-                                <dt><label for="colorOscuroFActBbh">Botón de barra de herramientas, fondo activo</label></dt><dd><input type="color" id="colorOscuroFActBbh" value="#d3d3d3" /></dd>
-                                <dt><label for="colorOscuroFdBbh">Botón de barra de herramientas, fondo deshabilitado</label></dt><dd><input type="color" id="colorOscuroFdBbh" value="#ffffff" /></dd>
-                                <dt><label for="colorOscuroSBand">Bandera, resplandor</label></dt><dd><input type="color" id="colorOscuroSBand" value="#ffd983" /></dd>
-                                <dt><label for="colorOscuroIArc">Archivo sin guardar, indicador</label></dt><dd><input type="color" id="colorOscuroIArc" value="#dc143c" /></dd>
-                                <dt><label for="colorOscuroCInfo">Mensaje informativo, texto</label></dt><dd><input type="color" id="colorOscuroCInfo" value="#1e90ff" /></dd>
-                                <dt><label for="colorOscuroFInfo">Mensaje informativo, fondo</label></dt><dd><input type="color" id="colorOscuroFInfo" value="#add8e6" /></dd>
-                                <dt><label for="colorOscuroCAviso">Mensaje de advertencia, texto</label></dt><dd><input type="color" id="colorOscuroCAviso" value="#ffa500" /></dd>
-                                <dt><label for="colorOscuroFAviso">Mensaje de advertencia, fondo</label></dt><dd><input type="color" id="colorOscuroFAviso" value="#ffdead" /></dd>
-                                <dt><label for="colorOscuroCError">Mensaje de error, texto</label></dt><dd><input type="color" id="colorOscuroCError" value="#ff0000" /></dd>
-                                <dt><label for="colorOscuroFError">Mensaje de error, fondo</label></dt><dd><input type="color" id="colorOscuroFError" value="#f08080" /></dd>
+                                <dt><label for="colorOscuroCM">$color_cm</label></dt><dd><input type="color" id="colorOscuroCM" value="#323232" /></dd>
+                                <dt><label for="colorOscuroFM">$color_fm</label></dt><dd><input type="color" id="colorOscuroFM" value="#ffffff" /></dd>
+                                <dt><label for="colorOscuroBM">$color_bm</label></dt><dd><input type="color" id="colorOscuroBM" value="#d3d3d3" /></dd></dt>
+                                <dt><label for="colorOscuroCA">$color_ca</label></dt><dd><input type="color" id="colorOscuroCA" value="#323232" /></dd>
+                                <dt><label for="colorOscuroFA">$color_fa</label></dt><dd><input type="color" id="colorOscuroFA" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroHA">$color_ha</label></dt><dd><input type="color" id="colorOscuroHA" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroCT">$color_ct</label></dt><dd><input type="color" id="colorOscuroCT" value="#f5f5f5" /></dd>
+                                <dt><label for="colorOscuroFT">$color_ft</label></dt><dd><input type="color" id="colorOscuroFT" value="#323232" /></dd>
+                                <dt><label for="colorOscuroActT">$color_actt</label></dt><dd><input type="color" id="colorOscuroActT" value="#808080" /></dd>
+                                <dt><label for="colorOscuroBW">$color_bw</label></dt><dd><input type="color" id="colorOscuroBW" value="#d3d3d3"></dd>
+                                <dt><label for="colorOscuroCBr">$color_cbr</label></dt><dd><input type="color" id="colorOscuroCBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCActBr">$color_cactbr</label></dt><dd><input type="color" id="colorOscuroCActBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroCdBr">$color_cdbr</label></dt><dd><input type="color" id="colorOscuroCdBr" value="#000000" /></dd>
+                                <dt><label for="colorOscuroFBr">$color_fbr</label></dt><dd><input type="color" id="colorOscuroFBr" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFActBr">$color_factbr</label></dt><dd><input type="color" id="colorOscuroFActBr" value="#808080" /></dd>
+                                <dt><label for="colorOscuroFdBr">$color_fdbr</label></dt><dd><input type="color" id="colorOscuroFdBr" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCBbh">$color_cbbh</label></dt><dd><input type="color" id="colorOscuroCBbh" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCActBbh">$color_cactbbh</label></dt><dd><input type="color" id="colorOscuroCActBbh" value="#808080" /></dd>
+                                <dt><label for="colorOscuroCdBbh">$color_cdbbh</label></dt><dd><input type="color" id="colorOscuroCdBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFBbh">$color_fbbh</label></dt><dd><input type="color" id="colorOscuroFBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorOscuroFActBbh">$color_factbbh</label></dt><dd><input type="color" id="colorOscuroFActBbh" value="#d3d3d3" /></dd>
+                                <dt><label for="colorOscuroFdBbh">$color_fdbbh</label></dt><dd><input type="color" id="colorOscuroFdBbh" value="#ffffff" /></dd>
+                                <dt><label for="colorOscuroSBand">$color_sband</label></dt><dd><input type="color" id="colorOscuroSBand" value="#ffd983" /></dd>
+                                <dt><label for="colorOscuroIArc">$color_iarc</label></dt><dd><input type="color" id="colorOscuroIArc" value="#dc143c" /></dd>
+                                <dt><label for="colorOscuroCInfo">$color_cinfo</label></dt><dd><input type="color" id="colorOscuroCInfo" value="#1e90ff" /></dd>
+                                <dt><label for="colorOscuroFInfo">$color_finfo</label></dt><dd><input type="color" id="colorOscuroFInfo" value="#add8e6" /></dd>
+                                <dt><label for="colorOscuroCAviso">$color_caviso</label></dt><dd><input type="color" id="colorOscuroCAviso" value="#ffa500" /></dd>
+                                <dt><label for="colorOscuroFAviso">$color_faviso</label></dt><dd><input type="color" id="colorOscuroFAviso" value="#ffdead" /></dd>
+                                <dt><label for="colorOscuroCError">$color_cerror</label></dt><dd><input type="color" id="colorOscuroCError" value="#ff0000" /></dd>
+                                <dt><label for="colorOscuroFError">$color_ferror</label></dt><dd><input type="color" id="colorOscuroFError" value="#f08080" /></dd>
                             </dl>
                         </fieldset>
-                        <h3>Editor</h3>
+                        <h3>$r_cfg_editor</h3>
                         <fieldset>
-                            <legend><label for="txtEdAutoGuardadoTiempo">Autoguardado</label></legend>
-                            <p>Define el tiempo en el que guardará automáticamente un archivo, en segundos. 0 para desactivar.</p>
+                            <legend><label for="txtEdAutoGuardadoTiempo">$txt_edautoguardadotiempo</label></legend>
+                            <p>$txt_edautoguardadotiempo_d</p>
                             <input type="number" id="txtEdAutoGuardadoTiempo" value="0" min="0" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtEdTipo">Tipografía</label></legend>
-                            <p>Define la tipografía a usar dentro del editor de código.</p>
-                            <input type="text" id="txtEdTipo" value="monospace" />
+                            <legend><label for="txtEdTipo">$txt_edtipo</label></legend>
+                            <p>$txt_edtipo_d</p>
+                            <input type="text" id="txtEdTipo" value="&quot;Fira Code&quot;" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtEdTipoTam">Tamaño de tipografía</label></legend>
-                            <p>Define el tamaño de la tipografía a usar dentro del editor de código.</p>
+                            <legend><label for="txtEdTipoTam">$txt_edtipotam</label></legend>
+                            <p>$txt_edtipotam_d</p>
                             <input type="text" id="txtEdTipoTam" value="1rem" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtEdTab">Tamaño de tabulador (⇥)</label></legend>
-                            <p>Define el número de espacios equivalentes a una tabulación.</p>
+                            <legend><label for="txtEdTab">$txt_edtab</label></legend>
+                            <p>$txt_edtab_d</p>
                             <input type="number" id="txtEdTab" value="4" min="1" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtEdSalto">Caracter de salto de línea</label></legend>
-                            <p>Define el caracter que se usará como salto de línea al salvar y copiar el texto del editor.</p>
+                            <legend><label for="txtEdSalto">$txt_edsalto</label></legend>
+                            <p>$txt_edsalto_d</p>
                             <select id="txtEdSalto">
                                 <option value="lf" selected="selected">LF (Unix)</option>
                                 <option value="crlf">CR LF (Windows)</option>
                             </select>
                         </fieldset>
                         <fieldset>
-                            <legend><label for="chkDOSNombre">Ajustar nombres de archivo al formato 8.3</label></legend>
-                            <p>Si está habilitado, el formato de los nombres de archivo se limitarán al formato 8.3, para facilitar la compatibilidad con ensambladores para plataformas DOS.</p>
+                            <legend><label for="chkDOSNombre">$txt_chkdosnombre</label></legend>
+                            <p>$txt_chkdosnombre_d</p>
                             <input type="checkbox" id="chkDOSNombre" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtExtAsm">Extensión para archivos en ensamblador</label></legend>
-                            <p>Define la extensión a utilizar al crear un nuevo archivo, o descargar uno.</p>
+                            <legend><label for="txtExtAsm">$txt_extasm</label></legend>
+                            <p>$txt_extasm_d</p>
                             <input type="text" id="txtExtAsm" value=".z80" />
                         </fieldset>
                         <fieldset>
-                            <legend><label for="txtExtProj">Extensión para archivos de proyecto</label></legend>
-                            <p>Define la extensión a utilizar al crear un nuevo archivo de proyecto.</p>
+                            <legend><label for="txtExtProj">$txt_extproj</label></legend>
+                            <p>$txt_extproj_d</p>
                             <input type="text" id="txtExtProj" value=".z80p" />
                         </fieldset>
-                        <h3>Plataforma</h3>
+                        <h3>$r_cfg_ensamblado</h3>
                         <fieldset>
-                            <legend><label for="selPlatMem">Tamaño de memoria</label></legend>
-                            <p>Define el tamaño de la memoria de trabajo que estará disponible durante la ejecución del programa.</p>
-                            <p class="aviso">¡Cambiar el tamaño de la memoria reinicializará su contenido!</p>
+                            <legend><label for="txtEnsOrg">$txt_ensorg</label></legend>
+                            <p>$txt_ensorg_d</p>
+                            <input type="text" id="txtEnsOrg" value="0" />
+                        </fieldset>
+                        <h3>$r_cfg_plataforma</h3>
+                        <fieldset>
+                            <legend><label for="selPlatMem">$sel_platmem</label></legend>
+                            <p>$sel_platmem_d</p>
+                            <p class="aviso">$sel_platmem_a</p>
                             <select id="selPlatMem">
                                 <option value="256">256 B (0x00FF)</option>
                                 <option value="512">512 B (0x01FF)</option>
@@ -454,90 +480,97 @@
                                 <option value="65536">64 KiB (0xFFFF)</option>
                             </select>
                         </fieldset>
-                        <h3>Interfaz</h3>
+                        <h3>$r_cfg_interfaz</h3>
                         <fieldset>
-                            <legend><label for="selIntIdioma"></label></legend>
-                            <p>Establece el idioma del programa.</p>
+                            <legend><label for="txtIntTipo">$txt_inttipo</label></legend>
+                            <p>$txt_inttipo_d</p>
+                            <input type="text" id="txtIntTipo" value="Carlito" />
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="selIntIdioma">$sel_intidioma</label></legend>
+                            <p>$sel_intidioma_d</p>
                             <select id="selIntIdioma">
-                                <option selected="selected">Sistema</option>
+                                <option value="qaa" selected="selected">$sel_intidioma_s</option>
                                 <option value="es">Español</option>
                                 <option value="en">English</option>
                             </select>
                         </fieldset>
                         <fieldset>
-                            <legend><label for="chkIntTitulo">Cambiar título según el archivo abierto</label></legend>
-                            <p>Si está habilitado, el título cambiará para mostrar el nombre del archivo abierto actualmente, y mostrará el ícono ★ si el archivo tiene cambios no salvados.</p>
+                            <legend><label for="chkIntTitulo">$chk_inttitulo</label></legend>
+                            <p>$chk_inttitulo_d</p>
                             <input type="checkbox" id="chkIntTitulo" checked="checked" />
                         </fieldset>
-                        <fieldset><button type="reset" id="btnRestConfig">Restablecer valores</button></fieldset>
+                        <fieldset><button type="reset" id="btnRestConfig">$btn_restconfig</button></fieldset>
                     </form></div>
                 </section>
             </section>
             <section id="r-cod">
-                <h2>Código</h2>
+                <h2>$r_cod</h2>
                 <div><div id="codemirror"></div></div>
             </section>
             <section id="r-mem">
-                <h2>Memoria</h2>
+                <h2>$r_mem</h2>
                 <div><table>
                     <thead>
-                        <tr><th rowspan="2">Dir</th><th colspan="16">Bytes</th><th colspan="16">ASCII</th></tr>
+                        <tr><th rowspan="2">$r_mem_dir</th><th colspan="16">$r_mem_bytes</th><th colspan="16">$r_mem_ascii</th></tr>
                         <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>
                         <tbody></tbody>
                 </table></div>
             </section>
             <section id="r-ay">
-                <h2>Ayuda</h2>
+                <h2>$r_ay</h2>
                 <div>
                     <div id="pan"></div>
                     <div id="panst"></div>
                 </div>
             </section>
             <section id="r-pila">
-                <h2>Pila</h2>
+                <h2>$r_pila</h2>
                 <div>
                     <table>
-                        <thead><tr><th>#</th><th>Dirección</th><th>Valor</th></tr></thead>
-                        <tbody><tr><td>0</td><td>FFFE</td><td>0065</td></tr></tbody>
-                        <tbody><tr><td>1</td><td>FFFC</td><td>0066</td></tr></tbody>
-                        <tbody><tr><td>2</td><td>FFFA</td><td>0067</td></tr></tbody>
-                        <tbody><tr><td>3</td><td>FFF8</td><td>0068</td></tr></tbody>
-                        <tbody><tr><td>4</td><td>FFF6</td><td>0069</td></tr></tbody>
-                        <tbody><tr><td>5</td><td>FFF4</td><td>006A</td></tr></tbody>
+                        <thead><tr><th>#</th><th>$r_pila_dir</th><th>$r_pila_val</th></tr></thead>
+                        <tbody>
+                            <tr><td>0</td><td>FFFE</td><td>0065</td></tr>
+                            <tr><td>1</td><td>FFFC</td><td>0066</td></tr>
+                            <tr><td>2</td><td>FFFA</td><td>0067</td></tr>
+                            <tr><td>3</td><td>FFF8</td><td>0068</td></tr>
+                            <tr><td>4</td><td>FFF6</td><td>0069</td></tr>
+                            <tr><td>5</td><td>FFF4</td><td>006A</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </section>
             <section id="r-reg">
-                <h2>Registros</h2>
+                <h2>$r_reg</h2>
                 <div>
                     <table>
                         <tbody id="r-r">
-                            <tr><th scope="col" colspan="4">Registros principales</th></tr>
+                            <tr><th scope="col" colspan="4">$r_r</th></tr>
                             <tr><th scope="row" id="t-a">A</th><td id="v-a">00</td><td colspan="2"></td></tr>
                             <tr><th scope="row" id="t-b">B</th><td id="v-b">00</td><th scope="row" id="r-c">C</th><td id="v-c">00</td></tr>
                             <tr><th scope="row" id="t-d">D</th><td id="v-d">00</td><th scope="row" id="r-e">E</th><td id="v-e">00</td></tr>
                             <tr><th scope="row" id="t-h">H</th><td id="v-h">00</td><th scope="row" id="r-l">L</th><td id="v-l">00</td></tr>
                         </tbody>
                         <tbody id="r-rx">
-                            <tr><th scope="col" colspan="4">Registros alternativos</th></tr>
+                            <tr><th scope="col" colspan="4">$r_rx</th></tr>
                             <tr><th scope="row" id="t-ax">A'</th><td id="v-ax">00</td><td colspan="2"></td></tr>
                             <tr><th scope="row" id="t-bx">B'</th><td id="v-bx">00</td><th scope="row" id="t-cx">C'</th><td id="v-cx">00</td></tr>
                             <tr><th scope="row" id="t-dx">D'</th><td id="v-dx">00</td><th scope="row" id="t-ex">E'</th><td id="v-ex">00</td></tr>
                             <tr><th scope="row" id="t-hx">H'</th><td id="v-hx">00</td><th scope="row" id="t-lx">L'</th><td id="v-lx">00</td></tr>
                         </tbody>
                         <tbody id="r-16b">
-                            <tr><th scope="col" colspan="4">Registros de 16 bits</th></tr>
+                            <tr><th scope="col" colspan="4">$r_16b</th></tr>
                             <tr><th scope="row" colspan="2" id="t-ix">IX</th><td colspan="2" id="v-ix">0000</td></tr>
                             <tr><th scope="row" colspan="2" id="t-iy">IY</th><td colspan="2" id="v-iy">0000</td></tr>
                             <tr><th scope="row" colspan="2" id="t-sp">SP</th><td colspan="2" id="v-sp">0000</td></tr>
                             <tr><th scope="row" colspan="2" id="t-pc">PC</th><td colspan="2" id="v-pc">0000</td></tr>    
                         </tbody>
                         <tbody id="r-e">
-                            <tr><th scope="col" colspan="4">Registros especiales</th></tr>
+                            <tr><th scope="col" colspan="4">$r_e</th></tr>
                             <tr><th scope="row" id="t-i">I</th><td id="v-i">00</td><th scope="row" id="t-r">R</th><td id="v-r">00</td></tr>
                         </tbody>
                         <tbody id="r-f">
-                            <tr><th scope="col" colspan="2">Registro F</th><th scope="col" colspan="2">Registro F'</th></tr>
+                            <tr><th scope="col" colspan="2">$r_f</th><th scope="col" colspan="2">$r_fx</th></tr>
                             <tr><th scope="row" id="t-sf">SF</th><td id="v-sf">💡</td><th scope="row" id="t-sfx">SF'</th><td id="v-sfx">💡</td></tr>
                             <tr><th scope="row" id="t-zf">ZF</th><td id="v-zf">💡</td><th scope="row" id="t-zfx">ZF'</th><td id="v-zfx">💡</td></tr>
                             <tr><th scope="row" id="t-yf">YF</th><td id="v-yf">💡</td><th scope="row" id="t-yfx">YF'</th><td id="v-yfx">💡</td></tr>
@@ -552,53 +585,53 @@
             </section>
         </main>
         <footer>
-            <ul aria-label="Máquina" role="menubar">
-                <li class="hint--top" aria-label="Estado"><output id="outEstado"></output></li>
-                <li class="hint--top" aria-label="Tamaño de memoria"><output id="outMemTam"></output></li>
+            <ul aria-label="$menubar_f_maquina" role="menubar">
+                <li class="hint--top" aria-label="$out_estado_aria_label"><output id="outEstado"></output></li>
+                <li class="hint--top" aria-label="$out_memtam_aria_label"><output id="outMemTam"></output></li>
             </ul>
-            <ul aria-label="Archivo" role="menubar">
-                <li class="hint--top-left" aria-label="Tamaño"><output id="outArcTam"></output></li>
-                <li class="hint--top-left" aria-label="Línea"><output id="outArcLin"></output></li>
-                <li class="hint--top-left" aria-label="Columna"><output id="outArcCol"></output></li>
+            <ul aria-label="$menubar_f_archivo" role="menubar">
+                <li class="hint--top-left" aria-label="$out_arctam_aria_label"><output id="outArcTam"></output></li>
+                <li class="hint--top-left" aria-label="$out_arclin_aria_label"><output id="outArcLin"></output></li>
+                <li class="hint--top-left" aria-label="$out_arccol_aria_label"><output id="outArcCol"></output></li>
             </ul>
         </footer>
         <!-- Cuadros de diálogo -->
         <dialog id="dlgNuevoArchivo" data-botones="ck"><form method="dialog">
             <fieldset>
-                <legend><label for="txtDlgNuevoArchivoNombre">Escribe el nombre del nuevo archivo:</label></legend>
+                <legend><label for="txtDlgNuevoArchivoNombre">$dlg_nuevoarchivo</label></legend>
                 <input id="txtDlgNuevoArchivoNombre" type="text" />
             </fieldset>
         </form></dialog>
         <dialog id="dlgBorrarConfirmacion" data-botones="ns"><form method="dialog">
-            <p>¿Estás seguro? Esta operación es irreversible.</p>
+            <p>$dlg_borrarconfirmacion</p>
         </form></dialog>
         <dialog id="dlgCerrarConfirmacion" data-botones="ns"><form method="dialog">
-            <p>¿Estás seguro? Cerrar el proyecto quitará todos tus archivos de Emulador Z80.</p>
+            <p>$dlg_cerrarconfirmacion</p>
         </form></dialog>
         <dialog id="dlgCerrarNoGuardadoConfirmacion" data-botones="cns"><form method="dialog">
-            <p>Tienes cambios sin guardar en %nom. ¿Deseas guardarlos antes de cerrar el proyecto?</p>
+            <p>$dlg_cerrarnoguardadoconfirmacion</p>
         </form></dialog>
         <dialog id="dlgDescargar" data-botones="a"><form method="dialog">
-            <p>Seleccione el formato a descargar:</p>
-            <div id="contDlgDescargar"><button id="btnDlgDescargarAsm">Ensamblador (%ext)</button><button id="btnDlgDescargarHex">Hexadecimal (.hex)</button></div>
+            <p>$dlg_descargar_sel</p>
+            <div id="contDlgDescargar"><button id="btnDlgDescargarAsm">$dlg_descargar_asm</button><button id="btnDlgDescargarHex">$dlg_descargar_hex</button></div>
         </form></dialog>
         <dialog id="dlgAcercaDe" data-botones="a"><form method="dialog">
             <div id="dlgAcercaDeEsque">
                 <figure>
-                    <img src="icon.svg" alt="Icono de Emulador Z80" />
-                    <figcaption>Emulador Z80</figcaption>
+                    <img src="icon.svg" alt="$dlg_acercade_iconode" />
+                    <figcaption>$nombre_app</figcaption>
                 </figure>
                 <dl class="natural">
-                    <dt>Versión</dt><dd>%version</dd>
-                    <dt>Fecha</dt><dd>%fecha</dd>
-                    <dt>Commit</dt><dd>%commit</dd>
-                    <dt>Sistema</dt><dd>%sistema</dd>
+                    <dt>$dlg_acercade_version</dt><dd>%version</dd>
+                    <dt>$dlg_acercade_fecha</dt><dd>%fecha</dd>
+                    <dt>$dlg_acercade_commit</dt><dd>%commit</dd>
+                    <dt>$dlg_acercade_sistema</dt><dd>%sistema</dd>
                     <dt>Neutralino</dt><dd>%neu</dd>
-                    <dt>User-agent</dt><dd>%ua</dd>
+                    <dt>$dlg_acercade_ua</dt><dd>%ua</dd>
                 </dl>
                 <div>
-                    <h2>Autores</h2>
-                    <ul>
+                    <h2>$dlg_acercade_autores</h2>
+                    <ul translate="no">
                         <li>Emilio Cruz</li>
                         <li>Giovanni Garciliano</li>
                         <li>Ernesto López</li>
@@ -607,11 +640,11 @@
                     </ul>
                 </div>
                 <div>
-                    <h3>Sitio web</h3>
+                    <h3>$dlg_acercade_web</h3>
                     <p><a href="https://twilight1794.github.io/z80">https://twilight1794.github.io/z80</a></p>
-                    <h3>Código fuente</h3>
+                    <h3>$dlg_acercade_codigo</h3>
                     <p><a href="https://github.com/twilight1794/z80">https://github.com/twilight1794/z80</a></p>
-                    <h3>Licencia</h3>
+                    <h3>$dlg_acercade_licencia</h3>
                     <p><a href="https://raw.githubusercontent.com/twilight1794/z80/main/COPYING">GPLv3+</a></p>
                 </div>
             </div>

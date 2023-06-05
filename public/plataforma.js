@@ -5,9 +5,7 @@ class TipoLog {
     static INFO = new TipoLog("info");
     static AVISO = new TipoLog("aviso");
     static ERROR = new TipoLog("error");
-    constructor(name) {
-      this.name = name;
-    }
+    constructor(name){ this.name = name; }
 }
 
 // Excepciones
@@ -97,7 +95,28 @@ class TipoValorError extends TipoError {
 }
 
 class Plataforma {
-    // Lee un byte de la memoria, y devuelve su valor
+    inicio;
+    
+    /**
+     * Carga y procesa un archivo en ensamblador para su posterior ensamblado
+     *
+     * @param {String} nom Nombre del archivo a cargar
+     * @return {Array<String>}
+     * @memberof Plataforma
+     */
+    cargarArchivoEnsamblador(nom){
+        let t = localStorage.getItem("archivo_"+nom) || "";
+        //t = this.preprocesar();
+        return t.split("\n");
+    }
+
+    /**
+     * Lee un byte de la memoria, y devuelve su valor
+     *
+     * @param {Number} dir Dirección de memoria a leer
+     * @return {Number} Valor de la posición de memoria
+     * @memberof Plataforma
+     */
     leerMemoria(dir){
         let m = g.mem.tBodies[0].children;
         if (dir < m.length)
@@ -105,7 +124,13 @@ class Plataforma {
         else
             throw new DireccionInvalidaError(dir, -1);
     }
-    // Lee dos bytes de la memoria, los interpreta como una palabra, y devuelve su valor
+    /**
+     * Lee dos bytes de la memoria, los interpreta como una palabra, y devuelve su valor
+     *
+     * @param {Number} dir Dirección de inicio de la palabra a leer
+     * @return {Number} Valor de la palabra
+     * @memberof Plataforma
+     */
     leerPalabra(dir){
         let m = g.mem.tBodies[0].children;
         if (dir < m.length && dir+1 < m.length){
@@ -114,9 +139,15 @@ class Plataforma {
             return parseInt(h+l, 16);
         } else
             throw new DireccionInvalidaError(dir, -1);
-        }
+    }
 
-    // Escribe sobre un byte de la memoria
+    /**
+     * Escribe sobre un byte de la memoria
+     *
+     * @param {Number} dir Dirección de memoria a escribir
+     * @param {*} val Valor a escribir sobre la dirección especificada
+     * @memberof Plataforma
+     */
     escribirMemoria(dir, val){
         let m = g.mem.tBodies[0].children;
         val.forEach(b => {
@@ -226,8 +257,15 @@ class Plataforma {
         el.textContent = ((el.textContent == 1)?"0":"1");
     }
 
-    // Envía un mensaje al registro de mensajes, o log
+    /**
+     * Envía un mensaje al registro de mensajes
+     *
+     * @param {TipoLog} tipo Tipo de mensaje a escribir en el registro de mensajes
+     * @param {String} mensaje Mensaje a escribir en el registro de mensajes
+     * @memberof Plataforma
+     */
     escribirLog(tipo, mensaje){
+        let log = document.querySelector("#r-msg ul");
         let li = document.createElement("li");
         switch (tipo){
             case TipoLog.INFO:
@@ -240,10 +278,11 @@ class Plataforma {
                 li.className = "error";
                 break;
         }
-        let ins = document.createElement("ins");
-        ins.dateTime = (new Date()).toISOString();
-        ins.textContent = mensaje;
-        li.appendChild(ins);
+        let time = document.createElement("time");
+        time.textContent = (new Date()).toISOString();
+        let txt = document.createElement("span");
+        txt.textContent = mensaje;
+        li.append(time, txt);
         log.appendChild(li);
     }
 }

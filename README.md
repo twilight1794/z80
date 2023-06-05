@@ -21,6 +21,7 @@
 ### Cosas aún no implementadas
 
 - Puertos e instrucciones I/O
+- Características avanzadas de macros
 
 ## Créditos
 
@@ -36,6 +37,11 @@
 - **NeutralinoJS**:
   - Usamos NeutralinoJS para generar los binarios para Windows y Linux
   - Tiene licencia MIT
+- **Tipografías**:
+  - Predeterminadamente, usamos dos tipografías:
+  - *Carlito*: reemplazo libre de Calibri, para el texto base
+  - *Fira Code*: tipo monoespaciado con algunas ligaduras, para el código
+  - Ambas tipografías están bajo la licencia Open Font License
 
 ## Recursos y otras peripecias
 

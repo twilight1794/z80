@@ -2,43 +2,101 @@
 
 /* Enums */
 /**
+ * Designa el tipo de símbolo reconocido en el análisis léxico
  *
- * Designa el tipo de valor tratado durante el análisis léxico y sintáctico de una expresión
- * @class TipoVal
+ * @class TipoOp
  */
-class TipoVal {
-    /* Tipos terminales */
-    static NUMERO = new TipoVal("numero");                 // 45h, 44o, 1100b, 44
-                                                           // { tipo: TipoVal.NUMERO, valor: x }
-    static CADENA = new TipoVal("cadena");                 // "Hola mundo" -> bytes
-                                                           // { tipo: TipoVal.CADENA, valor: "x" }
-    static REGISTRO = new TipoVal("registro");             // A, B, D, E, F, BC, DE, HL, AF, IX, IY, SP
-                                                           // { tipo: TipoVal.REGISTRO, valor: "r" }
-    static BANDERA = new TipoVal("bandera");               // P,V,Z,S, NC, NP, NV, NZ, NS
-                                                           // { tipo: TipoVal.BANDERA, valor: "x" }
-    static AMB_C = new TipoVal("amb_c");                   // C es ambiguo: puede ser un registro, o una bandera
-                                                           // { tipo: TipoVal.AMB_C, valor: "c" }
-    static DIRECCION = new TipoVal("direccion");           // (100h), (303o)
-                                                           // { tipo: TipoVal.NUMERO, valor: x }
-                                                           // x= dirección de memoria
-    static DESPLAZAMIENTO = new TipoVal("desplazamiento"); // (HL), (IX), (IY+4)
-                                                           // { tipo: TipoVal.DESPLAZAMIENTO, valor: n, registro: "x" }
+class TipoSimbolo {
+    static DIRECTIVA = new TipoSimbolo("directiva");
+    static FIN = new TipoSimbolo("fin");
+    static BLOQUE_SI = new TipoSimbolo("if");
+    static ORG = new TipoSimbolo("org");
+    static MNEMO = new TipoSimbolo("mnemo");
+    constructor(name){ this.name = name; }
+}
 
-    /* Tipos no terminales */
-    static OP = new TipoVal("op");                         // + - * / ^ AND OR XOR NOT NAND NOR NXOR
-                                                           // { tipo: TipoVal.OP, valor: "x" }
-    static ETIQUETA = new TipoVal("etiqueta");             // eti1, fin
-                                                           // { tipo: TipoVal.ETIQUETA, valor: "x" }
-    static GRUPO = new TipoVal("grupo");                   // (IX+4)
-                                                           // { tipo: TipoVal.GRUPO, valor [...] }
-    constructor(name) {
-      this.name = name;
+/**
+ * Designa un operador
+ *
+ * @class TipoOp
+ */
+class TipoOp {
+    static NEG = new TipoOp("!", 2, 1);
+    static COMP_1 = new TipoOp("~", 2, 1);
+    static COMP_2 = new TipoOp("-", 2, 1);
+    static POS = new TipoOp("+", 2, 1);
+    static INV = new TipoOp("INV", 2, 1);
+    static MUL = new TipoOp("*", 3, 2);
+    static DIV = new TipoOp("/", 3, 2);
+    static MOD = new TipoOp("%", 3, 2);
+    static ADD = new TipoOp("x+", 4, 2);
+    static SUB = new TipoOp("x-", 4, 2);
+    static SHIFT_L = new TipoOp("<<", 5, 2);
+    static SHIFT_R = new TipoOp(">>", 5, 2);
+    static LT = new TipoOp("<", 6, 2);
+    static LE = new TipoOp("<=", 6, 2);
+    static GT = new TipoOp(">", 6, 2);
+    static GE = new TipoOp(">=", 6, 2);
+    static EQ = new TipoOp("==", 7, 2);
+    static NEQ = new TipoOp("!=", 7, 2);
+    static B_AND = new TipoOp("&", 8, 2);
+    static B_XOR = new TipoOp("^", 9, 2);
+    static B_OR = new TipoOp("|", 10, 2);
+    static L_AND = new TipoOp("&&", 11, 2);
+    static L_OR = new TipoOp("||", 12, 2);
+    static OFF_P = new TipoOp("o+", 100, 2);
+    static OFF_N = new TipoOp("o-", 100, 2);
+    constructor(name, precedencia, aridad){
+        this.name = name;
+        this.precedencia = precedencia;
+        this.aridad = aridad;
+    }
+    static obtTipo(coin){
+        return Object.getOwnPropertyNames(TipoOp).filter((p) => TipoOp[p] instanceof TipoOp).map((p) => TipoOp[p] ).find((p) => p.name == coin);
     }
 }
 
 /**
- *
+ * Designa el tipo de valor tratado durante el análisis léxico y sintáctico de una expresión
+ * 
+ * @class TipoVal
+ */
+class TipoVal {
+    /* Tipos terminales */
+    // 45h, 44o, 1100b, 44
+    static NUMERO = new TipoVal("numero");
+    // A, B, D, E, F, BC, DE, HL, AF, IX, IY, SP
+    static REGISTRO = new TipoVal("registro");
+    // P,V,Z,S, NC, NP, NV, NZ, NS
+    static BANDERA = new TipoVal("bandera");
+    // C es ambiguo: puede ser un registro, o una bandera
+    static AMB_C = new TipoVal("amb_c");
+    // (100h), (303o)
+    static DIRECCION = new TipoVal("direccion");
+    // (HL), (IX), (IY+4)
+    static DESPLAZAMIENTO = new TipoVal("desplazamiento");
+
+    /* Tipos no terminales */
+    // "Hola mundo"
+    static CADENA = new TipoVal("cadena");
+    // { } ! ~ INV * / % + - << >> < <= > >= == != & ^ | && ||
+    static OP = new TipoVal("op");
+    // eti1, fin
+    static ETIQUETA = new TipoVal("etiqueta");
+    // Coma separadora
+    static SEPARADOR = new TipoVal("separador");
+    // Paréntesis {}
+    static PARENTESIS_AP = new TipoVal("parentesis_ap");
+    static PARENTESIS_CI = new TipoVal("parentesis_ci");
+    // Delimitadores de indirección ()
+    static DESPLAZAMIENTO_AP = new TipoVal("desplazamiento_ap");
+    static DESPLAZAMIENTO_CI = new TipoVal("desplazamiento_ci");
+    constructor(name){ this.name = name; }
+}
+
+/**
  * Designa la clase de un parámetro, durante el proceso de ensamblamiento
+ * 
  * @class TipoParam
  */
 class TipoParam {
@@ -70,36 +128,7 @@ class TipoParam {
     static RAF = new TipoParam("raf");
     static RDE = new TipoParam("rde");
     static DSP = new TipoParam("dsp");
-}
-
-/**
- * Línea de ensamblador estructurada
- * 
- * @class Instruccion
- */
-class Instruccion {
-    ops = [];
-
-    constructor (){
-        this.mnemo = arguments[0];
-        this.eti = arguments[1];
-        // QUESTION: ¿Es lo siguiente útil?
-        this.text = this.toString();
-    }
-    anadOps(){
-        // QUESTION: ¿Debería haber validación de tipo?
-        this.ops.push(...arguments);
-        this.text = this.toString();
-    }
-    toString(){
-        let str = this.eti?(this.eti+": "):"";
-        str += this.mnemo + " ";
-        this.ops.forEach((o) => {
-            str += o.valor + ", ";
-        });
-        str = str.substring(0, str.length-2);
-        return str;
-    }
+    constructor(name){ this.name = name; }
 }
 
 /**
@@ -109,46 +138,131 @@ class Instruccion {
  */
 class ProgramaAsm {
 
+    // Atributos para el análisis léxico
     /**
-     * Índice de etiquetas a resolver
-     * Si la etiqueta ya está resuelta, contiene su dirección, de lo contrario, contiene undefined
+     * Líneas de código fuente a analizar
+     *
      * @memberof ProgramaAsm
      */
-    #tablaSimbolos = {};
+    lineas = []; //#
 
-    earrings = [];
+    /**
+     * Índice de etiquetas a resolver
+     * Posibles valores:
+     * No definida -> undefined
+     * Declarada, no definida aún -> [null, []]
+     * Definida -> number
+     * Referenciada, no definida -> [undefined, []]
+     * 
+     * @memberof ProgramaAsm
+     */
+    tablaSimbolos = {}; //#
+
+    /**
+     * Listado de instrucciones cuyas referencias a etiquetas aún no han sido definidas
+     * En este paso:
+     * undefined -> pendiente; null -> definido parcialmente
+     *
+     * @memberof ProgramaAsm
+     */
+    instIndef = {}; //#
+
+    /**
+     * Pila que contiene los índices de los bloques en los que pudiéramos entrar.
+     * Cada índice es un array, que contiene los enteros índice
+     *
+     * @memberof ProgramaAsm
+     */
+    ambitos = []; //#
+
+    /**
+     * Bandera que indica el tipo de ámbito en el cual escribir: IF-ELSE
+     * Valores: 0 -> IF, 1 -> ELSE
+     *
+     * @type Number
+     * @memberof ProgramaAsm
+     */
+    estadoIPC = []; //#
+
+    /**
+     * Listado de instrucciones relevantes generadas del código fuente
+     *
+     * @memberof ProgramaAsm
+     */
+    simbolos = [];
+
+    // Atributos para el análisis sintáctico
+    /**
+     * Array que contiene los bytes correspondientes al código objeto
+     * 
+     * @memberof ProgramaAsm
+     */
+    bytes = [];
+
+    /**
+     * Contador de localidades
+     *
+     * @default 0
+     * @memberof ProgramaAsm
+     */
+    cl = 0;
+
+    /**
+     * Dirección de inicio de ejecución
+     *
+     * @default 0
+     * @memberof ProgramaAsm
+     */
+    inicio = 0;
+
+    /**
+     * Bandera que define si ignorar o no la capitalización de las directivas, mnemotécnicos y etiquetas
+     *
+     * @default false
+     * @memberof ProgramaAsm
+     */
+    caseRelevante = false;
+
+    /* Valores de retorno */
+    #retEnd = Symbol("retEnd");
 
     /* Expresiones regulares */
-    // NOTE: Esta expresión presupone que la definición de variables tiene una sintaxis diferente a las demás directivas, y que el compilador las procesará por separado
-    #r_ins = /^([A-Z_0-9]+|[a-z_0-9]+)\s*/;
-    #r_var = /^([A-Za-z_][A-Za-z_0-9]+)\s*:\s*([A-Z]+|[a-z]+)\s+/;
-    #r_eti = /^([A-Za-z_][A-Za-z_0-9]+)\s*:/;
-    //
-    #r_id = /^[A-Za-z_][A-Za-z_0-9]+/;
-    //#r_num = /^((0x([0-9A-Fa-f]+))|(0b[01]+)|([0-9]+)|(0[0-7]+))/; // Número en formato Intel
-    #r_num = /^(([01]+b)|([0-9A-F]+h)|([0-9a-f]+h)|([0-7]+o)|[0-9]+)/;
-    #r_esp = /^\s+/;
+    #r_defeti = /^([A-Za-z_\.\?][A-Za-z0-9_\.\?]*)\s*:\s*/;
+    #r_eti = /^([A-Za-z_\.\?][A-Za-z0-9_\.\?]*)\s*/;
+    #r_mnemo = /^([A-Z]+|[a-z]+)\s*/;
+    #r_com = /^;.*$/;
+    #r_num = /^((?:0x(?:(?:[0-9A-F]|[0-9a-f])+))|(?:0b[01]+)|(?:(?:[0-9A-F]|[0-9a-f])+[Hh])|(?:[01]+[Bb])|(?:[0-7]+[Oo])|(?:0[0-7]+)|(?:[0-9]+))\s*/;
+    #r_op = /^(!|~|INV|\*|\/|%|\+|\-|<<|>>|<|<=|>|>=|==|!=|&|\^|\||&&|\|\|)\s*/;
+    #r_cad = /^(?:"([^"]*)")\s*/;
+    #r_reg = /^(A|B|D|E|H|L|I|R|BC|DE|HL|SP|AF|IX|IY)\s*/i;
+    #r_band = /^(P|V|Z|S|NC|NP|NV|NZ|NS)\s*/i;
+    //#r_band = /^(Z|P|M|NZ|NC|PO|PE)\s*/i;
+    #r_sep = /^,\s*/;
+    #r_par_l = /^\{\s*/;
+    #r_par_r = /^\}\s*/;
+    #r_off_l = /^\(\s*/;
+    #r_off_r = /^\)\s*/;
 
-    /// Correspondencias Simbolos-Binario
-    // Registros (r)
-    ValsR = { "b": 0, "c": 1, "d": 2, "e": 3, "h": 4, "l": 5, "hl": 6, "a": 7 }
-    // Pares de registros (ss)
-    ValsSS = { "bc": 0, "de": 1, "hl": 2, "sp": 3 }
-    // Pares de registros (qq)
-    ValsQQ = { "bc": 0, "de": 1, "hl": 2, "af": 3 }
-    // Pares de registros (pp)
-    ValsPP = { "bc": 0, "de": 1, "ix": 2, "sp": 3 }
-    // Pares de registros (rr)
-    ValsRR = { "bc": 0, "de": 1, "iy": 2, "sp": 3 }
-    // Banderas (cc)
-    ValsCC = { "nz": 0, "z": 1, "nc": 2, "c": 3, "po": 4, "pe": 5, "p": 6, "m": 7 }
+    /* Correspondencias Simbolos-Binario */
+    /** Registros (r) */
+    ValsR = { "b": 0, "c": 1, "d": 2, "e": 3, "h": 4, "l": 5, "hl": 6, "a": 7 };
+    /** Pares de registros (ss) */
+    ValsSS = { "bc": 0, "de": 1, "hl": 2, "sp": 3 };
+    /** Pares de registros (qq) */
+    ValsQQ = { "bc": 0, "de": 1, "hl": 2, "af": 3 };
+    /** Pares de registros (pp) */
+    ValsPP = { "bc": 0, "de": 1, "ix": 2, "sp": 3 };
+    /** Pares de registros (rr) */
+    ValsRR = { "bc": 0, "de": 1, "iy": 2, "sp": 3 };
+    /** Banderas (cc) */
+    ValsCC = { "nz": 0, "z": 1, "nc": 2, "c": 3, "po": 4, "pe": 5, "p": 6, "m": 7 };
 
     /**
      * Valida si un parámetro es de una clase válida
      *
      * @param {TipoParam} t Clase de parámetro contra el cual validar
-     * @param {*} v Parámetro a validar
-     * @return {boolean} Si la validación es exitosa, devuelve true
+     * @param {Object} v Parámetro a validar
+     * @return {Boolean} Si la validación es exitosa, devuelve true
      * @memberof ProgramaAsm
      * @see TipoParam
      */
@@ -282,17 +396,29 @@ class ProgramaAsm {
      *
      * Devuelve el código de operación correspondiente a una instrucción de ensamblador
      *
-     * @param {string} ins Mnemotécnico, en minúsculas, a procesar
+     * @param {String} ins Mnemotécnico, en minúsculas, a procesar
      * @param {Array} lop Array que contiene los parámetros pasados al mnemotécnico
      * @return {Array} Array con los bytes que representan la instrucción en código máquina
      * @memberof ProgramaAsm
      */
-    getCodigoOp(ins, lop){
+    #obtCodigoOp(ins, lop){
         let bytes = [];
         switch (ins){
+            /* Las directivas que generan bytes en memoria serán tratadas como mnemotécnicos */
+            case "DB":
+                break;
+            case "DFB":
+                break;
+            case "DFS":
+                break;
+            case "DWL":
+                break;
+            case "DWM":
+                break;
+            /* Mnemotécnicos reales */
             case "adc":
                 if (lop.length == 1){
-                    bytes = this.getCodigoOp("add", lop);
+                    bytes = this.#obtCodigoOp("add", lop);
                     bytes[0] = bytes[0]+8;
                     break;
                 } else if (lop.length == 2){
@@ -351,7 +477,7 @@ class ProgramaAsm {
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "and":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = this.getCodigoOp("add", lop);
+                bytes = this.#obtCodigoOp("add", lop);
                 bytes[0] = bytes[0]+32;
                 break;
             case "bit":
@@ -391,7 +517,7 @@ class ProgramaAsm {
                 break;
             case "cp":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = this.getCodigoOp("add", lop);
+                bytes = this.#obtCodigoOp("add", lop);
                 bytes[0] = bytes[0]+56;
                 break;
             case "cpd":
@@ -494,7 +620,7 @@ class ProgramaAsm {
             case "im":
                 bytes.push(0xed);
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                if (lop[0].tipo = TipoVal.Numero) throw new BaseError();
+                if (lop[0].tipo != TipoVal.Numero) throw new BaseError();
                 switch (lop[0].valor){
                     case 0: bytes.push(0x46); break;
                     case 1: bytes.push(0x56); break;
@@ -665,7 +791,6 @@ class ProgramaAsm {
                         bytes.push(64 + (this.ValsR[lop[0].valor]<<3) + (this.ValsR[lop[1].valor]<<3));
                         break;
                     } catch {}
-
                     if (lop[0].valor == "a"){
                         try {
                             this.esTipo(TipoParam.RI, lop[1]);
@@ -693,7 +818,6 @@ class ProgramaAsm {
                             break;
                         } catch {}
                     }
-
                     throw new BaseError();
                 } catch {}
                 try {
@@ -825,7 +949,7 @@ class ProgramaAsm {
                 break;
             case "or":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = this.getCodigoOp("add", lop);
+                bytes = this.#obtCodigoOp("add", lop);
                 bytes[0] = bytes[0]+48;
                 break;
             case "otdr":
@@ -877,7 +1001,7 @@ class ProgramaAsm {
                 } catch {}
                 throw new BaseError();
             case "res":
-                bytes = this.getCodigoOp("set", lop);
+                bytes = this.#obtCodigoOp("set", lop);
                 bytes[3] = bytes[3]+64;
                 break;
             case "ret":
@@ -895,7 +1019,7 @@ class ProgramaAsm {
                 bytes.push(0xed, 0x45);
                 break;
             case "rl":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(2<<3);
                 break;
             case "rla":
@@ -923,14 +1047,14 @@ class ProgramaAsm {
                 bytes.push(0xed, 0x6f);
                 break;
             case "rr":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(3<<3);
                 break;
             case "rra":
                 bytes.push(0x1f);
                 break;
             case "rrc":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(1<<3);
                 break;
             case "rrca":
@@ -948,7 +1072,7 @@ class ProgramaAsm {
                 break;
             case "sbc":
                 if (lop.length == 1){
-                    bytes = this.getCodigoOp("add", lop);
+                    bytes = this.#obtCodigoOp("add", lop);
                     bytes[0] = bytes[0]+24;
                     break;
                 } else if (lop.length == 2){
@@ -964,29 +1088,29 @@ class ProgramaAsm {
                 bytes.push(0x37);
                 break;
             case "set":
-                bytes = this.getCodigoOp("set", lop);
+                bytes = this.#obtCodigoOp("set", lop);
                 bytes[3] = bytes[3]+128;
                 break;
             case "sla":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(4<<3);
                 break;
             case "sra":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(5<<3);
                 break;
             case "srl":
-                bytes = this.getCodigoOp("rlc", lop);
+                bytes = this.#obtCodigoOp("rlc", lop);
                 bytes[3] = bytes[3]+(7<<3);
                 break;
             case "sub":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = this.getCodigoOp("add", lop);
+                bytes = this.#obtCodigoOp("add", lop);
                 bytes[0] = bytes[0]+16;
                 break;
             case "xor":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                bytes = this.getCodigoOp("add", lop);
+                bytes = this.#obtCodigoOp("add", lop);
                 bytes[0] = bytes[0]+40;
                 break;
             default:
@@ -995,260 +1119,329 @@ class ProgramaAsm {
         return bytes;
     }
 
+
+
     /**
+     * Función auxiliar de analLexico que almacena un símbolo en el ámbito correcto
      *
-     * Analiza léxica y sintácticamente una línea de ensamblador
-     *
-     * @param {string} l Línea en ensamblador a procesar
-     * @param {number} lnum Número de línea en el código fuente
-     * @param {number} cl Contador de localidades, para identificar la dirección de una etiqueta
-     * @return {Instruccion} Si la instrucción es sintácticamente válida, devuelve un objeto Instrucción
+     * @param {Object} obj Símbolo a almacenar
+     * @see #analLexico
      * @memberof ProgramaAsm
      */
-    analLexSint(l, lnum, cl){
-        /*
-            NOTA: Recordar que la traducción a través de una pasada y media funciona de la manera siguiente:
-            - Se va ensamblando y validando las instrucciones línea por línea
-            - Si en una línea se encuentra un declarador de etiqueta, se agrega la etiqueta a una lista de etiquetas disponibles
-            - En caso de que la etiqueta se encuentra como referencia externa, habrá que analizar si dicha etiqueta ya se encuentra dentro
-              de la lista de etiquetas, en caso contrario, colocar un marcador
-            - Generar código hexadecimal
+    #guardarEnAmbito(obj){
+        let p = (this.estadoIPC[this.estadoIPC[this.estadoIPC.length - 1]] == 0)?"v":"f";
+        if (!this.estadoIPC.length) this.simbolos.push(obj);
+        else this.simbolos[this.ambitos[this.ambitos.length - 1]][p].push(obj);
+    }
 
-            Por lo tanto, tenemos que realizar lo siguiente por cada línea de código:
-            1. Determinar la estructura -> eti:_instr_op1,op2
-            2. Separar la estructura en los elementos necesarios
-            3. Determinar si la etiqueta es una definición o una referencia externa
-                3a. Si es una definición de etiqueta se deberá de almacenar en una lista de etiquetas
-                3b. En caso contrario, se deberá de validar que la etiqueta ya exista definida en la lista de etiquetas 
-                    3ba. Si no lo está, colocaremos un marcador en la etiqueta y se compararán las siguientes definiciones de etiquetas 
-                        con las etiquetas pendientes, asignando la dirección en hexadecimal
-
-            OJO -> Estamos pensando en un simulador que no contemple las directiva ORG, por lo tanto el CL siempre
-                   iniciará en 0 (pensando en el contador como número decimal) -> Para la asignación de valor a las 
-                   etiquetas, se tendrá que convertir de decimal a hexadecimal
-
-            Símbolos útiles:
-            - tableOfSymbols -> Nos permitirá asignar las etiquetas necesarias en la hora de traducción
-            - earrings -> Nos permite llevar una lista de instrucciones pendientes de traducir (debido a falta de etiquetas referenciadas)
-            
-            
-            NOTA: En este caso, se van a simular un ensamblador de 1 pasada y media, ya que, sabemos que las etiquetas son asignadas con 
-            direcciones de memoria en hexadecimal, es decir, tiene valores nn -> 2 bytes, por lo que seguiremos el conteo y traducción. Una 
-            vez terminado el proceso, se procederá a traducir las instrucciones faltantes considerando que la tabla de symbolos
-            sea correcta 
-        */
-       
-        /*
-            1) Analizamos la sintaxis de la línea ingresada. Hay dos opciones:
-                a) etiqueta:_instrucción_operandos
-                b) instrucción_operandos
-        */
-        // Para los modos de direccionamiento indirecto
-        // El format y format2 nos permite determinar desplazamientos o accesos a memoria
-        let format = /\(\s*(\w+)\s*\)/i;
-        let format2 = /\(\s*(\w+)\s*\+\s*(\w+)\s*\)/i;
-        let format3 = /\(\s*(\w+)\s*\-\s*(\w+)\s*\)/i;
-        // Expresión regular para determinar si hay definición de etiquetas
-        let expRegTag = /^\w+:$/;
-        let line = l.trim().toLowerCase();
-
-        if (line.includes("+")) line = line.replace(format2,"($1+$2)");
-        else if (line.includes("-")) line = line.replace(format3,"($1-$2)");
-        else line = line.replace(format,"($1)");
-
-        let instr = new String();
-        let tag = null; // <- Valor predeterminado
-        let operands = [];
-        if (!line.length){ return 0; } // 0 nos indicará que se puede seguir con la traducción
-        // En caso de que la línea no esté vacía, se analiza su estructura
-
-        let elementos = line.replace(","," ").split(" ");
-        let el = elementos.filter(word => word.length > 0);
-        // Por el momento la variable el contiene un arreglo de la instrucción dividida
-        // En este punto, si el primer elemento contiene la estructura eti:, se procede a analizar etiquetas
-        if (expRegTag.test(el[0])){
-            // Si hay etiqueta
-            // Como es definición de etiqueta, validamos que la etiqueta no esté ya definida
-            el[0] = el[0].replace(":", "");
-            // Si existe, error de doble declaración
-            if (this.#tablaSimbolos?.[el[0]]) throw new EtiquetaExistenteError(el[0]);
-            // Si no, se agrega a la tabla
-            else this.#tablaSimbolos[el[0]].dir = cl;
-            tag = el[0];
-            instr = el[1];
-            operands = el.slice(2);
-        } else {
-            // Si no hay etiqueta
-            instr = el[0];
-            operands = el.slice(1);
-        }
-
-        /*
-            En este punto se tienen separados los elementos de la instrucción completa, por lo que se procede a 
-            realizar el análisis de operandos para validar que la operación es una posible instrucción válida
-            y se pueda generar su código de operación
-        */
-        // En caso de haber referencia a etiqueta que no se haya definido, deberemos ingresar la instrucción a la lista 
-        // de instrucciones pendientes
-        // FIX: esta validación es por ahora, luego se quitará, puesto que la validación del número de parámetros ya se lleva a cabo más adelante, y hay directivas que precisan n parámetros
-
-        let trad = new Instruccion(instr, tag);
-        if (operands.length === 0){
-        } else if (operands.length === 1){
-            // Hay un operando -> Se debe de analizar el tipo de operando y posteriormente toda la instrucción
-            operands[0] = this.parseVal(operands[0]);
-
-            if (operands[0][1] === 0){
-                // En este caso, la instrucción se manda a la lista de pendientes
-                this.earrings.push([lnum,trad]);
-                // Igualmente se deberá de meter a la lista de código del programa, considerando que las etiquetas
-                // son valores numéricos de 16 bits (ya que representan localidades de memoria)
+    /**
+     *
+     * Analiza léxicamente una línea de ensamblador
+     *
+     * @memberof ProgramaAsm
+     */
+    #analLexico(){
+        let l, obj, res, valEti;
+        for (let i = 0; i < this.lineas.length; i++){
+            l = this.lineas[i].trim();
+            if (!l.length) continue;
+            obj = {};
+            // Comprobar si hay etiquetas
+            if (this.#r_defeti.test(l)){
+                res = this.#r_defeti.exec(l);
+                l = l.substring(res[0].length);
+                obj.eti = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
+                // Validar que la etiqueta no esté ya declarada
+                valEti = this.tablaSimbolos[obj.eti];
+                if (valEti && !(valEti instanceof Array && valEti[0] == undefined)) throw new EtiquetaExistenteError(obj.eti);
+                // Si es primera declaración, se marca
+                else this.tablaSimbolos[obj.eti] = [null, ["hehe"]];
+                // FIX: Iterar sobre los símbolos en busca
+                //if (obj.eti in this.#etisIndef) this.#etisIndef = this.#etisIndef.filter((e) => e != obj.eti);
             }
-            trad.anadOps(...operands);
-        } else if (operands.length === 2){
-            // Hay dos operandos -> Se deben de analizar ambos operandos y la existencia de la instrucción
-            // Debemos de guardar el valor de los operandos así como el tipo de operando que es
-            operands[0] = this.parseVal(operands[0]);
-            operands[1] = this.parseVal(operands[1]);
-            if (operands[0][1] === 0 | operands[1][1] === 0){
-                // En este caso, la instrucción se deberá de mandar a la lista de instrucciones pendientes
-                this.earrings.push([lnum,trad]);
+            // Comprobar si hay comentario o nada después de etiqueta
+            if (!l.length || this.#r_com.test(l)){
+                this.simbolos.push(obj);
+                continue;
             }
-            trad.anadOps(...operands);
-        } else throw new NumeroParametrosExcedidoError(); // Inexistencia de instrucción con mas de 3 operandos 
-
-        // Una vez obtenido el análisis sintáctico, se obtiene el código de operación
-        return trad;
-    }
-
-    /**
-     * Analiza léxica y sintácticamente un parámetro de instrucción
-     *
-     * @param {string} valor Cadena de caracteres a analizar léxica y sintácticamente
-     * @return {Object} Objeto que representa el tipo de dato y el valor
-     * @memberof ProgramaAsm
-     */
-    parseVal(valor){
-        // FIX: al considerar cadenas, hay qué quitar esto
-        valor = valor.toLowerCase();
-        let op, tipo;
-        // Realizamos una expresión regular para validar que sea un registro
-        let regExpR = /^[A|B|D|E|H|L|I|R]$/i;
-        // Realizamos una expresión para banderas
-        let regExpCC = /^[Z|P|M]$|NZ$|NC$|PO$|PE$/i;
-        // Pares de registros de la forma 16 bits
-        let regExpSS = /^BC$|^DE$|^HL$|^SP$|^AF$|^IX$|^IY$/i;
-        // La siguiente expresión regular ya contempla cualquier tipo de número
-        let regExpNumber = /^[01]+[B]$|^[0-7]+[O]$|^[0-9]+$|^\-[0-9]+$|^[0-9ABCDEF]+[H]$|^\-[01]+[B]$|^\-[0-7]+[O]$|^\-[0-9ABCDEF]+[H]$/i;
-        // Para los registros de índice indirectos (IX|IY + d)
-        let regExpInd = /^\(\s*IX\s*[\+|\-]\s*[0-9]+\)$|^\(\s*IY\s*[\+|\-]\s*[0-9]+\)$|^\(\s*IX\s*[\+|\-]\s*[0-9]+[B|O]\)$|^\(\s*IY\s*[\+|\-]\s*[0-9]+[B|O]\)$|^\(\s*IX\s*[\+|\-]\s*[0-9A-F]+[H]\)$|^\(\s*IY\s*[\+|\-]\s*[0-9A-F]+[H]\)$/i;
-        // Para los registros de desplazamiento
-        let regExpSSI = /^\(BC\)$|^\(DE\)$|^\(HL\)$/i;
-        // Para direcciones numéricas
-        let regExpNNI = /^\([0-9]+[BO]\)$|^\([0-9]+\)$|^\([0-9ABCDEF]+[H]\)$/i;
-        // Y por último, las etiquetas
-        let regExpTag = /^[A-Z][\w]+$/i;
-
-        // Contemplar a (ss) como desplazamiento
-        // Contemplar a I y R como registros
-        // Cambiar cadenas de números a valor decimal
-        // Ajustar todos los tipos a los señalados en la clase tipoVal
-        // Se analiza el tipo de operando
-        if (valor === "c"){
-            tipo = TipoVal.AMB_C;
-        } else if (regExpNumber.test(valor)){
-            // El valor encontrado es un número
-            tipo = TipoVal.NUMERO;
-            // Hay que obtener el valor numérico
-            valor = this.#getNumericValue(valor);
-        } else if (regExpR.test(valor)){
-            // El valor encontrado es un registro
-            tipo = TipoVal.REGISTRO;
-        } else if (regExpCC.test(valor)){
-            // El valor encontrado es una bandera
-            tipo = TipoVal.BANDERA;
-        } else if (regExpSS.test(valor)){
-            // El valor encontrado es un registro de 16 bits
-            tipo = TipoVal.REGISTRO;
-        } else if (regExpInd.test(valor)){
-            // { tipo: TipoVal.DESPLAZAMIENTO, valor: n, registro: "x" }
-            op = this.#getDisplacementAndRegister(valor);
-            return op;
-        } else if (regExpSSI.test(valor)){
-            // Es un acceso a memoria de 16 bits -> (BC),(DE) o (HL)
-            tipo = TipoVal.DESPLAZAMIENTO;
-        } else if (regExpNNI.test(valor)){
-            // Se trata de un acceso de memoria numérica
-            tipo = TipoVal.DIRECCION;
-            // Necesitamos obtener el valor numérico de la dirección
-            valor = valor.replace("(","").replace(")","");
-            valor = this.#getNumericValue(valor);
-        } else if (regExpTag.test(valor)){
-            // En caso de una posible etiqueta, analizamos si dicha etiqueta existe en la tabla de símbolos
-            if (!(valor in this.#tablaSimbolos)){
-                this.#tablaSimbolos[valor] = undefined;
-                return [valor, 0];
-            } else if (this.#tablaSimbolos[valor]){
-                tipo = TipoVal.NUMERO; 
-                valor = this.#tablaSimbolos[valor];
-            } else return [valor, 0];
-
-            // Se trata de una posible etiqueta que habrá que analizar su existencia en la tabla de símbolos o en caso contrario
-            // agregar la línea de instrucción en instrucciones pendientes
-        } else throw new TipoValorError("unknown"); // QUESTION: ¿Hacer diferencia entre tipos de directivas y tipos internos?
-        
-        // En caso de que el tipo de dato sea numérico, se deberá de convertir a decimal -> operando
-        return {
-            tipo: tipo,
-            valor: valor
+            // Comprobar si hay mnemotécnico o directiva
+            if (this.#r_mnemo.test(l)){
+                res = this.#r_mnemo.exec(l);
+                l = l.substring(res[0].length);
+                obj.mnemo = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
+            }
+            // Comprobar si hay argumentos después de mnemotécnico o directiva
+            console.log("Parsing l: "+l);
+            if (l.length && !this.#r_com.test(l)) obj.ops = this.parseOps(l);
+                //this.simbolos.push(obj);
+            // Por último, tratar directivas selectivamente
+            switch (obj.mnemo){
+                case "CASE":
+                    if (obj.ops && obj.ops.length == 2 && ((obj.ops[0] == 111 && obj.pos[1] == 110) || (obj.ops[0] == 79 && obj.ops[1] == 78))) this.caseRelevante = true;
+                    else if (obj.ops && obj.ops.length == 3 && ((obj.ops[0] == 111 && obj.pos[1] == 102 && obj.pos[2] == 102) || (obj.ops[0] == 79 && obj.ops[1] == 70 && obj.ops[2] == 70))) this.caseRelevante = false;
+                    else throw new BaseError("valor para CASE inválido");
+                    break;
+                case "DFS":
+                    if (!obj.ops) throw new BaseError();
+                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new BaseError("Debe ser 1");
+                    obj.tipo = TipoSimbolo.DIRECTIVA;
+                    this.#guardarEnAmbito(obj);
+                    break;
+                case "DFB":
+                case "DWL":
+                case "DWM":
+                    if (!obj.ops) throw new BaseError();
+                    obj.tipo = TipoSimbolo.DIRECTIVA;
+                    this.#guardarEnAmbito(obj);
+                    break;
+                case "END":
+                    obj.tipo = TipoSimbolo.FIN;
+                    this.#guardarEnAmbito(obj);
+                    return;
+                case "EQU":
+                    if (!obj.ops) throw new BaseError();
+                    if (!obj.eti) throw new BaseError();
+                    obj.tipo = TipoSimbolo.DIRECTIVA;
+                    this.#guardarEnAmbito(obj);
+                    break;
+                case "IF":
+                    obj.tipo = TipoSimbolo.BLOQUE_SI;
+                    obj.v = [];
+                    obj.f = [];
+                    this.#guardarEnAmbito(obj);
+                    this.estadoIPC.push(0);
+                    this.ambitos.push(this.simbolos.length - 1);
+                    break;
+                case "ELSE":
+                    this.estadoIPC[this.estadoIPC.length - 1] = 1;
+                    break;
+                case "ENDI":
+                    if (this.estadoIPC.length == 0) throw new BaseError();
+                    this.estadoIPC.pop();
+                    this.ambitos.pop();
+                    break;
+                case "INCL":
+                    if (!obj.ops) throw new BaseError();
+                    if (this.#r_cad.test(res[0]))
+                        var arr = plat.cargarArchivoEnsamblador(this.#r_cad.exec(res[0])[0]);
+                    for (let j = 0; j<arr.length; j++) this.lineas.splice(i+j, 0, arr[j]);
+                    break;
+                case "ORG":
+                    if (!obj.ops) throw new BaseError();
+                    obj.tipo = TipoSimbolo.ORG;
+                    this.#guardarEnAmbito(obj);
+                    break;
+                case "CPU":
+                case "HEX":
+                case "HOF":
+                case "LIST":
+                    plat.escribirLog(TipoLog.AVISO, "La directiva "+obj.mnemo+" será ignorada.");
+                    continue;
+                default:
+                    obj.tipo = TipoSimbolo.MNEMO;
+                    this.#guardarEnAmbito(obj);
+            }
         }
     }
 
-    decimalToHex(decimal, padding){
-        // Función para transformar a hexadecimal de 16 bits
-        var hex = decimal.toString(16);
-        padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
-        while (hex.length < padding){
-            hex = "0" + hex;
+    /**
+     * Analiza léxica, sintáctica y semánticamente la sección de operandos de una instrucción
+     *
+     * @param {String} exp Cadena de caracteres a analizar léxica y sintácticamente
+     * @return {Array} Array de objetos que representan el tipo de dato y el valor
+     * @memberof ProgramaAsm
+     */
+    parseOps(exp){
+        /* Análisis léxico/sintáctico */
+        let sims = [];
+        let res; // Resultado de la regex
+        let cexp = exp;
+        let ult = { tipo: null }; // Último símbolo utilizado
+        while (cexp){
+            let obj = {};
+            if (this.#r_num.test(cexp)){
+                res = this.#r_num.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                obj.tipo = TipoVal.NUMERO;
+                obj.valor = (() => {
+                    if (res[1].startsWith("0x")) return parseInt(res[1].slice(2), 16);
+                    else if (res[1].startsWith("0b")) return parseInt(res[1].slice(2), 2);
+                    else if (res[1].endsWith("H") || res[1].endsWith("h")) return parseInt(res[1].slice(0, res[1].length - 1), 16);
+                    else if (res[1].endsWith("B") || res[1].endsWith("b")) return parseInt(res[1].slice(0, res[1].length - 1), 2);
+                    else if (res[1].endsWith("O") || res[1].endsWith("o")) return parseInt(res[1].slice(0, res[1].length - 1), 8);
+                    else if (res[1].startsWith("0")) return parseInt(res[1], 8);
+                    else return parseInt(res[1]);
+                })();
+            } else if (this.#r_eti.test(cexp)){
+                res = this.#r_eti.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                obj.tipo = TipoVal.ETIQUETA;
+                obj.valor = res[1];
+            } else if (this.#r_reg.test(cexp)){
+                res = this.#r_reg.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                console.log("Cexp:" + cexp);
+                console.log(ult);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.REGISTRO);
+                obj.valor = res[1].toLowerCase();
+            } else if (this.#r_band.test(cexp)){
+                res = this.#r_band.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (ult.tipo != null) throw new BaseError();
+                obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.BANDERA);
+                obj.valor = res[1].toLowerCase();
+            } else if (this.#r_cad.test(cexp)){
+                res = this.#r_cad.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (ult.tipo != TipoVal.SEPARADOR && ult.tipo != null) throw new BaseError();
+                obj.tipo = TipoVal.CADENA;
+                obj.valor = res[1];
+            } else if (this.#r_op.test(cexp)){
+                res = this.#r_op.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                let disamb = null; // Indicador de aridad en el operador
+                obj.aridad = 2;
+                if (ult.tipo == TipoVal.REGISTRO) 
+                    if (res[1] == "+" || res[1] == "-") disamb = "o";
+                else if (ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.PARENTESIS_CI)
+                    if (res[1] == "+" || res[1] == "-") disamb = "x";
+                if (ult.tipo == TipoVal.CADENA || (ult.tipo == TipoVal.OP && obj.aridad != 1)) throw new BaseError();
+                obj.tipo = TipoVal.OP;
+                obj.valor = TipoOp.obtTipo(disamb+res[1]);
+                if (obj.valor == TipoOp.NEG || obj.valor == TipoOp.COMP_1 || obj.valor == TipoOp.COMP_2  || obj.valor == TipoOp.POS || obj.valor == TipoOp.INV) obj.aridad = 1;
+                if ((obj.aridad == 1 && (
+                    ult.tipo == TipoVal.PARENTESIS_AP ||
+                    ult.tipo == TipoVal.PARENTESIS_CI ||
+                    (ult.tipo == TipoVal.OP && ult.aridad == 2) ||
+                    ult.tipo == null
+                )) ||
+                (obj.aridad == 2 && !(
+                    ult.tipo == TipoVal.NUMERO ||
+                    ult.tipo == TipoVal.PARENTESIS_CI ||
+                    ult.tipo == TipoVal.ETIQUETA ||
+                    (ult.tipo == TipoVal.REGISTRO && (obj.valor == TipoOp.OFF_P || obj.valor == TipoOp.OFF_N))
+                ))) throw new BaseError();
+            } else if (this.#r_com.test(cexp)){
+                res = this.#r_com.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+            } else if (this.#r_sep.test(cexp)){
+                res = this.#r_sep.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (ult.tipo == null || ult.tipo == TipoVal.SEPARADOR || (ult.tipo == TipoVal.OP && ult.valor)) throw new BaseError();
+                obj.tipo = TipoVal.SEPARADOR;
+            } else if (this.#r_par_l.test(cexp)){
+                res = this.#r_par_l.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                obj.tipo = TipoVal.PARENTESIS_AP;
+            } else if (this.#r_par_r.test(cexp)){
+                res = this.#r_par_r.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new BaseError();
+                obj.tipo = TipoVal.PARENTESIS_CI;
+            } else if (this.#r_off_l.test(cexp)){
+                res = this.#r_off_l.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                obj.tipo = TipoVal.DESPLAZAMIENTO_AP;
+            } else if (this.#r_off_r.test(cexp)){
+                res = this.#r_off_r.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new BaseError();
+                obj.tipo = TipoVal.DESPLAZAMIENTO_CI;
+            } else throw new BaseError("Expresión inválida");
+            ult = obj;
+            sims.push(obj);
         }
-        return hex;
+        return sims;
     }
 
     /**
-     * Analiza léxica y sintácticamente una expresión de desplazamiento
+     * Reduce una lista de símbolos lo máximo posible en el momento de la llamada, ejecutando las operaciones representadas y substituyendo las etiquetas
      *
-     * @param {string} operand Cadena de caracteres que representa al desplazamiento
-     * @return {Object} Objeto que representa al desplazamiento
+     * @param {Array} sims Cadena de caracteres a analizar léxica y sintácticamente
+     * @return {Array} Array de símbolos reducidos
      * @memberof ProgramaAsm
      */
-    #getDisplacementAndRegister(operand){
-        let elements = operand.replace("(","").replace(")","").split(elements.includes("+")?"+":"-");
-        let register = elements[0];
-        let valor = this.#getNumericValue(elements[1]) * (operand.includes("-")?-1:1);
-        return {
-            valor: valor,
-            registro: register,
-            tipo: TipoVal.DESPLAZAMIENTO
-        };
+    reducirExpresion(sims){
+        /* Análisis semántico */
+        // Aquí no hay mucho misterio: esto es básicamente el algoritmo shunting-yard
+        let simsp = []; // Cola de salida
+        let pila = []; // Pila de operadores
+        while (sims){
+            let sim = sims.shift();
+            switch (sim.tipo){
+                // DIRECCION DESPLAZAMIENTO
+                case TipoVal.NUMERO:
+                case TipoVal.REGISTRO:
+                case TipoVal.BANDERA:
+                case TipoVal.AMB_C:
+                    simsp.push(sim);
+                    break;
+                case TipoVal.CADENA:
+                    for (let l of sim.valor)
+                        simsp.push({ tipo: TipoVal.NUMERO, valor: l.codePointAt() }, { tipo: TipoVal.SEPARADOR });
+                    break;
+                case TipoVal.OP:
+                    break;
+                case TipoVal.ETIQUETA:
+                    break;
+                case TipoVal.SEPARADOR:
+                    simsp.push(sim);
+                    break;
+                case TipoVal.PARENTESIS_AP:
+                    break;
+                case TipoVal.PARENTESIS_CI:
+                    break;
+                case TipoVal.DESPLAZAMIENTO_AP:
+                    break;
+                case TipoVal.DESPLAZAMIENTO_CI:
+                    break;
+            }
+        }
+        /*
+        mientras haya simbolos a leer:
+            leer simbolo:
+            si simbolo es
+                numero:
+                    ponerlo en la salida
+                operador o1:
+
+                coma:
+                    fin de subexpresion:
+                        si hay paréntesis en la pila, es que hubo un error
+                parapertura:
+                parcerradura:
+
+         */
+        return sims;
     }
 
-    /**
-     *
-     * Obtiene el valor numérico, a partir de una cadena numérica con el formato de ensamblador
-     *
-     * @param {string} n Número con formato
-     * @return {number} Valor numérico
-     * @memberof ProgramaAsm
-     */
-    #getNumericValue(n){
-        let regExpDecimal = /^[0-9]+$|^\-[0-9]+$/i;
-        let regExpOctal = /^[0-7]+[O]$|^\-[0-7]+[O]$/i;
-        let regExpBin = /^[01]+[B]$|^\-[01]+[B]$/i;
-        let regExpHex = /^[0-9ABCDEF]+[H]$|^\-[0-9ABCDEF]+[H]/i;
-        if (regExpDecimal.test(n)) return parseInt(n);
-        if (regExpBin.test(n)) return parseInt(n, 2);
-        if (regExpOctal.test(n)) return parseInt(n, 8);
-        if (regExpHex.test(n)) return parseInt(n, 16);
-        return false; // El número ingresado no es ningún tipo de número válido
+    constructor(nom){
+        this.lineas = plat.cargarArchivoEnsamblador(nom);
+        this.#analLexico();
+        //this.#analSintactico();
+        /*for (let l of lineas){
+            try {
+                /
+                Esto puede devolver un valor de tipo:
+                  - Array: la instrucción se resolvió correctamente
+                  - Object: faltan etiquetas a resolver
+                  - undefined: la línea está vacía
+                *
+                let bytes = this.analLexSint(l);
+                this.bytes.push(...bytes);
+                this.cl += bytes.length;
+            } catch (e){
+                console.log(e);
+                break;
+            }
+        }
+        while (true){
+            
+        }*/
     }
 }

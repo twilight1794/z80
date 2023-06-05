@@ -8,8 +8,8 @@
  * @class TipoDescarga
  */
 class TipoDescarga {
-    static Asm = new TipoParam("asm");
-    static Hex = new TipoParam("hex");
+    static Asm = new TipoDescarga("asm");
+    static Hex = new TipoDescarga("hex");
 }
 
 /* Arrays y diccionarios de datos */
@@ -86,7 +86,24 @@ window.funsConfig = {
         iniMem();
         document.getElementById("outMemTam").textContent = document.getElementById("selPlatMem").selectedOptions[0].textContent.split(" ").slice(0, -1).join(" ");
     },
-    chkIntTitulo: (v) => { if(!v) document.title = "Emulador Z80"; }
+    txtIntTipo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--txtIntTipo", v); },
+    selIntIdioma: (v) => {
+        if (v == "qaa") v = navigator.language.match(/[a-z]+/)[0]; // qaa -> Código para 'Sistema'
+        if (idisp.indexOf(v) == -1) v == "en";
+        window.msgs = window["loc-"+v];
+        if (msgs){
+            let nodos = document.querySelectorAll("html :not([translate=no]) *:not([translate=no])");
+            let nodo, idcad;
+            for (let i = 0; i < nodos.length; i++){
+                nodo = nodos[i].childNodes[0];
+                if (nodos[i].hasChildNodes() && nodo.nodeType == 3){
+                    idcad = nodo.nodeValue.match(/\$([A-Za-z0-9\._]+)/)?.[1];
+                    if (idcad) nodo.textContent = msgs[idcad];
+                }
+            }
+        }
+    },
+    chkIntTitulo: (v) => { if (!v) document.title = msgs["nombre_app"]; }
 }
 
 /* Lista de funciones asociadas a una combinación de teclas */
@@ -101,6 +118,7 @@ window.combTeclas = {
     "M-f i": btnAccionesDuplicar,
     "M-f j": btnAccionesBorrar,
     "M-f k": btnAccionesRenombrar,
+    "M-f l": btnAccionesEntralizar,
     "M-f d": null,
     "M-f e": null,
     "M-f f": null,
@@ -110,7 +128,7 @@ window.combTeclas = {
     "C-c": null,
     "C-v": null,*/
     "C-b": btnBuscar,
-    "M-e c": null,
+    "M-e c": btnEnsamblar,
     "M-e e": null,
     "M-e a": null,
     "M-e d": null,
@@ -121,7 +139,6 @@ window.combTeclas = {
     "M-a m": null,
     "M-a s": btnAcercaDe,
 }
-
 
 /* Funciones útiles generales */
 
@@ -183,6 +200,36 @@ function btnCerrarProj(){
 function btnBuscar(){
     document.getElementById("btnMenuBuscar").children[0].click();
 }
+function btnInsX(e){
+    if (cmi.getSelection().length > 0) cmi.replaceSelection(e.textContent);
+    else {
+        var cursor = cmi.getCursor();
+        cmi.replaceRange(e.textContent, cursor);
+    }
+}
+function btnEnsamblar(){
+    // Limpiar antes de cualquier otra cosa
+    btnRestablecer();
+
+    let a = document.querySelector("#archivos .entrada") || document.querySelector("#archivo [aria-selected=true]");
+    window.prog = new ProgramaAsm(a.textContent);
+    plat.escribirLog(TipoLog.INFO, "Ensamblado finalizado correctamente.");
+}
+function btnEjecutar(){
+    document.getElementById("btnMenuEjecutar").children[0].click();
+    try {
+        plat.ejecutar();
+        plat.escribirLog(TipoLog.INFO, "Ejecución finalizada correctamente.");
+    } catch {}
+}
+function btnAvanzar(){
+    plat.ejecutarInstruccion();
+}
+function btnDetener(){
+    plat.estPC(0);  // FIX: Implementa estPC
+                    // FIX: Implementar prog.inicio, para indicar en dónde debe empezar a ejecutarse esto
+}
+function btnRestablecer(){}
 function btnManual(){
     document.getElementById("btnMenuManual").children[0].click();
 }
@@ -241,6 +288,50 @@ function btnAccionesRenombrar(){
         if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
             proy.renombrarArchivo(nom.nextElementSibling.textContent, o.txtDlgNuevoArchivoNombre);
     });
+}
+function btnAccionesEntralizar(){
+    let vie = document.querySelector("#archivos .entrada");
+    if (vie) vie.classList.remove("entrada");
+    let nom = document.querySelector("#archivos :checked");
+    nom.classList.add("entrada");
+}
+
+/* Funciones de Buscar y reemplazar */
+/**
+ * Genera una expresión regular de acuerdo a las opciones especificadas por el usuario
+ *
+ * @param {String} patron Entrada del usuario a buscar dentro del editor
+ * @param {String} acc Id del botón pulsado
+ */
+function genRegex(patron, acc){
+    let pat = document.getElementById("txtByrReemplazar").value;
+    let modo = document.querySelectorAll("[name=modoBusq]:checked").value;
+    let cap = document.getElementById("chkByrOpcCase").checked;
+    /* Patrón */
+    switch (modo){
+        case "normal":
+            break;
+        case "escape":
+            break;
+        case "regex":
+            
+            break;
+    }
+    /* Banderas */
+    let band = (acc=="btnByrReemplazarTodo")?"g":"";
+    if (cap) band += "i";
+}
+function outByr(e){ e.target.textContent = ""; }
+function btnByrBuscar(){
+    let ent = document.getElementById("txtBuscar").value;
+    let regex = genRegex(ent, "btnByrBuscar");
+    //[...temp0.textContent.matchAll(new RegExp(temp1.textContent, 'gi'))]
+}
+function btnByrReemplazar(){
+
+}
+function btnByrReemplazarTodo(){
+
 }
 
 /* Eventos de CodeMirror */
@@ -306,9 +397,10 @@ function estConfigIni(d){
 /* Inicialización de memoria */
 function iniMem(){
     let t = parseInt(localStorage.getItem("selPlatMem"));
-    g.mem.children[1].textContent = "";
+    let mem = document.querySelector("#r-mem table");
+    mem.children[1].textContent = "";
     for (let i=0; i<(t/16); i++){
-        let nFila = g.mem.children[1].insertRow();
+        let nFila = mem.children[1].insertRow();
         var tof = document.createElement("th");
         tof.textContent = (i*16).toString(16).toUpperCase().padStart(4, "0");
         nFila.appendChild(tof);
@@ -399,11 +491,26 @@ function mostrarDialogo(id, params, fun, evs){
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-    /* Ubicaciones globales */
-    window.g = {
-        log: document.querySelector("#r-msg ul"),
-        mem: document.querySelector("#r-mem table"),
-    };
+    /* Localización */
+    window.idisp = Array.from(document.querySelectorAll("#selIntIdioma option")).map((e) => e.value).filter((e) => e != "qaa");
+    // Cargar cadenas
+    // TODO: hacer que se carguen sólo cuando se necesiten, en vez de todos a la vez
+    idisp.forEach((i) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "cadenas/"+i+".xml");
+        xhr.responseType = "document";
+        xhr.overrideMimeType("text/xml");
+        xhr.onload = () => {
+            if (xhr.readyState === xhr.DONE && xhr.status === 200){
+                window["loc-"+i] = {};
+                Array.from(xhr.responseXML.getElementsByTagName("string")).forEach((e) => {
+                    window["loc-"+i][e.getAttribute("name")] = e.textContent;
+                });
+                funsConfig.selIntIdioma(document.getElementById("selIntIdioma").value);
+            }
+        };
+        xhr.send();
+    });
 
     /* Estado */
     document.getElementById("outEstado").textContent = "Listo";
@@ -438,8 +545,9 @@ window.addEventListener("DOMContentLoaded", () => {
         estConfigIni(true);
     });
 
-    /* Creación de proyecto de inicio */
+    /* Creación de proyecto y plataforma de inicio */
     window.proy = new Proyecto();
+    window.plat = new Plataforma();
 
     /* Asignación de eventos de Archivo */
     document.getElementById("archivoAsm").addEventListener("change", (e) => {
@@ -459,6 +567,10 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnAbrirProj").addEventListener("click", btnAbrirProj);
     document.getElementById("btnCerrarProj").addEventListener("click", btnCerrarProj);
     document.getElementById("btnBuscar").addEventListener("click", btnBuscar);
+    document.getElementById("btnEnsamblar").addEventListener("click", btnEnsamblar);
+    Array.from(document.querySelectorAll(":is(#f_dir, #f_mnemo) button")).forEach((e) => {
+        e.addEventListener("click", (e2) => { btnInsX(e2.target); });
+    });
     document.getElementById("btnManual").addEventListener("click", btnManual);
     document.getElementById("btnAcercaDe").addEventListener("click", btnAcercaDe);
 
@@ -475,8 +587,8 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    /* Asignación de eventos Barra de herramientas Explorador */
-    Array.from(document.querySelectorAll("#menuArchivoAcciones button")).forEach((e) => {
+    /* Asignación de eventos a botones de barra de herramientas */
+    Array.from(document.querySelectorAll("#menuArchivoAcciones button, #menuMensajesAcciones :is(button, label)")).forEach((e) => {
         e.addEventListener("mouseover", (e2) => {
             e2.target.parentNode.classList.add("hint--bottom-right");
             e2.target.parentNode.setAttribute("aria-label", e2.target.textContent.trim());
@@ -488,6 +600,7 @@ window.addEventListener("DOMContentLoaded", () => {
         if (e.getAttribute("aria-disabled") == "true") e.disabled = true;
     });
 
+    /* Asignación de eventos Barra de herramientas Explorador */
     document.getElementById("btnAccionesNuevo").addEventListener("click", btnAccionesNuevo);
     document.getElementById("btnAccionesVisualizar").addEventListener("click", btnAccionesVisualizar);
     document.getElementById("btnAccionesGuardar").addEventListener("click", btnAccionesGuardar);
@@ -495,6 +608,20 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnAccionesDuplicar").addEventListener("click", btnAccionesDuplicar);
     document.getElementById("btnAccionesBorrar").addEventListener("click", btnAccionesBorrar);
     document.getElementById("btnAccionesRenombrar").addEventListener("click", btnAccionesRenombrar);
+    document.getElementById("btnAccionesEntralizar").addEventListener("click", btnAccionesEntralizar);
+
+    /* Asignación de eventos de Buscar y reemplazar */
+    document.getElementById("outByr").addEventListener("dblclick", outByr);
+    document.getElementById("btnByrBuscar").addEventListener("click", btnByrBuscar);
+    document.getElementById("btnByrReemplazar").addEventListener("click", btnByrReemplazar);
+    document.getElementById("btnByrReemplazarTodo").addEventListener("click", btnByrReemplazarTodo);
+
+    /* Asignación de eventos Barra de herramientas Mensajes */
+    document.getElementById("btnAccionesLimpiarMsgs").addEventListener("click", 
+    btnAccionesLimpiarMsgs);
+    document.getElementById("chkAccionesMostrarInfo").addEventListener("change", chkAccionesMostrarInfo);
+    document.getElementById("chkAccionesMostrarAviso").addEventListener("change", chkAccionesMostrarAviso);
+    document.getElementById("chkAccionesMostrarError").addEventListener("change", chkAccionesMostrarError);
 
     /* Combinaciones de teclas */
     document.addEventListener("keydown", (e) => {
@@ -520,26 +647,5 @@ window.addEventListener("DOMContentLoaded", () => {
             window.comb = undefined;
         }
         return;
-    });
-
-    // Temporal: marco para pruebas
-    // Esta estructura es para pruebas, sin embargo, más o menos así será al final
-    document.getElementById("btnEnsamblar").addEventListener("click", () => {
-        window.p = new ProgramaAsm();
-        let i = 0;
-        let l = cmi.getLineHandle(i);
-        window.lins = [];
-        while (l) {
-            lins.push(p.analLexSint(l.text));
-            i++;
-            l = cmi.getLineHandle(i);
-        }
-        window.cods = [];
-        lins.forEach(e => {
-            try{cods.push(p.getCodigoOp(e.mnemo, e.ops));} catch (e) {console.log(e);}
-        });
-        window.lcod = cods.map((a) => {
-            return a.map((b) => {return b.toString(16).padStart(2, "0")});
-          })
     });
 });

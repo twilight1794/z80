@@ -163,7 +163,7 @@
     <string name="txt_extasm">Extensión para archivos en ensamblador</string>
     <string name="txt_extasm_d">Define la extensión a utilizar al crear un nuevo archivo, o descargar uno.</string>
     <string name="txt_extproj">Extensión para archivos de proyecto</string>
-    <string name="txt_extproj_d">Def´ine la extensión a utilizar al crear un nuevo archivo de proyecto.</string>
+    <string name="txt_extproj_d">Define la extensión a utilizar al crear un nuevo archivo de proyecto.</string>
     <string name="r_cfg_ensamblado">Ensamblado</string>
     <string name="txt_ensorg">Dirección de carga predeterminada</string>
     <string name="txt_ensorg_d">Dirección de memoria predeterminada desde la cual se empezará a cargar el programa ensamblado. Se usará este valor, a menos de que se especifique otro en el código fuente, mediante la directiva ORG.</string>
@@ -171,6 +171,7 @@
     <string name="sel_platmem">Tamaño de memoria</string>
     <string name="sel_platmem_d">Define el tamaño de la memoria de trabajo que estará disponible durante la ejecución del programa.</string>
     <string name="sel_platmem_a">¡Cambiar el tamaño de la memoria reinicializará su contenido!</string>
+    <string name="sel_platmem_a2">¡No escojas un tamaño de memoria demasiado alto si no es necesario! Valores mayores de 8 KB pueden ocupar cientos de megabytes de memora RAM, lo que podría alentar tu equipo.</string>
     <string name="r_cfg_interfaz">Interfaz</string>
     <string name="txt_inttipo">Tipografía</string>
     <string name="txt_inttipo_d">Define la tipografía a usar dentro del programa.</string>
@@ -220,4 +221,5 @@
     <string name="dlg_acercade_web">Sitio web</string>
     <string name="dlg_acercade_codigo">Código fuente</string>
     <string name="dlg_acercade_licencia">Licencia</string>
+    <!-- Mensajes de error -->
 </resources>

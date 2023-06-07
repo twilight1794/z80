@@ -468,6 +468,7 @@
                             <legend><label for="selPlatMem">$sel_platmem</label></legend>
                             <p>$sel_platmem_d</p>
                             <p class="aviso">$sel_platmem_a</p>
+                            <p class="aviso">$sel_platmem_a2</p>
                             <select id="selPlatMem">
                                 <option value="256">256 B (0x00FF)</option>
                                 <option value="512">512 B (0x01FF)</option>
@@ -508,7 +509,7 @@
                 <h2>$r_cod</h2>
                 <div><div id="codemirror"></div></div>
             </section>
-            <section id="r-mem">
+            <section id="r-mem" spellcheck="false">
                 <h2>$r_mem</h2>
                 <div><table>
                     <thead>
@@ -529,18 +530,11 @@
                 <div>
                     <table>
                         <thead><tr><th>#</th><th>$r_pila_dir</th><th>$r_pila_val</th></tr></thead>
-                        <tbody>
-                            <tr><td>0</td><td>FFFE</td><td>0065</td></tr>
-                            <tr><td>1</td><td>FFFC</td><td>0066</td></tr>
-                            <tr><td>2</td><td>FFFA</td><td>0067</td></tr>
-                            <tr><td>3</td><td>FFF8</td><td>0068</td></tr>
-                            <tr><td>4</td><td>FFF6</td><td>0069</td></tr>
-                            <tr><td>5</td><td>FFF4</td><td>006A</td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </section>
-            <section id="r-reg">
+            <section id="r-reg" spellcheck="false">
                 <h2>$r_reg</h2>
                 <div>
                     <table>

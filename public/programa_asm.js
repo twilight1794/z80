@@ -263,66 +263,67 @@ class ProgramaAsm {
      * @param {TipoParam} t Clase de parámetro contra el cual validar
      * @param {Object} v Parámetro a validar
      * @return {Boolean} Si la validación es exitosa, devuelve true
+     * @throws NoEsTipoExcepcion
      * @memberof ProgramaAsm
      * @see TipoParam
      */
     esTipo(t, v){
         switch (t){
             case TipoParam.R:
-                if (v.tipo != TipoVal.REGISTRO && v.tipo != TipoVal.AMB_C) throw new BaseError();
-                if (Object.keys(this.ValsR).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO && v.tipo != TipoVal.AMB_C) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsR).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.N:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 0xff || v.valor < 0) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 0xff || v.valor < 0) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.HL:
-                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
-                if (v.registro != "hl");
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new NoEsTipoExcepcion();
+                if (v.registro != "hl") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.IX:
-                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
-                if (v.registro != "ix") throw new BaseError();;
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new NoEsTipoExcepcion();
+                if (v.registro != "ix") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.IY:
-                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
-                if (v.registro != "iy") throw new BaseError();;
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new NoEsTipoExcepcion();
+                if (v.registro != "iy") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.NN:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 0xffff || v.valor < 0) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 0xffff || v.valor < 0) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.D:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 127 || v.valor < -128) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 127 || v.valor < -128) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.B:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 7 || v.valor < 0) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 7 || v.valor < 0) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.E:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 129 || v.valor < -126) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 129 || v.valor < -126) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.CC:
-                if (v.tipo != TipoVal.AMB_C && v.tipo != TipoVal.BANDERA) throw new BaseError();
-                if (Object.keys(this.ValsCC).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.AMB_C && v.tipo != TipoVal.BANDERA) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsCC).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.QQ:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (Object.keys(this.ValsSS).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsSS).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.SS:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (Object.keys(this.ValsSS).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsSS).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.PP:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (Object.keys(this.ValsPP).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsPP).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RR:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (Object.keys(this.ValsRR).indexOf(v.valor) == -1) throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsRR).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.S:
                 try { this.esTipo(TipoParam.R, v); break; } catch {}
@@ -330,64 +331,64 @@ class ProgramaAsm {
                 try { this.esTipo(TipoParam.HL, v); break; } catch {}
                 try { this.esTipo(TipoParam.IX, v); break; } catch {}
                 try { this.esTipo(TipoParam.IY, v); break; } catch {}
-                throw new BaseError();
+                throw new NoEsTipoExcepcion();
             case TipoParam.M:
                 try { this.esTipo(TipoParam.R, v); break; } catch {}
                 try { this.esTipo(TipoParam.HL, v); break; } catch {}
                 try { this.esTipo(TipoParam.IX, v); break; } catch {}
                 try { this.esTipo(TipoParam.IY, v); break; } catch {}
-                throw new BaseError();
+                throw new NoEsTipoExcepcion();
             /* Especiales */
             // Para mnemónico RST
             case TipoParam.RST:
-                if (v.tipo != TipoVal.NUMERO) throw new BaseError();
-                if (v.valor > 0x38) throw new BaseError();
-                if (v.valor % 8 != 0) throw new BaseError();
+                if (v.tipo != TipoVal.NUMERO) throw new NoEsTipoExcepcion();
+                if (v.valor > 0x38) throw new NoEsTipoExcepcion();
+                if (v.valor % 8 != 0) throw new NoEsTipoExcepcion();
                 break;
             // Para los que solo quieren IX o IY
             case TipoParam.RHL:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "hl") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "hl") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RIX:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "ix") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "ix") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RIY:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "iy") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "iy") throw new NoEsTipoExcepcion();
                 break;
             /* Para registros raros de LD */
             case TipoParam.RI:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "i") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "i") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RR:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "r") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "r") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.DBC:
-                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new BaseError();
-                if (v.valor != 0) throw new BaseError();
-                if (v.registro != "bc") throw new BaseError();
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new NoEsTipoExcepcion();
+                if (v.valor != 0) throw new NoEsTipoExcepcion();
+                if (v.registro != "bc") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.DDE:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != 0) throw new BaseError();
-                if (v.registro != "de") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != 0) throw new NoEsTipoExcepcion();
+                if (v.registro != "de") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RSP:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "sp") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "sp") throw new NoEsTipoExcepcion();
                 break;
             /* Para registros aún más raros de EX */
             case TipoParam.RAF:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "af") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "af") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.RDE:
-                if (v.tipo != TipoVal.REGISTRO) throw new BaseError();
-                if (v.valor != "de") throw new BaseError();
+                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.valor != "de") throw new NoEsTipoExcepcion();
         }
         return true;
     }
@@ -428,7 +429,7 @@ class ProgramaAsm {
                         bytes.push(0xed, 74+(this.ValsSS[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "add":
                 if (lop.length == 1){
@@ -452,7 +453,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 134, ...obtLittleEndianNum(lop[0].valor));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } else if (lop.length == 2){
                     try {
                         this.esTipo(TipoParam.RHL, lop[0]);
@@ -472,7 +473,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 9+(this.ValsRR[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 }
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "and":
@@ -498,7 +499,7 @@ class ProgramaAsm {
                     bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor), 70+(lop[0].valor<<3));
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "call":
                 if (lop.length == 1){
                     bytes.push(0xcd);
@@ -567,7 +568,7 @@ class ProgramaAsm {
                     bytes.push(0x11+(this.ValsSS[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "di":
                 bytes.push(0xf3);
                 break;
@@ -608,7 +609,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.RIY, lop[1]);
                         bytes.push(0xfd, 0xe3);
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 break;
             case "exx":
@@ -625,7 +626,7 @@ class ProgramaAsm {
                     case 0: bytes.push(0x46); break;
                     case 1: bytes.push(0x56); break;
                     case 2: bytes.push(0x5e); break;
-                    default: throw new BaseError();
+                    default: throw new TipoParametrosIncorrectoError({m: ins});
                 }
             case "inc":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
@@ -656,7 +657,7 @@ class ProgramaAsm {
                     bytes.push(3+(this.ValsSS[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "ind":
                 bytes.push(0xed, 0xaa);
                 break;
@@ -694,7 +695,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0xe9);
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 }
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
@@ -725,7 +726,7 @@ class ProgramaAsm {
                             bytes.push(0x28, ...obtLittleEndianNum(lop[1].valor-2));
                             break;
                         default:
-                            throw new BaseError();
+                            throw new TipoParametrosIncorrectoError({m: ins});
                     }
                     break;
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
@@ -748,7 +749,7 @@ class ProgramaAsm {
                         bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[0]);
@@ -767,7 +768,7 @@ class ProgramaAsm {
                         bytes.push(0xdf, 0x2a, ...obtLittleEndianNum(lop[1].valor));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.R, lop[0]);
@@ -818,7 +819,7 @@ class ProgramaAsm {
                             break;
                         } catch {}
                     }
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.SP, lop[0]);
@@ -837,7 +838,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0xf9);
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.SS, lop[0]);
@@ -849,7 +850,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xed, 75+(this.ValsSS[lop[1].valor]<<4), ...obtLittleEndianNum(lop[1].valor));
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.DIRECCION, lop[0]);
@@ -878,7 +879,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0x22, ...obtLittleEndianNum(lop[0].valor));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIX, lop[0]);
@@ -890,7 +891,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIY, lop[0]);
@@ -902,7 +903,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xfd, 0x2a, ...obtLittleEndianNum(lop[1].valor));
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RI, lop[0]);
@@ -928,7 +929,7 @@ class ProgramaAsm {
                     bytes.push(0x12);
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "ldd":
                 bytes.push(0xed, 0xa8);
                 break;
@@ -981,7 +982,7 @@ class ProgramaAsm {
                     bytes.push(193+(ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "push":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {
@@ -999,7 +1000,7 @@ class ProgramaAsm {
                     bytes.push(197+(ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new BaseError();
+                throw new TipoParametrosIncorrectoError({m: ins});
             case "res":
                 bytes = this.#obtCodigoOp("set", lop);
                 bytes[3] = bytes[3]+64;
@@ -1038,7 +1039,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor), 6);
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "rlca":
                 bytes.push(0x07);
@@ -1082,7 +1083,7 @@ class ProgramaAsm {
                         bytes.push(0xed, 66+(this.ValsSS[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new BaseError();
+                    throw new TipoParametrosIncorrectoError({m: ins});
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "scf":
                 bytes.push(0x37);
@@ -1114,12 +1115,10 @@ class ProgramaAsm {
                 bytes[0] = bytes[0]+40;
                 break;
             default:
-                throw new NoImplementadoError(ins, lnum);
+                throw new NoImplementadoError({m: ins});
         }
         return bytes;
     }
-
-
 
     /**
      * Función auxiliar de analLexico que almacena un símbolo en el ámbito correcto
@@ -1153,7 +1152,7 @@ class ProgramaAsm {
                 obj.eti = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
                 // Validar que la etiqueta no esté ya declarada
                 valEti = this.tablaSimbolos[obj.eti];
-                if (valEti && !(valEti instanceof Array && valEti[0] == undefined)) throw new EtiquetaExistenteError(obj.eti);
+                if (valEti && !(valEti instanceof Array && valEti[0] == undefined)) throw new EtiquetaExistenteError(obj.eti); // NOTE: Ver si esto se queda
                 // Si es primera declaración, se marca
                 else this.tablaSimbolos[obj.eti] = [null, ["hehe"]];
                 // FIX: Iterar sobre los símbolos en busca
@@ -1171,26 +1170,24 @@ class ProgramaAsm {
                 obj.mnemo = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
             }
             // Comprobar si hay argumentos después de mnemotécnico o directiva
-            console.log("Parsing l: "+l);
             if (l.length && !this.#r_com.test(l)) obj.ops = this.parseOps(l);
-                //this.simbolos.push(obj);
             // Por último, tratar directivas selectivamente
             switch (obj.mnemo){
                 case "CASE":
                     if (obj.ops && obj.ops.length == 2 && ((obj.ops[0] == 111 && obj.pos[1] == 110) || (obj.ops[0] == 79 && obj.ops[1] == 78))) this.caseRelevante = true;
                     else if (obj.ops && obj.ops.length == 3 && ((obj.ops[0] == 111 && obj.pos[1] == 102 && obj.pos[2] == 102) || (obj.ops[0] == 79 && obj.ops[1] == 70 && obj.ops[2] == 70))) this.caseRelevante = false;
-                    else throw new BaseError("valor para CASE inválido");
+                    else throw new ValorCASEInvalidoError({v: l});
                     break;
                 case "DFS":
-                    if (!obj.ops) throw new BaseError();
-                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new BaseError("Debe ser 1");
+                    if (!obj.ops) throw new ParametroInexistenteError({m: "DFS"});
+                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new MultiplesParametrosError({m: "DFS"});
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
                 case "DFB":
                 case "DWL":
                 case "DWM":
-                    if (!obj.ops) throw new BaseError();
+                    if (!obj.ops) throw new ParametroInexistenteError({m: obj.mnemo});
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1199,8 +1196,8 @@ class ProgramaAsm {
                     this.#guardarEnAmbito(obj);
                     return;
                 case "EQU":
-                    if (!obj.ops) throw new BaseError();
-                    if (!obj.eti) throw new BaseError();
+                    if (!obj.ops) throw new ParametroInexistenteError({m: "EQU"});
+                    if (!obj.eti) throw new EtiquetaInexistenteError({m: "EQU"});
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1216,18 +1213,18 @@ class ProgramaAsm {
                     this.estadoIPC[this.estadoIPC.length - 1] = 1;
                     break;
                 case "ENDI":
-                    if (this.estadoIPC.length == 0) throw new BaseError();
+                    if (this.estadoIPC.length == 0) throw new DirectivaENDIError();
                     this.estadoIPC.pop();
                     this.ambitos.pop();
                     break;
                 case "INCL":
-                    if (!obj.ops) throw new BaseError();
+                    if (!obj.ops) throw new ParametroInexistenteError({m: "INCL"});
                     if (this.#r_cad.test(res[0]))
                         var arr = plat.cargarArchivoEnsamblador(this.#r_cad.exec(res[0])[0]);
                     for (let j = 0; j<arr.length; j++) this.lineas.splice(i+j, 0, arr[j]);
                     break;
                 case "ORG":
-                    if (!obj.ops) throw new BaseError();
+                    if (!obj.ops) throw new ParametroInexistenteError({m: "ORG"});
                     obj.tipo = TipoSimbolo.ORG;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1262,7 +1259,7 @@ class ProgramaAsm {
             if (this.#r_num.test(cexp)){
                 res = this.#r_num.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.NUMERO);
                 obj.tipo = TipoVal.NUMERO;
                 obj.valor = (() => {
                     if (res[1].startsWith("0x")) return parseInt(res[1].slice(2), 16);
@@ -1276,27 +1273,25 @@ class ProgramaAsm {
             } else if (this.#r_eti.test(cexp)){
                 res = this.#r_eti.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.ETIQUETA);
                 obj.tipo = TipoVal.ETIQUETA;
                 obj.valor = res[1];
             } else if (this.#r_reg.test(cexp)){
                 res = this.#r_reg.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                console.log("Cexp:" + cexp);
-                console.log(ult);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.REGISTRO);
                 obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.REGISTRO);
                 obj.valor = res[1].toLowerCase();
             } else if (this.#r_band.test(cexp)){
                 res = this.#r_band.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (ult.tipo != null) throw new BaseError();
+                if (ult.tipo != null) throw new ExpresionInvalidaError(TipoVal.BANDERA);
                 obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.BANDERA);
                 obj.valor = res[1].toLowerCase();
             } else if (this.#r_cad.test(cexp)){
                 res = this.#r_cad.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (ult.tipo != TipoVal.SEPARADOR && ult.tipo != null) throw new BaseError();
+                if (ult.tipo != TipoVal.SEPARADOR && ult.tipo != null) throw new ExpresionInvalidaError(TipoVal.CADENA);
                 obj.tipo = TipoVal.CADENA;
                 obj.valor = res[1];
             } else if (this.#r_op.test(cexp)){
@@ -1308,7 +1303,7 @@ class ProgramaAsm {
                     if (res[1] == "+" || res[1] == "-") disamb = "o";
                 else if (ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.PARENTESIS_CI)
                     if (res[1] == "+" || res[1] == "-") disamb = "x";
-                if (ult.tipo == TipoVal.CADENA || (ult.tipo == TipoVal.OP && obj.aridad != 1)) throw new BaseError();
+                if (ult.tipo == TipoVal.CADENA || (ult.tipo == TipoVal.OP && obj.aridad != 1)) throw new ExpresionInvalidaError(TipoVal.OP);
                 obj.tipo = TipoVal.OP;
                 obj.valor = TipoOp.obtTipo(disamb+res[1]);
                 if (obj.valor == TipoOp.NEG || obj.valor == TipoOp.COMP_1 || obj.valor == TipoOp.COMP_2  || obj.valor == TipoOp.POS || obj.valor == TipoOp.INV) obj.aridad = 1;
@@ -1323,36 +1318,36 @@ class ProgramaAsm {
                     ult.tipo == TipoVal.PARENTESIS_CI ||
                     ult.tipo == TipoVal.ETIQUETA ||
                     (ult.tipo == TipoVal.REGISTRO && (obj.valor == TipoOp.OFF_P || obj.valor == TipoOp.OFF_N))
-                ))) throw new BaseError();
+                ))) throw new ExpresionInvalidaError(TipoVal.OP);
             } else if (this.#r_com.test(cexp)){
                 res = this.#r_com.exec(cexp);
                 cexp = cexp.substring(res[0].length);
             } else if (this.#r_sep.test(cexp)){
                 res = this.#r_sep.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (ult.tipo == null || ult.tipo == TipoVal.SEPARADOR || (ult.tipo == TipoVal.OP && ult.valor)) throw new BaseError();
+                if (ult.tipo == null || ult.tipo == TipoVal.SEPARADOR || (ult.tipo == TipoVal.OP && ult.valor)) throw new ExpresionInvalidaError(TipoVal.SEPARADOR);
                 obj.tipo = TipoVal.SEPARADOR;
             } else if (this.#r_par_l.test(cexp)){
                 res = this.#r_par_l.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.PARENTESIS_AP);
                 obj.tipo = TipoVal.PARENTESIS_AP;
             } else if (this.#r_par_r.test(cexp)){
                 res = this.#r_par_r.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new BaseError();
+                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new ExpresionInvalidaError(TipoVal.PARENTESIS_CI);
                 obj.tipo = TipoVal.PARENTESIS_CI;
             } else if (this.#r_off_l.test(cexp)){
                 res = this.#r_off_l.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.SEPARADOR)) throw new BaseError();
+                if (!(ult.tipo == null || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.DESPLAZAMIENTO_AP);
                 obj.tipo = TipoVal.DESPLAZAMIENTO_AP;
             } else if (this.#r_off_r.test(cexp)){
                 res = this.#r_off_r.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new BaseError();
+                if (!(ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.REGISTRO || ult.tipo == TipoVal.PARENTESIS_CI)) throw new ExpresionInvalidaError(TipoVal.DESPLAZAMIENTO_CI);
                 obj.tipo = TipoVal.DESPLAZAMIENTO_CI;
-            } else throw new BaseError("Expresión inválida");
+            } else throw new ExpresionInvalidaError(cexp);
             ult = obj;
             sims.push(obj);
         }

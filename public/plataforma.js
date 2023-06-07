@@ -8,92 +8,6 @@ class TipoLog {
     constructor(name){ this.name = name; }
 }
 
-// Excepciones
-class BaseError extends Error {
-    linea(lnum){
-        this.lnum = lnum;
-        this.message = "En la línea %l: ".replace("%l", lnum) + this.message;
-    }
-}
-
-class SintaxisError extends BaseError {
-    constructor (){
-        super();
-        this.message = "Error de sintaxis desconocido.";
-    }
-}
-class NoImplementadoError extends SintaxisError {
-    constructor (cmd){
-        super(lnum);
-        this.cmd = cmd;
-        this.message = "El mnemotécnico o directiva "+cmd+" no ha sido implementado aún.";
-    }
-}
-/*class EtiquetaFueraError extends SintaxisError {
-    constructor (id){
-        super();
-        this.id = id;
-        this.message = "La variable \""+id+"\" debe ser definida antes de cualquier instrucción.";
-    }
-}*/
-class EtiquetaExistenteError extends SintaxisError {
-    constructor (id){
-        super();
-        this.id = id;
-        this.message = "La etiqueta \""+id+"\" ya fue declarada anteriormente.";
-    }
-}
-class ExpresionInvalidaError extends SintaxisError {
-    constructor (sim){
-        super();
-        this.sim = sim;
-        this.message = "La expresión \""+sim+"\" es inválida.";
-    }
-}
-// QUESTION: ¿Se mantendrá esto? Las directivas sí podrán aceptar más de dos parámetros
-class NumeroParametrosExcedidoError extends SintaxisError {
-    constructor(){
-       super();
-       this.message = "Se han recibido más de 2 parámetros en una instrucción";
-    }
-}
-class NumeroParametrosIncorrectoError extends SintaxisError {
-    constructor (ins, nc, nr){
-        super();
-        this.ins = ins;
-        this.nc = nc;
-        this.nr = nr;
-        this.message = "La instrucción \""+ins+"\" esperaba "+nc.toString()+" parámetros, pero ha recibido "+nr.toString()+".";
-    }
-}
-
-class ReferenciaError extends BaseError {
-    constructor (){
-        super();
-        this.message = "Error de referencia desconocido.";
-    }
-}
-class DireccionInvalidaError extends ReferenciaError {
-    constructor (dir){
-        super();
-        this.message = "La dirección de memoria 0x"+dir.toString(16)+" no existe.";
-    }
-}
-
-class TipoError extends BaseError {
-    constructor (){
-        super();
-        this.message = "Error de tipo desconocido.";
-    }
-}
-class TipoValorError extends TipoError {
-    constructor (id){
-        super();
-        this.id = id;
-        this.message = "El tipo \""+id+"\" no se reconoce.";
-    }
-}
-
 class Plataforma {
     inicio;
     
@@ -101,7 +15,7 @@ class Plataforma {
      * Carga y procesa un archivo en ensamblador para su posterior ensamblado
      *
      * @param {String} nom Nombre del archivo a cargar
-     * @return {Array<String>}
+     * @return {Array<String>} Array que contiene las líneas de ensamblador del archivo
      * @memberof Plataforma
      */
     cargarArchivoEnsamblador(nom){
@@ -118,12 +32,14 @@ class Plataforma {
      * @memberof Plataforma
      */
     leerMemoria(dir){
-        let m = g.mem.tBodies[0].children;
-        if (dir < m.length)
-            return parseInt(m[dir].children[1].textContent, 16);
-        else
-            throw new DireccionInvalidaError(dir, -1);
+        let t = parseInt(localStorage.getItem("selPlatMem"));
+        if (dir < 0 || t < dir) throw new DireccionInvalidaError({"dir": dir});
+        let s = Math.trunc(dir/16);
+        let d = dir%16;
+        let p = document.querySelector("#r-mem table").tBodies[0].rows;
+        return parseInt(p[s].cells[1+d].textContent, 16);
     }
+
     /**
      * Lee dos bytes de la memoria, los interpreta como una palabra, y devuelve su valor
      *
@@ -132,129 +48,216 @@ class Plataforma {
      * @memberof Plataforma
      */
     leerPalabra(dir){
-        let m = g.mem.tBodies[0].children;
-        if (dir < m.length && dir+1 < m.length){
-            let l = m[dir].children[1].textContent;
-            let h = m[dir+1].children[1].textContent;
-            return parseInt(h+l, 16);
-        } else
-            throw new DireccionInvalidaError(dir, -1);
+        let l = this.leerMemoria(dir);
+        let h = this.leerMemoria(dir+1);
+        return (h<<8)+l;
     }
 
     /**
      * Escribe sobre un byte de la memoria
      *
      * @param {Number} dir Dirección de memoria a escribir
-     * @param {*} val Valor a escribir sobre la dirección especificada
+     * @param {Number} val Valor a escribir sobre la dirección especificada
      * @memberof Plataforma
      */
     escribirMemoria(dir, val){
-        let m = g.mem.tBodies[0].children;
-        val.forEach(b => {
-            if (b > 255) throw new ValorTamanoError(b, 1);
-            if (dir < m.length){
-                let p = m[dir].children;
-                p[1].textContent = b.toString(16).toUpperCase();
-                p[2].textContent = "-"; // FIX: Colocar función para obtener ASCII
-                return;
-            } else
-                throw new DireccionInvalidaError(dir);
-        });
+        let t = parseInt(localStorage.getItem("selPlatMem"));
+        if (dir < 0 || t < dir) throw new DireccionInvalidaError({"dir": dir});
+        if (val > 255) throw new ValorTamanoError({"t": 1});
+        let s = Math.trunc(dir/16);
+        let d = dir%16;
+        let p = document.querySelector("#r-mem table").tBodies[0].rows;
+        p[s].cells[1+d].textContent = val.toString(16).padStart(2, "0").toUpperCase();
+        p[s].cells[17+d].textContent = ASCIIaCar(val);
     }
 
-    // Lee un registro, y devuelve su valor
+    /**
+     * Escribe una palabra en la memoria, sobre 2 bytes de la memoria
+     *
+     * @param {Number} dir Dirección de inicio de la palabra a leer
+     * @param {Number} val Valor a escribir sobre la dirección especificada
+     * @memberof Plataforma
+     */
+    escribirPalabra(dir, val){
+        if (val > 65535) throw new ValorTamanoError({"t": 2});
+        let l = (val & 0xff);
+        let h = (val & 0xff00)>>8;
+        this.escribirMemoria(dir, l);
+        this.escribirMemoria(dir+1, h);
+    }
+
+    /**
+     * Lee un registro, y devuelve su valor
+     * Para los nombres de los registros alternativos, substituir el apóstrofo por una X
+     *
+     * @param {String} reg Registro a leer
+     * @return {Number} Valor contenido en el registro
+     * @memberof Plataforma
+     */
     leerRegistro(reg){
+        reg = reg.toLowerCase();
         switch(reg){
-            case "A":
-            case "B":
-            case "C":
-            case "D":
-            case "E":
-            case "H":
-            case "L":
-            case "I":
-            case "R":
-            case "A'":
-            case "B'":
-            case "C'":
-            case "D'":
-            case "E'":
-            case "H'":
-            case "L'":
-                val = parseInt(document.getElementById("v-"+reg[0].toLowerCase()+((reg.length>1)?"a":"")).textContent, 16);
-            case "IX":
-            case "IY":
-            case "SP":
-            case "PC":
-                val = parseInt(document.getElementById("v-"+reg.toLowerCase()).textContent, 16);
-            case "BC":
-            case "DE":
-            case "HL":
-            case "BC'":
-            case "DE'":
-            case "HL'":
-                val = parseInt(document.getElementById("v-"+reg[0].toLowerCase()+((reg.length>2)?"a":"")).textContent + document.getElementById("v-"+reg[1].toLowerCase()+((reg.length>2)?"a":"")).textContent, 16);
+            case "a":
+            case "b":
+            case "c":
+            case "d":
+            case "e":
+            case "h":
+            case "l":
+            case "i":
+            case "r":
+            case "ax":
+            case "bx":
+            case "cx":
+            case "dx":
+            case "ex":
+            case "hx":
+            case "lx":
+                return parseInt(document.getElementById("v-"+reg).textContent, 16);
+            case "ix":
+            case "iy":
+            case "sp":
+            case "pc":
+                return parseInt(document.getElementById("v-"+reg).textContent, 16);
+            case "bc":
+            case "de":
+            case "hl":
+            case "bcx":
+            case "dex":
+            case "hlx":
+                return parseInt(document.getElementById("v-"+reg[0]+(reg.length == 3)?"x":"").textContent + document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent, 16);
         }
-        return val;
     }
 
-    // Escribe sobre un registro
+    /**
+     * Escribe un valor sobre un registro
+     *
+     * @param {String} reg Registro a escribir
+     * @param {Number} val
+     * @memberof Plataforma
+     */
     escribirRegistro(reg, val){
+        reg = reg.toLowerCase();
         switch(reg){
-            case "A":
-            case "B":
-            case "C":
-            case "D":
-            case "E":
-            case "H":
-            case "L":
-            case "I":
-            case "R":
-            case "A'":
-            case "B'":
-            case "C'":
-            case "D'":
-            case "E'":
-            case "H'":
-            case "L'":
+            case "a":
+            case "b":
+            case "c":
+            case "d":
+            case "e":
+            case "h":
+            case "l":
+            case "i":
+            case "r":
+            case "ax":
+            case "bx":
+            case "cx":
+            case "dx":
+            case "ex":
+            case "hx":
+            case "lx":
                 if (val > 255) throw new ValorTamanoError(val, 1);
-                document.getElementById("v-"+reg[0].toLowerCase()+((reg.length>1)?"a":"")).textContent = val.toString(16).toUpperCase();
-            case "IX":
-            case "IY":
-            case "SP":
-            case "PC":
+                document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase();
+                break;
+            case "ix":
+            case "iy":
+            case "sp":
+            case "pc":
                 if (val > 65535) throw new ValorTamanoError(val, 1);
-                document.getElementById("v-"+reg.toLowerCase()).textContent = val.toString(16).toUpperCase();
-            case "BC":
-            case "DE":
-            case "HL":
-            case "BC'":
-            case "DE'":
-            case "HL'":
+                document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase().padStart(4,"0");
+                break;
+            case "bc":
+            case "de":
+            case "hl":
+            case "bcx":
+            case "dex":
+            case "hlx":
                 if (val > 65535) throw new ValorTamanoError(val, 1);
-                va = val.toString(16).padStart(4,"0").substring(0,2);
-                vb = val.toString(16).padStart(4,"0").substring(2,4);
-                document.getElementById("v-"+reg[0].toLowerCase()+((reg.length>2)?"a":"")).textContent = vb;
-                document.getElementById("v-"+reg[1].toLowerCase()+((reg.length>2)?"a":"")).textContent = va;
+                let va = val.toString(16).padStart(4,"0").substring(0,2);
+                let vb = val.toString(16).padStart(4,"0").substring(2,4);
+                document.getElementById("v-"+reg[0]+((reg.length == 3)?"x":"")).textContent = vb;
+                document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent = va;
         }
-        return;
     }
 
-    // Averigua si una bandera está activada o no
+    /**
+     * Averigua si una bandera está o no activada
+     *
+     * @param {String} band Bandera a comprobar
+     * @return {Boolean} Valor de la bandera
+     * @memberof Plataforma
+     */
     leerBandera(band){
-        return (document.getElementById("v-"+reg[0].toLowerCase()+((band.length>1)?"a":"")).textContent) == 1;
+        return document.getElementById("v-"+band.toLowerCase()).classList.contains("activo");
     }
 
-    // Establece el valor de una bandera
+    /**
+     * Establece el valor de una bandera
+     *
+     * @param {String} band Bandera a modificar
+     * @param {Boolean} val Valor a establecer en la bandera
+     * @memberof Plataforma
+     */
     escribirBandera(band, val){
-        document.getElementById("v-"+reg[0].toLowerCase()+((band.length>1)?"a":"")).textContent = Boolean(val);
-        return;
+        let b = document.getElementById("v-"+band.toLowerCase());
+        if (val) b.classList.add("activo");
+        else b.classList.remove("activo");
     }
 
-    // Cambia el valor de una bandera 
+    /**
+     * Intercambia el valor de una bandera 
+     *
+     * @param {String} band Bandera a modificar
+     * @memberof Plataforma
+     */
     toggleBandera(band){
-        var el = document.getElementById("v-"+reg[0].toLowerCase()+((band.length>1)?"a":""))
-        el.textContent = ((el.textContent == 1)?"0":"1");
+        document.getElementById("v-"+band.toLowerCase()).classList.toggle("activo");
+    }
+
+    /**
+     * Inserta una palabra en la pila
+     *
+     * @param {Number} val Valor a insertar en la pila
+     * @memberof Plataforma
+     */
+    insertarPila(val){
+        let p = document.querySelector("#r-pila table").tBodies[0];
+        let dir = this.leerRegistro("SP");
+        if (dir <= 1) throw new MemoriaLlenaError();
+        let fila = p.insertRow();
+        fila.insertCell().textContent = p.rows.length - 1;
+        fila.insertCell().textContent = (dir-1).toString(16).padStart(4, "0").toUpperCase();
+        let cval = fila.insertCell();
+        cval.textContent = val.toString(16).toUpperCase().padStart(4, "0");
+        cval.addEventListener("dblclick", iniValidarEdicion);
+        cval.addEventListener("change", pilaValidarEdicion );
+        cval.addEventListener("blur", pilaValidarEdicion );
+        cval.addEventListener("input", (c) => rInputEdicion(c, 16) );
+        this.escribirPalabra(dir-1, val);
+        this.escribirRegistro("SP", dir-2);
+    }
+
+    /**
+     * Quita una palabra de la pila
+     *
+     * @memberof Plataforma
+     */
+    retirarPila(){
+        let p = document.querySelector("#r-pila table").tBodies[0];
+        if (p.rows.length == 0) throw new PilaVaciaError();
+        let dir = this.leerRegistro("SP");
+        this.escribirRegistro("SP", dir+2);
+        p.deleteRow(-1);
+    }
+
+    /**
+     * Devuelve el valor que está en el tope de la pila
+     *
+     * @return Último valor agregado a la pila
+     * @memberof Plataforma
+     */
+    leerPila(){
+        let dir = this.leerRegistro("SP");
+        return this.leerPalabra(dir+1);
     }
 
     /**
@@ -284,5 +287,9 @@ class Plataforma {
         txt.textContent = mensaje;
         li.append(time, txt);
         log.appendChild(li);
+    }
+    constructor(){
+        // Establecer SP
+        this.escribirRegistro("SP", parseInt(localStorage.getItem("selPlatMem"))-1);
     }
 }

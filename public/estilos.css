@@ -389,6 +389,10 @@ body>footer {
 #r-cod .breakpoints { width: .8rem; }
 
 /* Panel Registros */
+#r-reg th {
+    -webkit-user-select: none;
+    user-select: none;
+}
 #r-f td {
     filter: grayscale(1);
     -webkit-user-select: none;

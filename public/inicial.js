@@ -140,7 +140,7 @@ window.combTeclas = {
     "M-a s": btnAcercaDe,
 }
 
-/* Funciones útiles generales */
+/* Funciones útiles de interpretación de bytes */
 
 /**
  * Dado un valor entero, devuelve los bytes que deben escribirse en memoria
@@ -169,6 +169,12 @@ function valorSignado(hex){
     var n = parseInt(hex, 16);
     var b = 2**(hex.length*4);
     return (n >= b/2)?("-"+(b-n).toString()):n.toString();
+}
+
+function ASCIIaCar(n){
+    if (n == 127 || n < 32) return String.fromCharCode(9216 + n);
+    else if (n > 127) return "�";
+    else return String.fromCharCode(n);
 }
 
 /* Funciones de Barra de menú */
@@ -334,6 +340,95 @@ function btnByrReemplazarTodo(){
 
 }
 
+/* Eventos de edición manual */
+function iniValidarEdicion(c) {
+    c.target.contentEditable = true;
+    c.target.dataset.ultimoValor = c.target.textContent;
+}
+function pilaValidarEdicion(c){
+    rValidarEdicion(c, 16);
+    // Actualización en memoria
+    let dir = parseInt(c.target.previousElementSibling.textContent, 16);
+    plat.escribirPalabra(dir, parseInt(c.target.textContent, 16));
+}
+
+function memoriaValidarEdicion(c) {
+    c.target.contentEditable = false;
+    if (!c.target.textContent.length) c.target.textContent = c.target.dataset.ultimoValor;
+    if (!c.target.classList.contains("ascii")) {
+        c.target.textContent = c.target.textContent.padStart(2, "0");
+    }
+    // Actualización en la pila
+    let fCel = Array.from(c.target.parentNode.children);
+    let fFil = Array.from(c.target.parentNode.parentNode.children);
+    let celP = document.querySelector("#r-pila tbody tr:last-child td:nth-child(2)");
+    if (celP){
+        let dirP = parseInt(celP.textContent, 16);
+        let d = fCel.indexOf(c.target);
+        let s = fFil.indexOf(c.target.parentNode);
+        if (s*16+d >= dirP){
+            let dirReal = s*16+((d%2==0)?d:d-1);
+            let em = Array.from(document.querySelectorAll("#r-pila tbody td:nth-child(2)")).find((e) => dirReal == parseInt(e.textContent, 16) );
+            em.nextElementSibling.textContent = plat.leerPalabra(dirReal).toString(16).padStart(4, "0").toUpperCase();
+        }
+    }
+}
+function memoriaInputEdicion(c) {
+    let f = Array.from(c.target.parentNode.children);
+    let e = c.target;
+    let otro, val;
+    if (e.classList.contains("ascii")) {
+        otro = f[f.indexOf(e) - 16];
+        val = e.textContent.charCodeAt(0);
+        // val = 160 -> En el navegador, introducir un espacio es introducir un nbsp
+        val = (val == 160) ? 32 : val;
+        if (e.textContent.length > 1 || (e.textContent.length == 1 && !(val > 31 && val < 127)))
+            e.textContent = e.dataset.ultimoValor;
+        else if (e.textContent.length) {
+            e.dataset.ultimoValor = e.textContent;
+            otro.textContent = val.toString(16).padStart(2, "0").toUpperCase();
+        }
+    } else {
+        otro = f[f.indexOf(c.target) + 16];
+        e.textContent = e.textContent.toUpperCase();
+        if (e.textContent.length > 2 || (!(/^[0-9A-F]?[0-9A-F]?$/).test(e.textContent)))
+            e.textContent = e.dataset.ultimoValor.toUpperCase();
+        else if (e.textContent.length) {
+            e.dataset.ultimoValor = e.textContent;
+            otro.textContent = ASCIIaCar(parseInt(e.textContent, 16));
+        }
+    }
+    if (e.textContent.length) {
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(e.childNodes[0], e.textContent.length);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+}
+function rValidarEdicion(c, t) {
+    let e = c.target;
+    e.contentEditable = false;
+    e.textContent = e.textContent.padStart(t / 4, "0");
+}
+function rInputEdicion(c, t) {
+    let r = (t == 8) ? (/^[0-9A-F]?[0-9A-F]?$/) : (/^[0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?$/);
+    let e = c.target;
+    e.textContent = e.textContent.toUpperCase();
+    if (e.textContent.length > t / 4 || (!r.test(e.textContent)))
+        e.textContent = e.dataset.ultimoValor;
+    else e.dataset.ultimoValor = e.textContent;
+    if (e.textContent.length) {
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(e.childNodes[0], e.textContent.length);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+}
+
 /* Eventos de CodeMirror */
 function onChangeCMI(cm){
     let t = cm.getValue().length;
@@ -404,8 +499,12 @@ function iniMem(){
         var tof = document.createElement("th");
         tof.textContent = (i*16).toString(16).toUpperCase().padStart(4, "0");
         nFila.appendChild(tof);
-        for (let j=0; j<16; j++) nFila.insertCell().appendChild(document.createTextNode("00"));
-        for (let j=0; j<16; j++) nFila.insertCell().appendChild(document.createTextNode("␀"));
+        for (let j=0; j<16; j++) nFila.insertCell().textContent = "00";
+        for (let j=0; j<16; j++) {
+            let c = nFila.insertCell();
+            c.textContent = "␀";
+            c.classList.add("ascii");
+        }
     }
 }
 
@@ -534,8 +633,7 @@ window.addEventListener("DOMContentLoaded", () => {
     cmi.on("cursorActivity", onInputCMI);
     onChangeCMI(cmi);
     onInputCMI(cmi);
-    // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo
-    // Esta bandera evita ese comportamiento
+    // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo. Esta bandera evita ese comportamiento.
     window.cambioCMI = false;
 
     /* Configuración */
@@ -622,6 +720,35 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("chkAccionesMostrarInfo").addEventListener("change", chkAccionesMostrarInfo);
     document.getElementById("chkAccionesMostrarAviso").addEventListener("change", chkAccionesMostrarAviso);
     document.getElementById("chkAccionesMostrarError").addEventListener("change", chkAccionesMostrarError);
+
+    /* Asignación de eventos a valores de interfaz */
+    /** Eventos de Memoria **/
+    Array.from(document.querySelectorAll("#r-mem td")).forEach((e) => {
+        e.addEventListener("dblclick", iniValidarEdicion );
+        e.addEventListener("change", memoriaValidarEdicion );
+        e.addEventListener("blur", memoriaValidarEdicion );
+        e.addEventListener("input", memoriaInputEdicion );
+    });
+    /** Eventos de Pila **/
+    /** Eventos de Registros **/
+    Array.from(document.querySelectorAll(":is(#r-r, #r-rx, #r-e) td:not(:empty)")).forEach((e) => {
+        e.addEventListener("dblclick", iniValidarEdicion);
+        e.addEventListener("change", (c) => rValidarEdicion(c, 8) );
+        e.addEventListener("blur", (c) => rValidarEdicion(c, 8) );
+        e.addEventListener("input", (c) => rInputEdicion(c, 8));
+    });
+    Array.from(document.querySelectorAll("#r-16b td")).forEach((e) => {
+        e.addEventListener("dblclick", iniValidarEdicion);
+        e.addEventListener("change", (c) => rValidarEdicion(c, 16) );
+        e.addEventListener("blur", (c) => rValidarEdicion(c, 16) );
+        e.addEventListener("input", (c) => rInputEdicion(c, 16) );
+    });
+    Array.from(document.querySelectorAll("#r-f th[scope=row]")).forEach((e) => {
+        e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.nextElementSibling.id.slice(2)) );
+     });
+    Array.from(document.querySelectorAll("#r-f td")).forEach((e) => {
+        e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.id.slice(2)) );
+     });
 
     /* Combinaciones de teclas */
     document.addEventListener("keydown", (e) => {

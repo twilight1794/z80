@@ -7,108 +7,93 @@
  * @extends {Error}
  */
 class BaseError extends Error {
-    generarLog(){
-        plat.escribirLog(TipoLog.ERROR, this.mensaje);
+    mostrar(lnum){
+        if (this instanceof LexicoError){
+            this.lnum = lnum;
+            this.message = "Línea %l: ".replace("%l", lnum) + this.message;
+        }
+        plat.escribirLog(TipoLog.ERROR, this.message);
     }
-    constructor(args){
+    constructor(msg, args){
         super();
         if (this.constructor == BaseError) throw new Error("BaseError es una clase abstracta.");
-        // NOTE: esto tal vez debería ser parte de otra función
-        this.args = args;
-        if (args){
-            Object.entries(args).forEach((e) => {
-                this.message = this.message.replaceAll("%"+e[0], e[1]);
-            });
-        }
+        this.message = _(msg, args);
     }
 }
 
 // Errores ocurridos durante la fase del análisis léxico
 class LexicoError extends BaseError {
-    constructor(args){ super(args); }
-    linea(lnum){
-        this.lnum = lnum;
-        this.message = "Línea %l: ".replace("%l", lnum) + this.message;
+    constructor(){
+        if (arguments) super(...arguments);
+        else super("err_lexico");
     }
-    message = "Error desconocido durante el análisis léxico.";
 }
 /// Errores ocurridos durante la simbolización de una línea
 class ValorCASEInvalidoError extends LexicoError {
-    constructor(args){ super(args); }
-    message = "Valor para directiva CASE inválido: %v.";
+    constructor(v){ super("err_valorcaseinvalido", {"v": v}); }
 }
 class ParametroInexistenteError extends LexicoError {
-    constructor(args){ super(args); }
-    message = "Debes proveer parámetros al mnemotécnico o directiva %m.";
+    constructor(m){ super("err_parametroinexistente", {"m": m}); }
 }
 class MultiplesParametrosError extends LexicoError {
-    constructor(args){ super(args); }
-    message = "El mnemotécnico o directiva %m solo admite un parámetro.";
+    constructor(m){ super("err_multiplesparametros", {"m": m}); }
 }
 class EtiquetaInexistenteError extends LexicoError {
-    constructor(args){ super(args); }
-    message = "El mnemotécnico o directiva %m requiere especificar una etiqueta.";
+    constructor(m){ super("err_etiquetainexistente", {"m": m}); }
 }
 class DirectivaENDIError extends LexicoError {
-    constructor(){ super(); }
-    message = "No existe un bloque IF para cerrar.";
+    constructor(){ super("err_directivaendi"); }
 }
 /// Errores ocurridos durante la simbolización de parámetros
 class ExpresionInvalidaError extends LexicoError {
     constructor(tipo){
-        super();
-        if (tipo instanceof String) this.message = "La expresión "+tipo+" es inválida";
-        else if (tipo instanceof TipoVal) this.message = "No se esperaba un símbolo de tipo "+tipo.name+" en la expresión.";
+        if (typeof tipo == "string") super("err_expresioninvalida_cad", {e: tipo});
+        else if (tipo instanceof TipoVal) super("err_expresioninvalida_tipoval", {e: tipo.name});
     }
 }
 /// Errores ocurridos durante la reducción de símbolos de parámetros
 
 // Errores ocurridos durante la fase del análisis sintáctico
 class SintacticoError extends BaseError {
-    constructor(args){ super(args); }
-    message = "Error desconocido durante el análisis sintáctico.";
+    constructor(){
+        if (arguments) super(...arguments);
+        else super("err_sintactico");
+    }
 }
 class NoImplementadoError extends SintacticoError {
-    constructor(args){ super(args); }
-    message = "El mnemotécnico o directiva %m no ha sido implementado aún."
+    constructor(m){ super("err_noimplementado", {"m": m}); }
 }
 class TipoParametrosIncorrectoError extends SintacticoError {
-    constructor(args){ super(args); }
-    message = "La instrucción %m ha recibido un parámetro de tipo incorrecto.";
+    constructor(m){ super("err_tipoparametrosincorrecto", {"m": m}); }
 }
 class NumeroParametrosIncorrectoError extends SintacticoError {
-    constructor (...args){
-        super();
-        this.args = {
-            ins: args[0],
-            nc: args[1],
-            nr: args[2]
-        }
-        let nctxt = (args[1] instanceof Array)?(args[1].join(" o ")):args[1];
-        this.message = "La instrucción "+args[0]+" esperaba "+nctxt+" parámetros, pero ha recibido "+args[2].toString()+".";
+    constructor (ins, ne, nr){
+        super("err_numeroparametrosincorrecto", {
+            "ins": ins,
+            "ne": (ne instanceof Array)?(ne.join(" o ")):ne,
+            "nr": nr
+        });
     }
 }
 
 // Errores ocurridos durante la fase de ejecución
 class EjecucionError extends BaseError {
-    constructor(args){ super(args); }
-    message = "Error desconocido durante la ejecución del programa.";
+    constructor(){
+        if (arguments) super(...arguments);
+        else super("err_ejecucion");
+    }
 }
 class DireccionInvalidaError extends EjecucionError {
-    constructor(args){ super(args); }
-    message = "La dirección de memoria 0x%dir no existe.";
+    constructor(dir){ super("err_direccioninvalida", {"dir": dir}); }
 }
 class ValorTamanoError extends EjecucionError {
-    constructor(args){ super(args); }
-    message = "El tamaño del valor es demasiado grande para un registro de %t bytes.";
-} // NOTE: ¿Se llega realmente a ejecutar esta excepción?
+    constructor(t){ super("err_valortamano", {"t": t}); }
+}
 class PilaVaciaError extends EjecucionError {
-    constructor(){ super(); }
-    message = "La pila ya está vacía";
+    constructor(){ super("err_pilavacia"); }
 }
 class MemoriaLlenaError extends EjecucionError {
-    constructor(){ super(); }
-    message = "La pila ha llenado toda la memoria";
+    constructor(){ super("err_memoriallena"); }
 }
 
 // Pseudoexcepciones

@@ -163,7 +163,7 @@
     <string name="txt_extasm">Extensión para archivos en ensamblador</string>
     <string name="txt_extasm_d">Define la extensión a utilizar al crear un nuevo archivo, o descargar uno.</string>
     <string name="txt_extproj">Extensión para archivos de proyecto</string>
-    <string name="txt_extproj_d">Def´ine la extensión a utilizar al crear un nuevo archivo de proyecto.</string>
+    <string name="txt_extproj_d">Define la extensión a utilizar al crear un nuevo archivo de proyecto.</string>
     <string name="r_cfg_ensamblado">Ensamblado</string>
     <string name="txt_ensorg">Dirección de carga predeterminada</string>
     <string name="txt_ensorg_d">Dirección de memoria predeterminada desde la cual se empezará a cargar el programa ensamblado. Se usará este valor, a menos de que se especifique otro en el código fuente, mediante la directiva ORG.</string>
@@ -171,6 +171,7 @@
     <string name="sel_platmem">Tamaño de memoria</string>
     <string name="sel_platmem_d">Define el tamaño de la memoria de trabajo que estará disponible durante la ejecución del programa.</string>
     <string name="sel_platmem_a">¡Cambiar el tamaño de la memoria reinicializará su contenido!</string>
+    <string name="sel_platmem_a2">¡No escojas un tamaño de memoria demasiado alto si no es necesario! Valores mayores de 8 KB pueden ocupar cientos de megabytes de memora RAM, lo que podría alentar tu equipo.</string>
     <string name="r_cfg_interfaz">Interfaz</string>
     <string name="txt_inttipo">Tipografía</string>
     <string name="txt_inttipo_d">Define la tipografía a usar dentro del programa.</string>
@@ -220,4 +221,30 @@
     <string name="dlg_acercade_web">Sitio web</string>
     <string name="dlg_acercade_codigo">Código fuente</string>
     <string name="dlg_acercade_licencia">Licencia</string>
+    <string name="btn_gen_a">Aceptar</string>
+    <string name="btn_gen_c">Cancelar</string>
+    <string name="btn_gen_k">Confirmar</string>
+    <string name="btn_gen_n">No</string>
+    <string name="btn_gen_s">Sí</string>
+    <!-- Mensajes de error -->
+    <string name="err_lexico">Error desconocido durante el análisis léxico.</string>
+    <string name="err_valorcaseinvalido">Valor para directiva CASE inválido: %v.</string>
+    <string name="err_parametroinexistente">Debes proveer parámetros al mnemotécnico o directiva %m.</string>
+    <string name="err_multiplesparametros">El mnemotécnico o directiva %m solo admite un parámetro.</string>
+    <string name="err_etiquetainexistente">El mnemotécnico o directiva %m requiere especificar una etiqueta.</string>
+    <string name="err_directivaendi">No existe un bloque IF para cerrar.</string>
+    <string name="err_expresioninvalida_cad">La expresión %e es inválida.</string>
+    <string name="err_expresioninvalida_tipoval">No se esperaba un símbolo de tipo %e en la expresión.</string>
+    <string name="err_sintactico">Error desconocido durante el análisis sintáctico.</string>
+    <string name="err_noimplementado">El mnemotécnico o directiva %m no ha sido implementado aún.</string>
+    <string name="err_tipoparametrosincorrecto">La instrucción %m ha recibido un parámetro de tipo incorrecto.</string>
+    <string name="err_numeroparametrosincorrecto">La instrucción %ins esperaba %ne parámetros, pero ha recibido %nr.</string>
+    <string name="err_ejecucion">Error desconocido durante la ejecución del programa.</string>
+    <string name="err_direccioninvalida">La dirección de memoria 0x%dir no existe.</string>
+    <string name="err_valortamano">El tamaño del valor es demasiado grande para un registro de %t bytes.</string>
+    <string name="err_pilavacia">La pila ya está vacía</string>
+    <string name="err_memoriallena">La pila ha llenado toda la memoria.</string>
+    <!-- Mensajes de eventos informativos -->
+    <string name="msg_ensamblado_finalizado">Ensamblado finalizado correctamente.</string>
+    <string name="msg_ejecucion_finalizada">Ejecución finalizada correctamente.</string>
 </resources>

@@ -177,6 +177,25 @@ function ASCIIaCar(n){
     else return String.fromCharCode(n);
 }
 
+/* Localización */
+
+/**
+ * Devuelve una cadena ya localizada
+ * _ es por familiaridad con gettext
+ *
+ * @param {String} id Identificador de la cadena a localizar
+ * @param {Object} params Lista de parámetros a substituir dentro de la cadena localizada
+ * @return {String} Cadena localizada y procesada
+ */
+function _(id, params){
+    let m = window.msgs?.[id];
+    let p = Object.entries(params || {});
+    for (let i = 0; i<p.length; i++) m = m.replaceAll("%"+p[i][0], p[i][1]);
+    return m;
+}
+
+/* Funciones de eventos */
+
 /* Funciones de Barra de menú */
 function btnAbrirAsm(){
     document.getElementById("archivoAsm").click();
@@ -219,13 +238,13 @@ function btnEnsamblar(){
 
     let a = document.querySelector("#archivos .entrada") || document.querySelector("#archivo [aria-selected=true]");
     window.prog = new ProgramaAsm(a.textContent);
-    plat.escribirLog(TipoLog.INFO, "Ensamblado finalizado correctamente.");
+    plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
 }
 function btnEjecutar(){
     document.getElementById("btnMenuEjecutar").children[0].click();
     try {
         plat.ejecutar();
-        plat.escribirLog(TipoLog.INFO, "Ejecución finalizada correctamente.");
+        plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
     } catch {}
 }
 function btnAvanzar(){
@@ -445,8 +464,8 @@ function onChangeCMI(cm){
 }
 function onInputCMI(cm){
     let c = cm.getCursor();
-    document.getElementById("outArcLin").textContent = "Línea " + (c.line + 1);
-    document.getElementById("outArcCol").textContent = "Columna " + (c.ch + 1);
+    document.getElementById("outArcLin").textContent = _("out_arclin_aria_label") + " " + (c.line + 1);
+    document.getElementById("outArcCol").textContent = _("out_arccol_aria_label") + " " + (c.ch + 1);
 }
 
 /* Configuración */
@@ -473,7 +492,7 @@ function estConfig(p, v){
         else cfg.value = val;
         let f = funsConfig[p];
         if (f) f(val);
-    } catch { console.error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
+    } catch { throw new Error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
 }
 
 function estConfigIni(d){
@@ -550,27 +569,27 @@ function mostrarDialogo(id, params, fun, evs){
         let btn = document.createElement("button");
         switch (c){
             case "a":
-                btn.textContent = "Aceptar";
+                btn.textContent = _("btn_gen_a");
                 btn.value = "a";
                 break;
             case "c":
-                btn.textContent = "Cancelar";
+                btn.textContent = _("btn_gen_c");
                 btn.value = "c";
                 break;
             case "k":
-                btn.textContent = "Confirmar";
+                btn.textContent = _("btn_gen_k");
                 btn.value = "k";
                 break;
             case "n":
-                btn.textContent = "No";
+                btn.textContent = _("btn_gen_n");
                 btn.value = "n";
                 break;
             case "s":
-                btn.textContent = "Sí";
+                btn.textContent = _("btn_gen_s");
                 btn.value = "s";
                 break;
             default:
-                throw Error("AL");
+                throw new Error("Debes especificar un patrón de botones válido");
         }
         pie.appendChild(btn);
     }
@@ -596,8 +615,8 @@ window.addEventListener("DOMContentLoaded", () => {
     // TODO: hacer que se carguen sólo cuando se necesiten, en vez de todos a la vez
     idisp.forEach((i) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("GET", "cadenas/"+i+".xml");
-        xhr.responseType = "document";
+        xhr.open("GET", "cadenas/"+i+".xml", false);
+        //xhr.responseType = "document";
         xhr.overrideMimeType("text/xml");
         xhr.onload = () => {
             if (xhr.readyState === xhr.DONE && xhr.status === 200){
@@ -615,7 +634,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("outEstado").textContent = "Listo";
 
     /* CodeMirror */
-    window.cmi = CodeMirror(document.querySelector('#codemirror'), {
+    window.cmi = CodeMirror(document.querySelector("#codemirror"), {
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers", "breakpoints"],
     });

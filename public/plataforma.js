@@ -961,7 +961,14 @@ class Plataforma {
      */
     ejecutar(todo){
         let inst;
-        document.getElementById("outNumInst").textContent = "0";
+        let instIni = document.getElementById("outNumInst");
+        if (instIni.textContent == "—"){
+            instIni.textContent = "0";
+            document.getElementById("outTiempo2MHzT").textContent = "0";
+            document.getElementById("outTiempo2MHzT").textContent = "0";
+            document.getElementById("outTiempoTT").textContent = "0";
+            document.getElementById("outTiempoMT").textContent = "0";
+        }
         while (true){
             inst = this.ejecutarInstruccion();
             console.log(inst);
@@ -1005,14 +1012,14 @@ class Plataforma {
             document.getElementById("outTiempo2MHz").textContent = inst[1]/2.5;
             document.getElementById("outTiempoT").textContent = inst[1];
             document.getElementById("outTiempoM").textContent = inst[2];
-            let c1 = document.getElementById("outNumInst").textContent;
-            document.getElementById("outNumInst").textContent = parseInt(c1) + 1;
-            let c2 = document.getElementById("outTiempo2MHz").textContent;
-            document.getElementById("outTiempo2MHzT").textContent = parseInt(c2) + inst[1]/2.5;
-            let c3 = document.getElementById("outTiempoT").textContent;
-            document.getElementById("outTiempoTT").textContent = parseInt(c3) + inst[1];
-            let c4 = document.getElementById("outTiempoM").textContent;
-            document.getElementById("outTiempoMT").textContent = parseInt(c4) + inst[2];
+            let c1 = document.getElementById("outNumInst");
+            c1.textContent = parseInt(c1.textContent) + 1;
+            let c2 = document.getElementById("outTiempo2MHzT");
+            c2.textContent = parseInt(c2.textContent) + inst[1]/2.5;
+            let c3 = document.getElementById("outTiempoTT");
+            c3.textContent = parseInt(c3.textContent) + inst[1];
+            let c4 = document.getElementById("outTiempoMT");
+            c4.textContent = parseInt(c4.textContent) + inst[2];
             if (!todo) break;
         }
     }

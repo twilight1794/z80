@@ -95,6 +95,9 @@ class PilaVaciaError extends EjecucionError {
 class MemoriaLlenaError extends EjecucionError {
     constructor(){ super("err_memoriallena"); }
 }
+class CodigoIlegalError extends EjecucionError {
+    constructor(b){ super("err_codigoilegal", {"b": b.join(", ")}); }
+}
 
 // Pseudoexcepciones
 // Excepciones que no denotan un error, sino que son usadas como mecanismo para salir rápidamente de un bloque, por ello estas clases no heredan de BaseError, sino directamente de Error. Esto es, de hecho, una mala práctica, y deberá ser reescrito en futuras actualizaciones.

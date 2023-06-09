@@ -285,7 +285,7 @@ body>footer {
     -webkit-mask-size: 85%;
     mask-size: 85%;
 }
-#r-act [role=tabpanel]:not(#r-exp, #r-msg)>div { padding: .5rem; }
+#r-act [role=tabpanel]:not(#r-exp, #r-msg, #r-eje)>div { padding: .5rem; }
 #r-act [role=tabpanel]>h2 { padding-top: calc(.25rem + 1px); }
 #r-act [role=tabpanel]>div {
     width: 20rem;

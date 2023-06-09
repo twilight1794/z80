@@ -18,8 +18,13 @@ class TipoDescarga {
 window.funsConfig = {
     selTemaTema: (v) => {
         if (v == "Sistema") document.body.classList.remove("tema-c", "tema-o");
-        else if (v == "Claro") document.body.classList.add("tema-c");
-        else if (v == "Oscuro") document.body.classList.add("tema-o");
+        else if (v == "Claro"){
+            document.body.classList.remove("tema-o");
+            document.body.classList.add("tema-c");
+        } else if (v == "Oscuro"){
+            document.body.classList.remove("tema-c");
+            document.body.classList.add("tema-o");
+        }
     },
     colorClaroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-m", v); },
     colorClaroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-m", v); },
@@ -53,7 +58,7 @@ window.funsConfig = {
     colorClaroFError: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-error", v); },
     colorOscuroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-m", v); },
     colorOscuroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-m", v); },
-    colorOscuroBM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-b-m", v); },
+    colorOscuroBM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-b-m", v); },
     colorOscuroCA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-c-a", v); },
     colorOscuroFA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-f-a", v); },
     colorOscuroHA: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--o-h-a", v); },
@@ -140,41 +145,10 @@ window.combTeclas = {
     "M-a s": btnAcercaDe,
 }
 
-/* Funciones útiles de interpretación de bytes */
-
-/**
- * Dado un valor entero, devuelve los bytes que deben escribirse en memoria
- * Considera el signo y el endianness
- * 
- * @param {number} x Número a procesar
- * @return {Array} Array con los bytes a escribir
- */
-function obtLittleEndianNum(x){
-    // Signo
-    var n, t;
-    if (x>-1){
-        n = x.toString(16);
-        t = n.length+((n.length%2==0)?0:1);
-        n = n.padStart(t, 0);
-    } else { // Ej para 31
-        n = Math.abs(x).toString(2);
-        t = Math.ceil(n.length/8)*8;
-        n = (parseInt(Array.from(n.padStart(t, 0)).map((d) => { return ((d=="1")?0:1); }).join(""), 2) + 1).toString(16);
-    }
-    // Endianness
-    return n.match(/.{2}/g).reverse().map((n) => { return parseInt(n, 16)} );
-}
-
 function valorSignado(hex){
     var n = parseInt(hex, 16);
     var b = 2**(hex.length*4);
     return (n >= b/2)?("-"+(b-n).toString()):n.toString();
-}
-
-function ASCIIaCar(n){
-    if (n == 127 || n < 32) return String.fromCharCode(9216 + n);
-    else if (n > 127) return "�";
-    else return String.fromCharCode(n);
 }
 
 /* Localización */
@@ -243,12 +217,13 @@ function btnEnsamblar(){
 function btnEjecutar(){
     document.getElementById("btnMenuEjecutar").children[0].click();
     try {
-        plat.ejecutar();
+        plat.ejecutar(true);
         plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
     } catch {}
 }
 function btnAvanzar(){
-    plat.ejecutarInstruccion();
+    document.getElementById("btnMenuEjecutar").children[0].click();
+    plat.ejecutar(false);
 }
 function btnDetener(){
     plat.estPC(0);  // FIX: Implementa estPC

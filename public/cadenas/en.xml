@@ -79,13 +79,16 @@
     <string name="chk_byropccase">Diferenciar capitalización</string>
     <string name="chk_byropctoda">Solo palabras completas</string>
     <string name="r_eje">Ejecución</string>
-    <string name="instact">Instrucción actual</string>
-    <string name="numtam">Tamaño</string>
-    <string name="instprox">Próxima instrucción</string>
-    <string name="numciclos">Ciclos</string>
-    <string name="out_numciclos">ciclos</string>
-    <string name="inst">Instrucción</string>
-    <string name="inst_de">de</string>
+    <string name="out_ultinst">Última instrucción</string>
+    <string name="out_taminst">Tamaño</string>
+    <string name="out_tiempo2mhz">Tiempo a 2 MHz</string>
+    <string name="out_tiempot">Tiempo T</string>
+    <string name="out_tiempom">Tiempo M</string>
+    <string name="progt">Programa</string>
+    <string name="out_numinst">Instrucciones ejecutadas</string>
+    <string name="out_tiempo2mhzt">Tiempo total a 2.5 MHz</string>
+    <string name="out_tiempott">Tiempo T total</string>
+    <string name="out_tiempomt">Tiempo M total</string>
     <string name="r_msg">Consola de mensajes</string>
     <string name="tlb_mensajesacciones">Acciones para mensajes</string>
     <string name="btn_limpiarmsgs">Limpiar consola de mensajes</string>
@@ -226,6 +229,14 @@
     <string name="btn_gen_k">Confirmar</string>
     <string name="btn_gen_n">No</string>
     <string name="btn_gen_s">Sí</string>
+    <string name="tipo_numero">número</string>
+    <string name="tipo_registro">registro</string>
+    <string name="tipo_registro_par">par de registros</string>
+    <string name="tipo_bandera">bandera</string>
+    <string name="tipo_direccion">dirección</string>
+    <string name="tipo_direccion_r">dirección en registro</string>
+    <string name="tipo_desplazamiento">desplazamiento</string>
+    <string name="tipo_bit">bit</string>
     <!-- Mensajes de error -->
     <string name="err_lexico">Error desconocido durante el análisis léxico.</string>
     <string name="err_valorcaseinvalido">Valor para directiva CASE inválido: %v.</string>
@@ -244,6 +255,7 @@
     <string name="err_valortamano">El tamaño del valor es demasiado grande para un registro de %t bytes.</string>
     <string name="err_pilavacia">La pila ya está vacía</string>
     <string name="err_memoriallena">La pila ha llenado toda la memoria.</string>
+    <string name="err_codigoilegal">La secuencia de bytes %b no corresponde a ninguna instrucción.</string>
     <!-- Mensajes de eventos informativos -->
     <string name="msg_ensamblado_finalizado">Ensamblado finalizado correctamente.</string>
     <string name="msg_ejecucion_finalizada">Ejecución finalizada correctamente.</string>

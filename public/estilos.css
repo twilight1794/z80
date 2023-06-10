@@ -290,7 +290,6 @@ body>footer {
 #r-act [role=tabpanel]>div {
     width: 20rem;
     height: calc(100% - 1.85rem);
-    /*max-height: calc(100% - 1.25rem);*/
     overflow: auto;
 }
 #r-act [role=tabpanel]:not([aria-current=page]) { display: none; }

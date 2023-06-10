@@ -228,6 +228,7 @@ class Plataforma {
      */
     leerRegistro(reg){
         reg = reg.toLowerCase();
+        let red;
         switch(reg){
             case "a":
             case "b":
@@ -258,6 +259,9 @@ class Plataforma {
             case "dex":
             case "hlx":
                 return parseInt(document.getElementById("v-"+reg[0]+((reg.length == 3)?"x":"")).textContent + document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent, 16);
+            case "f":
+            case "fx":
+                return Array.from(document.querySelectorAll("#r-f td:nth-child("+((reg=="f")?2:4)+")")).reverse().reduce((a, v, i) => a + ((v.classList.contains("activo")?1:0)<<i), 0);
         }
     }
 
@@ -308,6 +312,14 @@ class Plataforma {
                 let vb = val.toString(16).padStart(4,"0").substring(2,4);
                 document.getElementById("v-"+reg[0]+((reg.length == 3)?"x":"")).textContent = vb;
                 document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent = va;
+            case "f":
+            case "fx":
+                if (val > 255) throw new ValorTamanoError(val, 1);
+                Array.from(val.toString(2).padStart(8, "0")).forEach((e, i) => {
+                    let it = document.querySelector("#r-f tr:nth-child("+(i+2)+") td:nth-child("+((reg=="f")?2:4)+")");
+                    if (e=="1") it.classList.add("activo");
+                    else it.classList.remove("activo");
+                });
         }
     }
 
@@ -393,6 +405,34 @@ class Plataforma {
     }
 
     /**
+     * Comprueba una condición específica con banderas
+     *
+     * @param {Number} cc Valor CC a comprobar
+     * @return {Boolean} Validez de la condición
+     * @memberof Plataforma
+     */
+    comprobarCondicion(cc){
+        switch (cc){
+            case 0:
+                return !this.leerBandera("zf");
+            case 1:
+                return this.leerBandera("zf");
+            case 2:
+                return !this.leerBandera("cf");
+            case 3:
+                return this.leerBandera("cf");
+            case 4:
+                return !this.leerBandera("pf");
+            case 5:
+                return this.leerBandera("pf");
+            case 6:
+                return !this.leerBandera("sf");
+            case 7:
+                return this.leerBandera("sf");
+        }
+    }
+
+    /**
      * Ejecuta la instrucción que está en la dirección apuntada por el registro 
      *
      * @returns Array con información sobre la instrucción ejecutada
@@ -401,7 +441,8 @@ class Plataforma {
     ejecutarInstruccion(){
         let dir = this.leerRegistro("pc");
         let cod = this.leerMemoria(dir);
-        let op1, op2, dir1, dir2, auxv1, auxd1, auxv2, auxd2, res;
+        let codl = [cod];
+        let op1, op2, dir1, dir2, auxv1, auxd1, auxv2, auxd2, res, tt, tm;
         switch (cod){
             case 0:
                 this.escribirRegistro("pc", dir+1);
@@ -428,7 +469,6 @@ class Plataforma {
                 auxv2 = this.leerRegistro("ax");
                 this.escribirRegistro("a", auxv2);
                 this.escribirRegistro("ax", auxv1);
-                // TODO: Implementar f, fx
                 auxv1 = this.leerRegistro("f");
                 auxv2 = this.leerRegistro("fx");
                 this.escribirRegistro("f", auxv2);
@@ -462,8 +502,13 @@ class Plataforma {
                 if (auxv1>0){
                     this.escribirRegistro("b", auxv1-1);
                     this.escribirRegistro("pc", dir + op1 + 2);
+                    tt = 13;
+                    tm = 3;
+                } else {
+                    tt = 8;
+                    tm = 2;
                 }
-                return ["DJNZ", [13, 8], [3, 2], [{
+                return ["DJNZ", tt, tm, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                     "texto": op1+2
                 }]];
@@ -510,8 +555,15 @@ class Plataforma {
             case 0x28:
                 op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                 auxv1 = this.leerBandera("zf");
-                if ((!aux && cod == 20) || (aux && cod == 28)) this.escribirRegistro("pc", dir + op1 + 2);
-                return ["JR", [12, 7], [3, 2], 2, [{
+                if ((!aux && cod == 20) || (aux && cod == 28)){
+                    this.escribirRegistro("pc", dir + op1 + 2);
+                    tt = 12;
+                    tm = 3;
+                } else {
+                    tt = 7;
+                    tm = 2;
+                }
+                return ["JR", tt, tm, 2, [{
                     "tipo": TipoOpEns.BANDERA,
                     "texto": ((cod == 20)?"N":"")+"Z"
                 }, {
@@ -554,8 +606,15 @@ class Plataforma {
             case 0x38:
                 op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                 auxv1 = this.leerBandera("cf");
-                if ((!aux && cod == 30) || (aux && cod == 38)) this.escribirRegistro("pc", dir + op1 + 2);
-                return ["JR", [12, 7], [3, 2], 2, [{
+                if ((!aux && cod == 30) || (aux && cod == 38)){
+                    this.escribirRegistro("pc", dir + op1 + 2);
+                    tt = 12;
+                    tm = 3;
+                } else {
+                    tt = 7;
+                    tm = 2;
+                }
+                return ["JR", tt, tm, 2, [{
                     "tipo": TipoOpEns.BANDERA,
                     "texto": ((cod == 30)?"N":"")+"C"
                 }, {
@@ -587,7 +646,7 @@ class Plataforma {
                     "texto": op2
                 }]];
             case 0x34:
-                this.escribirRegistro("pc", dir1);
+                this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
                 op1 = obtNumLittleEndian(this.leerMemoria(dir1), 1, true) + 1;
                 this.escribirMemoria(dir1, obtLittleEndianNum(op1, 1));
@@ -627,7 +686,7 @@ class Plataforma {
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": "A"
                 }, {
-                    "tipo": Tipo.DIRECCION,
+                    "tipo": TipoOpEns.DIRECCION,
                     "texto": "("+op2+")"
                 }]];
             case 0x3F:
@@ -875,18 +934,30 @@ class Plataforma {
                 }]];
             case 0xD9:
                 this.escribirRegistro("pc", dir+1);
-                auxv1 = this.leerRegistro("bc");
-                auxv2 = this.leerRegistro("bcx");
-                this.escribirRegistro("bc", auxv2);
-                this.escribirRegistro("bcx", auxv1);
-                auxv1 = this.leerRegistro("de");
-                auxv2 = this.leerRegistro("dex");
-                this.escribirRegistro("de", auxv2);
-                this.escribirRegistro("dex", auxv1);
-                auxv1 = this.leerRegistro("hl");
-                auxv2 = this.leerRegistro("hlx");
-                this.escribirRegistro("hl", auxv2);
-                this.escribirRegistro("hlx", auxv1);
+                auxv1 = this.leerRegistro("b");
+                auxv2 = this.leerRegistro("bx");
+                this.escribirRegistro("b", auxv2);
+                this.escribirRegistro("bx", auxv1);
+                auxv1 = this.leerRegistro("c");
+                auxv2 = this.leerRegistro("cx");
+                this.escribirRegistro("c", auxv2);
+                this.escribirRegistro("cx", auxv1);
+                auxv1 = this.leerRegistro("d");
+                auxv2 = this.leerRegistro("dx");
+                this.escribirRegistro("d", auxv2);
+                this.escribirRegistro("dx", auxv1);
+                auxv1 = this.leerRegistro("e");
+                auxv2 = this.leerRegistro("ex");
+                this.escribirRegistro("e", auxv2);
+                this.escribirRegistro("ex", auxv1);
+                auxv1 = this.leerRegistro("h");
+                auxv2 = this.leerRegistro("hx");
+                this.escribirRegistro("h", auxv2);
+                this.escribirRegistro("hx", auxv1);
+                auxv1 = this.leerRegistro("l");
+                auxv2 = this.leerRegistro("lx");
+                this.escribirRegistro("l", auxv2);
+                this.escribirRegistro("lx", auxv1);
                 return ["EXX", 4, 1, 1, []];
             case 0xDB:
                 this.escribirRegistro("pc", dir+2);
@@ -899,6 +970,18 @@ class Plataforma {
                     "texto": op1.toString(16).padStart(2, "0")
                 }]];
             case 0xDE:
+                this.escribirRegistro("pc", dir+2);
+                op2 = obtNumLittleEndian(this.leerMemoria(dir + 1), 1, true);
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                auxv1 = this.leerBandera("cf");
+                res = op1-op2-(auxv1?1:0);
+                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128));
+                this.escribirBandera("nf", true);
+                // TODO: Carry flag
                 return ["SBC", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": "A"
@@ -907,20 +990,635 @@ class Plataforma {
                     "texto": op1.toString(16).padStart(2, "0")
                 }]];
             case 0xE3:
+                this.escribirRegistro("pc", dir+1);
+                // QUESTION: ¿qué pasa si no hay cosas en la pila?
+                dir1 = this.leerRegistro("sp");
+                auxv1 = this.leerMemoria(dir1+2);
+                auxv2 = this.leerRegistro("h");
+                this.escribirMemoria(dir1+2, auxv2);
+                this.escribirRegistro("h", auxv1);
+                auxv1 = this.leerMemoria(dir1+1);
+                auxv2 = this.leerRegistro("l");
+                this.escribirMemoria(dir1+1, auxv2);
+                this.escribirRegistro("l", auxv1);
+                return ["EX", 19, 5, 1, [{
+                    "tipo": TipoOpEns.DIRECCION_R,
+                    "texto": "(SP)"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "HL"
+                }]];
             case 0xE6:
+                this.escribirRegistro("pc", dir+2);
+                op2 = this.leerMemoria(dir+1);
+                op1 = this.leerRegistro("a");
+                res = Plataforma.obtAnd(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["AND", 7, 2, 2, [{
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": op2.toString(16).padStart(2, "0")
+                }]];
             case 0xE9:
+                // NOTE: hacer notar a Danjiro de la discrepancia en la sintaxis (HL) y HL
+                this.escribirRegistro("pc", dir+1);
+                op1 = this.leerRegistro("hl");
+                this.escribirRegistro("pc", op1);
+                return ["JP", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "HL"
+                }]];
             case 0xEB:
+                this.escribirRegistro("pc", dir+1);
+                auxv1 = this.leerRegistro("d");
+                auxv2 = this.leerRegistro("h");
+                this.escribirRegistro("d", auxv2);
+                this.escribirRegistro("h", auxv1);
+                auxv1 = this.leerRegistro("e");
+                auxv2 = this.leerRegistro("l");
+                this.escribirRegistro("e", auxv2);
+                this.escribirRegistro("l", auxv1);
+                return ["EX", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "DE"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "HL"
+                }]];
             case 0xEE:
+                this.escribirRegistro("pc", dir+2);
+                op2 = this.leerMemoria(dir+1);
+                op1 = this.leerRegistro("a");
+                res = Plataforma.obtXor(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["XOR", 7, 2, 2, [{
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": op2.toString(16).padStart(2, "0")
+                }]];
             case 0xF3:
+                this.escribirRegistro("pc", dir+1);
+                return ["DI", 4, 1, 1, []];
             case 0xF6:
+                this.escribirRegistro("pc", dir+2);
+                op2 = this.leerMemoria(dir+1);
+                op1 = this.leerRegistro("a");
+                res = Plataforma.obtOr(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["OR", 7, 2, 2, [{
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": op2.toString(16).padStart(2, "0")
+                }]];
             case 0xF9:
+                this.escribirRegistro("pc", dir+1);
+                op1 = this.leerRegistro("hl");
+                this.escribirRegistro("sp", op1);
+                return ["LD", 6, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": "SP"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "HL"
+                }]];
             case 0xFB:
+                this.escribirRegistro("pc", dir+1);
+                return ["EI", 4, 1, 1, []];
             case 0xFE:
+                this.escribirRegistro("pc", dir+2);
+                op2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                res = op2-op1;
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", true);
+                // TODO: Carry flag
+                return ["CP", 7, 2, 2, [{
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": op2.toString(16).padStart(2, "0")
+                }]];
             /* Compuestos */
+            /** 00dd0001 **/
+            case 1: case 17: case 33: case 49:
+                op1 = (cod-1)>>4;
+                op2 = this.leerPalabra(dir+1);
+                this.escribirRegistro(this.ValsSS[op1], op2);
+                return ["LD", 10, 2, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsSS[op1]
+                }, {
+                    "tipo": TipoOpEns.DIRECCION,
+                    "texto":  op2.toString(16).padStart(4, "0")
+                }]];
+            /** 00rrr100 **/
+            case 4: case 12: case 20: case 28: case 36: case 44: case 60:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = (cod-4)>>3;
+                op1 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir1]), 1, true) + 1;
+                this.escribirRegistro(this.ValsR[dir1], obtLittleEndianNum(op1, 1));
+                this.escribirBandera("sf", (op1<0));
+                this.escribirBandera("zf", (op1 == 0));
+                this.escribirBandera("hf", (op1 == 16));
+                this.escribirBandera("pf", (op1 == 0x80));
+                this.escribirBandera("nf", false);
+                return ["INC", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[op1]
+                }]];
+            /** 00rrr101 **/
+            case 5: case 13: case 21: case 29: case 37: case 45: case 61:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = (cod-5)>>3;
+                op1 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir1]), 1, true) - 1;
+                this.escribirRegistro(this.ValsR[dir1], obtLittleEndianNum(op1, 1));
+                this.escribirBandera("sf", (op1<0));
+                this.escribirBandera("zf", (op1 == 0));
+                this.escribirBandera("hf", (op1 == 15));
+                this.escribirBandera("pf", (op1 == 0x7f));
+                this.escribirBandera("nf", true);
+                return ["DEC", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir1]
+                }]];
+            /** 00rrr110 **/
+            case 6: case 14: case 22: case 30: case 38: case 46: case 62:
+                this.escribirRegistro("pc", dir+2);
+                dir1 = (cod-6)>>3;
+                op2 = this.leerMemoria(dir+1);
+                this.escribirRegistro(this.ValsR[dir1], op2);
+                return ["LD", 7, 2, 2, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[op1]
+                }, {
+                    "tipo": TipoOpEns.DIRECCION,
+                    "texto": op2.toString(16).padStart(4, "0")
+                }]];
+            /** 00ss0011 **/
+            case 3: case 19: case 35: case 51:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = (cod-3)>>4;
+                op1 = this.leerRegistro(this.ValsSS[dir1]) + 1;
+                this.escribirRegistro(this.ValsSS[dir1], op1);
+                return ["INC", 6, 1, 1, [{
+                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "texto": this.ValsSS[dir1]
+                }]];
+            /** 00ss1001 **/
+            case 9: case 25: case 41: case 57:
+                this.escribirRegistro("pc", dir+2);
+                dir2 = (cod-3)>>4;
+                op1 = this.leerRegistro("hl");
+                op2 = this.leerRegistro(this.ValsSS[dir2]);
+                res =  op1+op2;
+                this.escribirRegistro(this.ValsSS[dir2], res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                // TODO: Carry flag
+                return ["ADD", 11, 3, 1, [{
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": "HL"
+                }, {
+                    "tipo": ((dir2 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "texto": this.ValsSS[dir2]
+                }]];
+            /** 00ss1011 **/
+            case 11: case 27: case 43: case 59:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = (cod-11)>>4;
+                op1 = this.leerRegistro(this.ValsSS[dir1]) - 1;
+                this.escribirRegistro(this.ValsSS[dir1], op1);
+                return ["DEC", 6, 1, 1, [{
+                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "texto": this.ValsSS[dir1]
+                }]];
+            /** 01110rrr **/
+            case 112: case 113: case 114: case 115: case 116: case 117: case 119:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-112;
+                op2 = this.leerRegistro(this.ValsR[dir2]);
+                dir1 = this.leerRegistro("hl");
+                this.escribirMemoria(dir1, op2);
+                return ["LD", 7, 2, 1, [{
+                    "tipo": TipoOpEns.DIRECCION_R,
+                    "texto": "(HL)"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 01rrr110 **/
+            case 70: case 78: case 86: case 94: case 102: case 110: case 126:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = (cod-70)>>3;
+                dir2 = this.leerRegistro("hl");
+                op2 = this.leerMemoria(dir2);
+                this.escribirRegistro(this.ValsR[dir1], op2);
+                return ["LD", 7, 2, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir1]
+                }, {
+                    "tipo": TipoOpEns.DIRECCION_R,
+                    "texto": "(HL)"
+                }]];
+            /** 01rrrr'r'r' **/
+            case 64: case 72: case 80: case 88: case 96: case 104: case 120: case 65: case 73: case 81: case 89: case 97: case 105: case 121: case 66: case 74: case 82: case 90: case 98: case 106: case 122: case 67: case 75: case 83: case 91: case 99: case 107: case 123: case 68: case 76: case 84: case 92: case 100: case 108: case 124: case 69: case 77: case 85: case 93: case 101: case 109: case 125: case 71: case 79: case 87: case 95: case 103: case 111: case 127:
+                this.escribirRegistro("pc", dir+1);
+                dir1 = cod & 56;
+                dir2 = cod & 7;
+                op1 = this.leerRegistro(dir2);
+                this.escribirRegistro(dir1);
+                return ["LD", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir1]
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10000rrr **/
+            case 128: case 129: case 130: case 131: case 132: case 133: case 135:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-128;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                res =  op1+op2;
+                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                // TODO: Carry flag
+                return ["ADD", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": "A"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10001rrr **/
+            case 136: case 137: case 138: case 139: case 140: case 141: case 143:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-136;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                auxv1 = this.leerBandera("cf");
+                res = op1+op2+(auxv1?1:0);
+                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128));
+                this.escribirBandera("nf", false);
+                // TODO: Carry flag
+                return ["ADC", 4, 4, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": "A"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10010rrr **/
+            case 144: case 145: case 146: case 147: case 148: case 149: case 151:
+                this.escribirRegistro("pc", dir+2);
+                dir2 = cod-144;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                res = op1-op2;
+                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128));
+                this.escribirBandera("nf", true);
+                // TODO: Carry flag
+                return ["SUB", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": "A"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10011rrr **/
+            case 152: case 153: case 154: case 155: case 156: case 157: case 159:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-152;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                auxv1 = this.leerBandera("cf");
+                res = op1-op2-(auxv1?1:0);
+                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128));
+                this.escribirBandera("nf", true);
+                // TODO: Carry flag
+                return ["SBC", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": "A"
+                }, {
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10100rrr **/
+            case 160: case 161: case 162: case 163: case 164: case 165: case 167:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-160;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                res = Plataforma.obtAnd(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["AND", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10101rrr **/
+            case 168: case 169: case 170: case 171: case 172: case 173: case 175:
+                this.escribirRegistro("pc", dir+2);
+                dir2 = cod-168;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                res = Plataforma.obtXor(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["XOR", 4, 1, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10110rrr **/
+            case 176: case 177: case 178: case 179: case 180: case 181: case 183:
+                this.escribirRegistro("pc", dir+2);
+                dir2 = cod-176;
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                res = Plataforma.obtOr(op1, op2);
+                this.escribirRegistro("a", res);
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                this.escribirBandera("hf", false);
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", false);
+                this.escribirBandera("cf", false);
+                return ["OR", 7, 2, 2, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 10111rrr **/
+            case 184: case 185: case 186: case 187: case 188: case 189: case 183:
+                this.escribirRegistro("pc", dir+1);
+                dir2 = cod-184;
+                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
+                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                res = op2-op1;
+                this.escribirBandera("sf", (res<0));
+                this.escribirBandera("zf", (res == 0));
+                // TODO: Half flag
+                this.escribirBandera("pf", (res > 127 || res < -128)); //?
+                this.escribirBandera("nf", true);
+                // TODO: Carry flag
+                return ["CP", 7, 2, 1, [{
+                    "tipo": TipoOpEns.REGISTRO,
+                    "texto": this.ValsR[dir2]
+                }]];
+            /** 11ccc000 **/
+            case 192: case 200: case 208: case 216: case 224: case 232: case 240: case 248:
+                dir1 = (cod-192)>>3;
+                op1 = this.comprobarCondicion(dir1);
+                if (op1){
+                    tt = 11;
+                    tm = 3;
+                    auxv1 = this.leerPila();
+                    this.retirarPila();
+                    this.escribirRegistro("pc", auxv1);
+                } else {
+                    this.escribirRegistro("pc", dir+1);
+                    tt = 4;
+                    tm = 1;
+                }
+                return ["RET", tt, tm, 1, [{
+                    "tipo": TipoOpEns.BANDERA,
+                    "texto": this.ValsCC[dir1]
+                }]];
+            /** 11ccc010 **/
+            case 194: case 202: case 210: case 218: case 226: case 234: case 242: case 250:
+                dir1 = (cod-194)>>3;
+                op1 = this.comprobarCondicion(dir1);
+                op2 = this.leerPalabra(dir+1);
+                this.escribirRegistro("pc", (op1?op2:(dir+1)));
+                return ["JP", 10, 3, 3, [{
+                    "tipo": TipoOpEns.BANDERA,
+                    "texto": this.ValsCC[dir1]
+                }, {
+                    "tipo": TipoOpEns.DIRECCION,
+                    "texto": op2.toString(16).padStart(4, "0")
+                }]];
+            /** 11ccc100 **/
+            case 196: case 204: case 212: case 220: case 228: case 236: case 244: case 252:
+                dir1 = (cod-196)>>3;
+                op1 = this.comprobarCondicion(dir1);
+                op2 = this.leerPalabra(dir+1);
+                if (op1){
+                    tt = 17;
+                    tm = 5;
+                    auxv1 = this.leerRegistro("pc");
+                    this.insertarPila(auxv1);
+                    this.escribirRegistro("pc", op2);
+                } else {
+                    this.escribirRegistro("pc", dir+3);
+                    tt = 10;
+                    tm = 3;
+                }
+                return ["CALL", tt, tm, 3, [{
+                    "tipo": TipoOpEns.BANDERA,
+                    "texto": this.ValsCC[dir1]
+                }, {
+                    "tipo": TipoOpEns.DIRECCION,
+                    "texto": op2.toString(16).padStart(4, "0")
+                }]];
+            /** 11qq0001 **/
+            case 193: case 209: case 225: case 241:
+                dir1 = (cod-193)>>4;
+                op1 = this.leerPila();
+                this.retirarPila();
+                this.escribirRegistro(this.ValsQQ[dir1], op1);
+                return ["POP", 10, 3, 1, [{
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": this.ValsQQ[dir1]
+                }]];
+            /** 11qq0101 **/
+            case 197: case 213: case 229: case 245:
+                dir1 = (cod-197)>>4;
+                op1 = this.leerRegistro(this.ValsQQ[dir1]);
+                this.insertarPila(op1);
+                return ["PUSH", 11, 3, 1, [{
+                    "tipo": TipoOpEns.REGISTRO_PAR,
+                    "texto": this.ValsQQ[dir1]
+                }]];
+            /** 11ttt111 **/
+            case 199: case 207: case 215: case 223: case 231: case 239: case 247: case 255:
+                this.escribirRegistro("pc", dir+1);
+                op1 = (cod-199)>>3;
+                auxv1 = this.leerRegistro("pc");
+                this.insertarPila(auxv1);
+                this.escribirRegistro("pc", op1*8);
+                return ["RST", 11, 3, 1, [{
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": (op1*8).toString(16).padStart(2, "0")
+                }]];
+            /* Multibyte */
             case 0xCB:
+                dir = dir+1;
+                cod = this.leerMemoria(dir);
+                codl.push(cod);
             case 0xDD:
+                dir = dir+1;
+                cod = this.leerMemoria(dir);
+                codl.push(cod);
             case 0xED:
+                dir = dir+1;
+                cod = this.leerMemoria(dir);
+                codl.push(cod);
+                switch (cod){
+                    case 0x45:
+                        this.escribirRegistro("pc", dir+1);
+                        return ["RETN", 14, 4, 2, []];
+                    case 0x46:
+                        this.escribirRegistro("pc", dir+1);
+                        return ["IM", 8, 2, 2, [{
+                            "tipo": TipoOpEns.NUMERO,
+                            "texto": "00"
+                        }]];
+                    case 0x56:
+                        this.escribirRegistro("pc", dir+1);
+                        return ["IM", 8, 2, 2, [{
+                            "tipo": TipoOpEns.NUMERO,
+                            "texto": "01"
+                        }]];
+                    case 0x5E:
+                        this.escribirRegistro("pc", dir+1);
+                        return ["IM", 8, 2, 2, [{
+                            "tipo": TipoOpEns.NUMERO,
+                            "texto": "02"
+                        }]];
+                }
+                break;
             case 0xFD:
+                dir = dir+1;
+                cod = this.leerMemoria(dir);
+                codl.push(cod);
+                switch (cod){
+                    case 0x21:
+                        this.escribirRegistro("pc", dir+3);
+                        op2 = this.leerPalabra(dir+1);
+                        this.escribirRegistro("iy", op2);
+                        return ["LD", 14, 4, 4, [{
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": "IY"
+                        }, {
+                            "tipo": TipoOpEns.NUMERO,
+                            "texto": op2.toString(16).padStart(4, "0")
+                        }]];
+                    case 0x22:
+                        this.escribirRegistro("pc", dir+3);
+                        op1 = this.leerRegistro("iy");
+                        dir1 = this.leerPalabra(dir+1);
+                        this.escribirPalabra(dir1, op1);
+                        return ["LD", 20, 6, 4, [{
+                            "tipo": TipoOpEns.DIRECCION,
+                            "texto": "("+dir1+")"
+                        }, {
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": "IY"
+                        }]];
+                    case 0x23:
+                        this.escribirRegistro("pc", dir+1);
+                        op1 = this.leerRegistro("iy") + 1;
+                        this.escribirRegistro("iy", op1);
+                        return ["INC", 10, 2, 2, [{
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": "IY"
+                        }]];
+                    case 0x2A:
+                        this.escribirRegistro("pc", dir+3);
+                        dir2 = this.leerPalabra(dir+1);
+                        op2 = this.leerPalabra(dir2);
+                        this.escribirRegistro("iy", op2);
+                        return ["LD", 20, 6, 4, [{
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": "IY"
+                        }, {
+                            "tipo": TipoOpEns.DIRECCION,
+                            "texto": "("+op2.toString(16).padStart(4, "0")+")"
+                        }]];
+                    case 0x2B:
+                        this.escribirRegistro("pc", dir+1);
+                        op1 = this.leerRegistro("iy") - 1;
+                        this.escribirRegistro("iy", op1);
+                        return ["DEC", 10, 2, 2, [{
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": "IY"
+                        }]];
+                    case 0x34:
+                        this.escribirRegistro("pc", dir+1);
+                        op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true) + 1;
+                        this.escribirRegistro(this.ValsR[dir1], obtLittleEndianNum(op1, 1));
+                        this.escribirBandera("sf", (op1<0));
+                        this.escribirBandera("zf", (op1 == 0));
+                        this.escribirBandera("hf", (op1 == 16));
+                        this.escribirBandera("pf", (op1 == 0x80));
+                        this.escribirBandera("nf", false);
+                        return ["INC", 4, 1, 1, [{
+                            "tipo": TipoOpEns.REGISTRO,
+                            "texto": this.ValsR[op1]
+                        }]];
+                    case 0x35:
+                    case 0x86:
+                    case 0x8E:
+                    case 0x96:
+                    case 0x9E:
+                    case 0xA6:
+                    case 0xAE:
+                    case 0xB6:
+                    case 0xBE:
+                    case 0xCB:
+                    case 0xE1:
+                    case 0xE3:
+                    case 0xE5:
+                    case 0xE9:
+                    case 0xF9:
+                }
+            default:
+                throw new CodigoIlegalError(codl);
         }
     }
 

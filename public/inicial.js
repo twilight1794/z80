@@ -94,7 +94,7 @@ window.funsConfig = {
     txtIntTipo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--txtIntTipo", v); },
     selIntIdioma: (v) => {
         if (v == "qaa") v = navigator.language.match(/[a-z]+/)[0]; // qaa -> Código para 'Sistema'
-        if (idisp.indexOf(v) == -1) v == "en";
+        if (idisp.indexOf(v) == -1) v = "en";
         window.msgs = window["loc-"+v];
         if (msgs){
             let nodos = document.querySelectorAll("html :not([translate=no]) *:not([translate=no])");
@@ -134,9 +134,9 @@ window.combTeclas = {
     "C-v": null,*/
     "C-b": btnBuscar,
     "M-e c": btnEnsamblar,
-    "M-e e": null,
-    "M-e a": null,
-    "M-e d": null,
+    "M-e e": btnEjecutar,
+    "M-e a": btnAvanzar,
+    "M-e d": btnDetener,
     "M-e r": null,
     "M-a a": btnManual,
     "M-a p": null,
@@ -215,14 +215,14 @@ function btnEnsamblar(){
     plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
 }
 function btnEjecutar(){
-    document.getElementById("btnMenuEjecutar").children[0].click();
+    document.getElementById("btnMenuEjecucion").children[0].click();
     try {
         plat.ejecutar(true);
         plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
     } catch {}
 }
 function btnAvanzar(){
-    document.getElementById("btnMenuEjecutar").children[0].click();
+    document.getElementById("btnMenuEjecucion").children[0].click();
     plat.ejecutar(false);
 }
 function btnDetener(){
@@ -660,6 +660,9 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnCerrarProj").addEventListener("click", btnCerrarProj);
     document.getElementById("btnBuscar").addEventListener("click", btnBuscar);
     document.getElementById("btnEnsamblar").addEventListener("click", btnEnsamblar);
+    document.getElementById("btnEjecutar").addEventListener("click", btnEjecutar);
+    document.getElementById("btnAvanzar").addEventListener("click", btnAvanzar);
+    document.getElementById("btnDetener").addEventListener("click", btnDetener);
     Array.from(document.querySelectorAll(":is(#f_dir, #f_mnemo) button")).forEach((e) => {
         e.addEventListener("click", (e2) => { btnInsX(e2.target); });
     });

@@ -89,6 +89,7 @@
     <string name="out_tiempo2mhzt">Tiempo total a 2.5 MHz</string>
     <string name="out_tiempott">Tiempo T total</string>
     <string name="out_tiempomt">Tiempo M total</string>
+    <string name="hist_inst">Histórico de instrucciones</string>
     <string name="r_msg">Consola de mensajes</string>
     <string name="tlb_mensajesacciones">Acciones para mensajes</string>
     <string name="btn_limpiarmsgs">Limpiar consola de mensajes</string>

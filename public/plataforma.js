@@ -157,6 +157,19 @@ class Plataforma {
     }
 
     /**
+     * Escribe en memoria una secuencia de bytes
+     *
+     * @param {Number} dir Dirección desde la cual empezar a escribir
+     * @param {Array<Number>} bytes Array con los bytes a escribir
+     * @memberof Plataforma
+     */
+    cargarBytes(dir, bytes){
+        for (let i=0; i<bytes.length; i++){
+            this.escribirMemoria(dir+i, bytes[i]);
+        }
+    }
+
+    /**
      * Lee un byte de la memoria, y devuelve su valor
      *
      * @param {Number} dir Dirección de memoria a leer
@@ -404,7 +417,6 @@ class Plataforma {
         return this.leerPalabra(dir+1);
     }
 
-
     /**
      * Establece las banderas pertinentes después de cada instrucción
      *
@@ -625,6 +637,30 @@ class Plataforma {
     }
 
     /**
+     * Genera una cadena que contiene la representación del valor
+     *
+     * @param {TipoOpEns} t Tipo del valor
+     * @param {*} v Valor a convertir a cadena
+     * @return {String} Representación en cadena
+     * @memberof Plataforma
+     */
+    imprimirValor(t, v){
+        switch (t){
+            case TipoOpEns.NUMERO:
+                return "0x"+v.toString(16).padStart(2, "0");
+            //case TipoOpEns.REGISTRO: //?
+            //case TipoOpEns.REGISTRO_PAR: //?
+            //case TipoOpEns.BANDERA:
+            case TipoOpEns.DIRECCION:
+                return "(0x"+v.toString(16).padStart(4, "0")+")";
+            //case TipoOpEns.DIRECCION_R:
+            case TipoOpEns.DESPLAZAMIENTO:
+                return (v>0?"+":"")+"0x"+v.toString(16).padStart(2, "0");
+            //case TipoOpEns.BIT:
+        }
+    }
+
+    /**
      * Ejecuta la instrucción que está en la dirección apuntada por el registro 
      *
      * @returns Array con información sobre la instrucción ejecutada
@@ -635,6 +671,7 @@ class Plataforma {
         let cod = this.leerMemoria(dir);
         let codl = [cod];
         let op1, op2, dir1, dir2, auxv1, auxd1, auxv2, auxd2, res, tt, tm;
+        console.log(cod);
         switch (cod){
             case 0:
                 this.escribirRegistro("pc", dir+1);
@@ -702,7 +739,7 @@ class Plataforma {
                 }
                 return ["DJNZ", tt, tm, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": op1+2
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1+2)
                 }]];
             case 0x12:
                 this.escribirRegistro("pc", dir+1);
@@ -725,7 +762,7 @@ class Plataforma {
                 this.escribirRegistro("pc", dir + op1 + 2);
                 return ["JR", 12, 3, 2, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": op1 + 2
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1 + 2)
                 }]];
             case 0x1a:
                 this.escribirRegistro("pc", dir+1);
@@ -747,11 +784,12 @@ class Plataforma {
             case 0x28:
                 op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                 auxv1 = this.leerBandera("zf");
-                if ((!aux && cod == 20) || (aux && cod == 28)){
+                if ((!auxv1 && cod == 0x20) || (auxv1 && cod == 0x28)){
                     this.escribirRegistro("pc", dir + op1 + 2);
                     tt = 12;
                     tm = 3;
                 } else {
+                    this.escribirRegistro("pc", dir+2);
                     tt = 7;
                     tm = 2;
                 }
@@ -760,7 +798,7 @@ class Plataforma {
                     "texto": ((cod == 20)?"N":"")+"Z"
                 }, {
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": op1 + 2
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1 + 2)
                 }]];
             case 0x22:
                 this.escribirRegistro("pc", dir+3);
@@ -769,7 +807,7 @@ class Plataforma {
                 this.escribirMemoria(dir1, op2);
                 return ["LD", 16, 5, 3, [{
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": "("+dir1+")"
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                 }, {
                     "tipo": TipoOpEns.REGISTRO_PAR,
                     "texto": "HL"
@@ -787,7 +825,7 @@ class Plataforma {
                     "texto": "HL"
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": "("+dir1+")"
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                 }]];
             case 0x2f:
                 this.escribirRegistro("pc", dir+1);
@@ -799,11 +837,12 @@ class Plataforma {
             case 0x38:
                 op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                 auxv1 = this.leerBandera("cf");
-                if ((!aux && cod == 30) || (aux && cod == 38)){
+                if ((!auxv1 && cod == 0x30) || (auxv1 && cod == 0x38)){
                     this.escribirRegistro("pc", dir + op1 + 2);
                     tt = 12;
                     tm = 3;
                 } else {
+                    this.escribirRegistro("pc", dir + 2);
                     tt = 7;
                     tm = 2;
                 }
@@ -812,7 +851,7 @@ class Plataforma {
                     "texto": ((cod == 30)?"N":"")+"C"
                 }, {
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": op1 + 2
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1+2)
                 }]];
             case 0x32:
                 this.escribirRegistro("pc", dir+3);
@@ -821,22 +860,10 @@ class Plataforma {
                 this.escribirMemoria(dir1, op2);
                 return ["LD", 16, 5, 3, [{
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": "("+dir1+")"
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                 }, {
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": "A"
-                }]];
-            case 0x36:
-                this.escribirRegistro("pc", dir+2);
-                op1 = this.leerMemoria(dir+1);
-                dir2 = this.leerRegistro("hl");
-                op2 = this.escribirMemoria(dir2, op1);
-                return ["LD", 10, 3, 2, [{
-                    "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": "(HL+"+op1+")"
-                }, {
-                    "tipo": TipoOpEns.NUMERO,
-                    "texto": op2
                 }]];
             case 0x34:
                 this.escribirRegistro("pc", dir+1);
@@ -858,6 +885,18 @@ class Plataforma {
                     "tipo": TipoOpEns.DIRECCION_R,
                     "texto": "(HL)"
                 }]];
+            case 0x36:
+                this.escribirRegistro("pc", dir+2);
+                op1 = this.leerMemoria(dir+1);
+                dir2 = this.leerRegistro("hl");
+                op2 = this.escribirMemoria(dir2, op1);
+                return ["LD", 10, 3, 2, [{
+                    "tipo": TipoOpEns.DESPLAZAMIENTO,
+                    "texto": "(HL"+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1)+")"
+                }, {
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
+                }]];
             case 0x37:
                 this.escribirRegistro("pc", dir+1);
                 this.estBanderasOp("SCF");
@@ -872,14 +911,13 @@ class Plataforma {
                     "texto": "A"
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": "("+op2+")"
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir2)
                 }]];
             case 0x3F:
                 this.escribirRegistro("pc", dir+1);
                 this.estBanderasOp("CCF");
                 return ["CCF", 4, 1, 1, []];
             case 0x76:
-                this.escribirRegistro("pc", dir+1);
                 return ["HALT", 4, 1, 1, []];
             case 0x86:
                 this.escribirRegistro("pc", dir+1);
@@ -995,7 +1033,7 @@ class Plataforma {
                 this.escribirRegistro("PC", op1);
                 return ["JP", 10, 3, 3, [{
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": op1
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op1)
                 }]];
             case 0xC6:
                 this.escribirRegistro("pc", dir+2);
@@ -1008,7 +1046,7 @@ class Plataforma {
                     "texto": "A"
                 }, {
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op1
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xC9:
                 auxv1 = this.leerPila();
@@ -1022,7 +1060,7 @@ class Plataforma {
                 this.escribirRegistro("pc", op1);
                 return ["CALL", 17, 5, 3, [{
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": op1
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                 }]];
             case 0xCE:
                 this.escribirRegistro("pc", dir+2);
@@ -1037,14 +1075,14 @@ class Plataforma {
                     "texto": "A"
                 }, {
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op1,
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op1)
                 }]];
             case 0xD3:
                 this.escribirRegistro("pc", dir+2);
                 op1 = this.leerMemoria(dir+1);
                 return ["OUT", 11, 3, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op1.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op1)
                 }]];
             case 0xD6:
                 this.escribirRegistro("pc", dir+2);
@@ -1058,7 +1096,7 @@ class Plataforma {
                     "texto": "A"
                 }, {
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op2.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xD9:
                 this.escribirRegistro("pc", dir+1);
@@ -1096,7 +1134,7 @@ class Plataforma {
                 this.estBanderasOp("IN", [auxv1]);
                 return ["IN", 11, 3, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op1.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op1)
                 }]];
             case 0xDE:
                 this.escribirRegistro("pc", dir+2);
@@ -1111,7 +1149,7 @@ class Plataforma {
                     "texto": "A"
                 }, {
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op1.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op1)
                 }]];
             case 0xE3:
                 this.escribirRegistro("pc", dir+1);
@@ -1141,7 +1179,7 @@ class Plataforma {
                 this.estBanderasOp("AND", [res, op1, op2]);
                 return ["AND", 7, 2, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op2.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xE9:
                 // NOTE: hacer notar a Danjiro de la discrepancia en la sintaxis (HL) y HL
@@ -1178,7 +1216,7 @@ class Plataforma {
                 this.estBanderasOp("XOR", [res]);
                 return ["XOR", 7, 2, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op2.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xF3:
                 this.escribirRegistro("pc", dir+1);
@@ -1194,7 +1232,7 @@ class Plataforma {
                 this.estBanderasOp("OR", [res, op1, op2]);
                 return ["OR", 7, 2, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op2.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xF9:
                 this.escribirRegistro("pc", dir+1);
@@ -1220,20 +1258,20 @@ class Plataforma {
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 2, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": op2.toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             /* Compuestos */
             /** 00dd0001 **/
             case 1: case 17: case 33: case 49:
-                op1 = (cod-1)>>4;
+                dir1 = (cod-1)>>4;
                 op2 = this.leerPalabra(dir+1);
-                this.escribirRegistro(this.ValsSS[op1], op2);
+                this.escribirRegistro(this.ValsSS[dir1], op2);
                 return ["LD", 10, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
-                    "texto": this.ValsSS[op1]
+                    "texto": this.ValsSS[dir1]
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto":  op2.toString(16).padStart(4, "0")
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op2)
                 }]];
             /** 00rrr100 **/
             case 4: case 12: case 20: case 28: case 36: case 44: case 60:
@@ -1265,10 +1303,10 @@ class Plataforma {
                 this.escribirRegistro(this.ValsR[dir1], op2);
                 return ["LD", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
-                    "texto": this.ValsR[op1]
+                    "texto": this.ValsR[dir1]
                 }, {
-                    "tipo": TipoOpEns.DIRECCION,
-                    "texto": op2.toString(16).padStart(4, "0")
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             /** 00ss0011 **/
             case 3: case 19: case 35: case 51:
@@ -1277,7 +1315,7 @@ class Plataforma {
                 op1 = this.leerRegistro(this.ValsSS[dir1]) + 1;
                 this.escribirRegistro(this.ValsSS[dir1], op1);
                 return ["INC", 6, 1, 1, [{
-                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:TipoOpEns.REGISTRO_PAR),
                     "texto": this.ValsSS[dir1]
                 }]];
             /** 00ss1001 **/
@@ -1293,7 +1331,7 @@ class Plataforma {
                     "tipo": TipoOpEns.REGISTRO_PAR,
                     "texto": "HL"
                 }, {
-                    "tipo": ((dir2 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "tipo": ((dir2 == 3)?TipoOpEns.REGISTRO:TipoOpEns.REGISTRO_PAR),
                     "texto": this.ValsSS[dir2]
                 }]];
             /** 00ss1011 **/
@@ -1303,7 +1341,7 @@ class Plataforma {
                 op1 = this.leerRegistro(this.ValsSS[dir1]) - 1;
                 this.escribirRegistro(this.ValsSS[dir1], op1);
                 return ["DEC", 6, 1, 1, [{
-                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:REGISTRO_PAR),
+                    "tipo": ((dir1 == 3)?TipoOpEns.REGISTRO:TipoOpEns.REGISTRO_PAR),
                     "texto": this.ValsSS[dir1]
                 }]];
             /** 01110rrr **/
@@ -1337,10 +1375,10 @@ class Plataforma {
             /** 01rrrr'r'r' **/
             case 64: case 72: case 80: case 88: case 96: case 104: case 120: case 65: case 73: case 81: case 89: case 97: case 105: case 121: case 66: case 74: case 82: case 90: case 98: case 106: case 122: case 67: case 75: case 83: case 91: case 99: case 107: case 123: case 68: case 76: case 84: case 92: case 100: case 108: case 124: case 69: case 77: case 85: case 93: case 101: case 109: case 125: case 71: case 79: case 87: case 95: case 103: case 111: case 127:
                 this.escribirRegistro("pc", dir+1);
-                dir1 = cod & 56;
+                dir1 = (cod & 56)>>3;
                 dir2 = cod & 7;
-                op1 = this.leerRegistro(dir2);
-                this.escribirRegistro(dir1);
+                op1 = this.leerRegistro(this.ValsR[dir2]);
+                this.escribirRegistro(this.ValsR[dir1], op1);
                 return ["LD", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": this.ValsR[dir1]
@@ -1495,7 +1533,7 @@ class Plataforma {
                     "texto": this.ValsCC[dir1]
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": op2.toString(16).padStart(4, "0")
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op2)
                 }]];
             /** 11ccc100 **/
             case 196: case 204: case 212: case 220: case 228: case 236: case 244: case 252:
@@ -1518,7 +1556,7 @@ class Plataforma {
                     "texto": this.ValsCC[dir1]
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": op2.toString(16).padStart(4, "0")
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op2)
                 }]];
             /** 11qq0001 **/
             case 193: case 209: case 225: case 241:
@@ -1548,7 +1586,7 @@ class Plataforma {
                 this.escribirRegistro("pc", op1*8);
                 return ["RST", 11, 3, 1, [{
                     "tipo": TipoOpEns.NUMERO,
-                    "texto": (op1*8).toString(16).padStart(2, "0")
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op1*8)
                 }]];
             /* Multibyte */
             case 0xCB:
@@ -1685,7 +1723,7 @@ class Plataforma {
                     case 112: case 113: case 114: case 115: case 116: case 117: case 119:
                     case 120: case 121: case 122: case 123: case 124: case 125: case 127:
                         this.escribirRegistro("pc", dir+1);
-                        dir1 = (cod & 15);
+                        dir1 = (cod & 15)>>3;
                         dir2 = (cod & 7);
                         op2 = this.leerRegistro(this.ValsR[dir2]);
                         this.estBanderasOp("BIT", op2, dir1);
@@ -1720,7 +1758,7 @@ class Plataforma {
                     case 176: case 177: case 178: case 179: case 180: case 181: case 183:
                     case 184: case 185: case 186: case 187: case 188: case 189: case 191:
                         this.escribirRegistro("pc", dir+1);
-                        dir1 = (cod & 15);
+                        dir1 = (cod & 15)>>3;
                         dir2 = (cod & 7);
                         op2 = this.leerRegistro(this.ValsR[dir2]);
                         this.escribirRegistro(this.ValsR[dir2], (op2-(1<<dir1)));
@@ -1755,7 +1793,7 @@ class Plataforma {
                     case 240: case 241: case 242: case 243: case 244: case 245: case 247:
                     case 248: case 249: case 250: case 251: case 252: case 253: case 255:
                         this.escribirRegistro("pc", dir+1);
-                        dir1 = (cod & 15);
+                        dir1 = (cod & 15)>>3;
                         dir2 = (cod & 7);
                         op2 = this.leerRegistro(this.ValsR[dir2]);
                         this.escribirRegistro(this.ValsR[dir2], (op2|(1<<dir1)));
@@ -2015,7 +2053,7 @@ class Plataforma {
                         this.escribirPalabra(dir1, op2);
                         return ["LD", 20, 6, 4, [{
                             "tipo": TipoOpEns.DIRECCION,
-                            "texto": "("+dir1.toString(16).padStart(4, "0")+")"
+                            "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                         }, {
                             "tipo": (dir2==3)?TipoOpEns.REGISTRO:TipoOpEns.REGISTRO_PAR,
                             "texto": this.ValsSS[dir2]
@@ -2033,7 +2071,7 @@ class Plataforma {
                             "texto": this.ValsSS[dir1]
                         }, {
                             "tipo": TipoOpEns.DIRECCION,
-                            "texto": "("+dir2.toString(16).padStart(4, "0")+")"
+                            "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir2)
                         }]];
                     /* 01rrr000 */
                     case 64: case 72: case 80: case 88: case 96: case 104: case 112: case 120:
@@ -2112,7 +2150,7 @@ class Plataforma {
                             "texto": (codl[0] == 0xDD)?"IX":"IY"
                         }, {
                             "tipo": TipoOpEns.NUMERO,
-                            "texto": op2.toString(16).padStart(4, "0")
+                            "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                         }]];
                     case 0x22:
                         this.escribirRegistro("pc", dir+3);
@@ -2121,7 +2159,7 @@ class Plataforma {
                         this.escribirPalabra(dir1, op1);
                         return ["LD", 20, 6, 4, [{
                             "tipo": TipoOpEns.DIRECCION,
-                            "texto": "("+dir1+")"
+                            "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
                         }, {
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": (codl[0] == 0xDD)?"IX":"IY"
@@ -2144,7 +2182,7 @@ class Plataforma {
                             "texto": (codl[0] == 0xDD)?"IX":"IY"
                         }, {
                             "tipo": TipoOpEns.DIRECCION,
-                            "texto": "("+op2.toString(16).padStart(4, "0")+")"
+                            "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir2)
                         }]];
                     case 0x2B:
                         this.escribirRegistro("pc", dir+1);
@@ -2163,7 +2201,7 @@ class Plataforma {
                         this.estBanderasOp("INC", [op1]);
                         return ["INC", 23, 6, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd1+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0x35:
                         this.escribirRegistro("pc", dir+2);
@@ -2174,7 +2212,7 @@ class Plataforma {
                         this.estBanderasOp("DEC", [op1]);
                         return ["DEC", 23, 6, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd1+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0x36:
                         this.escribirRegistro("pc", dir+3);
@@ -2185,10 +2223,10 @@ class Plataforma {
                         this.escribirPalabra(dir1+auxd1, op1);
                         return ["LD", 23, 6, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd1+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }, {
                             "tipo": TipoOpEns.NUMERO,
-                            "texto": op2.toString(16).padStart(2, "0")
+                            "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                         }]];
                     case 0x86:
                         this.escribirRegistro("pc", dir+2);
@@ -2204,7 +2242,7 @@ class Plataforma {
                             "texto": "A"
                         }, {
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd2)+")"
                         }]];
                     case 0x8E:
                         this.escribirRegistro("pc", dir+2);
@@ -2221,7 +2259,7 @@ class Plataforma {
                             "texto": "A"
                         }, {
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd2)+")"
                         }]];
                     case 0x96:
                         this.escribirRegistro("pc", dir+2);
@@ -2237,13 +2275,13 @@ class Plataforma {
                             "texto": "A"
                         }, {
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd2)+")"
                         }]];
                     case 0x9E:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
                         auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true);
+                        op1 = obtNumLittleEndian(this.leerMemoria(dir2+auxd2), 1, true);
                         op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1-op2-(auxv1?1:0);
@@ -2254,12 +2292,12 @@ class Plataforma {
                             "texto": "A"
                         }, {
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd2)+")"
                         }]];
                     case 0xA6:
                         this.escribirRegistro("pc", dir+2);
-                        dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
+                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2267,25 +2305,25 @@ class Plataforma {
                         this.estBanderasOp("AND", [res, op1, op2]);
                         return ["AND", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0xAE:
                         this.escribirRegistro("pc", dir+2);
-                        dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = this.leerMemoria(dir1+auxd1);
+                        dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
+                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        op1 = this.leerMemoria(dir2+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
                         this.escribirRegistro("a", res);
                         this.estBanderasOp("XOR", [res]);
                         return ["XOR", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0xB6:
                         this.escribirRegistro("pc", dir+2);
-                        dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
+                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2293,19 +2331,19 @@ class Plataforma {
                         this.estBanderasOp("OR", [res, op1, op2]);
                         return ["OR", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0xBE:
                         this.escribirRegistro("pc", dir+2);
-                        dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
+                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
                         res = op1-op2;
                         this.estBanderasOp("AND", [res, op1, op2]);
                         return ["CP", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }]];
                     case 0xCB:
                         dir = dir+2;
@@ -2319,43 +2357,43 @@ class Plataforma {
                                 // TODO: Regresar
                                 return ["RLC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x0E:
                                 // TODO: Regresar
                                 return ["RRC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x16:
                                 // TODO: Regresar
                                 return ["RL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x1E:
                                 // TODO: Regresar
                                 return ["RR", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x26:
                                 // Regresar
                                 return ["SLA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x2E:
                                 // TODO: Regresar
                                 return ["SRA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x3E:
                                 // TODO: Regresar
                                 return ["SRL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             /* 11bbb110 */
                             case 198: case 206: case 214: case 222: case 230: case 238: case 246: case 254:
@@ -2366,7 +2404,7 @@ class Plataforma {
                                     "texto": dir2
                                 },{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             /* 10bbb110 */
                             case 134: case 142: case 150: case 158: case 166: case 174: case 182: case 190:
@@ -2377,7 +2415,7 @@ class Plataforma {
                                     "texto": dir2
                                 },{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             /* 01bbb110 */
                             case 70: case 78: case 86: case 94: case 102: case 110: case 118: case 126:
@@ -2388,7 +2426,7 @@ class Plataforma {
                                     "texto": dir2
                                 },{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                                    "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             default:
                                 throw new CodigoIlegalError(codl);
@@ -2468,7 +2506,7 @@ class Plataforma {
                         this.escribirMemoria(dir1+auxd1, op2);
                         return ["LD", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd1+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                         }, {
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir2]
@@ -2479,14 +2517,14 @@ class Plataforma {
                         dir1 = (cod-70)>>3;
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
                         auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op2 = this.leerMemoria(dir1+auxd1);
+                        op2 = this.leerMemoria(dir2+auxd2);
                         this.escribirRegistro(this.ValsR[dir1], op2);
                         return ["LD", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
                         }, {
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
-                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+auxd2+")"
+                            "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd2)+")"
                         }]];
                     default:
                         throw new CodigoIlegalError(codl);
@@ -2532,7 +2570,7 @@ class Plataforma {
      * @memberof Plataforma
      */
     ejecutar(todo){
-        let inst;
+        let inst, li;
         let instIni = document.getElementById("outNumInst");
         if (instIni.textContent == "—"){
             instIni.textContent = "0";
@@ -2541,45 +2579,68 @@ class Plataforma {
             document.getElementById("outTiempoTT").textContent = "0";
             document.getElementById("outTiempoMT").textContent = "0";
         }
+        let ol = document.getElementById("hist_inst");
         while (true){
             inst = this.ejecutarInstruccion();
-            console.log(inst);
+            /* Datos principales */
             document.getElementById("outUltInstMnemo").textContent = inst[0];
             let e = document.getElementById("outUltInstParams");
             e.textContent = "";
             if (inst[4].length > 0){
                 inst[4].forEach((p, i) => {
                     let el = document.createElement("span");
-                    el.textContent = p.texto;
+                    let eld = document.createElement("span");
                     switch (p.tipo){
                         case TipoOpEns.NUMERO:
+                            eld.textContent = p.texto;
                             el.dataset.tipo = _("tipo_numero");
+                            el.classList.add("tipo_numero");
                             break;
                         case TipoOpEns.REGISTRO:
+                            eld.textContent = p.texto.toUpperCase();
                             el.dataset.tipo = _("tipo_registro");
+                            el.classList.add("tipo_registro");
                             break;
                         case TipoOpEns.REGISTRO_PAR:
+                            eld.textContent = p.texto.toUpperCase();
                             el.dataset.tipo = _("tipo_registro_par");
+                            el.classList.add("tipo_registro_par");
                             break;
                         case TipoOpEns.BANDERA:
+                            eld.textContent = p.texto.toUpperCase();
                             el.dataset.tipo = _("tipo_bandera");
+                            el.classList.add("tipo_bandera");
                             break;
                         case TipoOpEns.DIRECCION:
+                            eld.textContent = p.texto;
                             el.dataset.tipo = _("tipo_direccion");
+                            el.classList.add("tipo_direccion");
                             break;
                         case TipoOpEns.DIRECCION_R:
-                            el.dataset.tipo = _("tipo_direccion_r")
+                            eld.textContent = p.texto;
+                            el.dataset.tipo = _("tipo_direccion_r");
+                            el.classList.add("tipo_direccion_r");
                             break;
                         case TipoOpEns.DESPLAZAMIENTO:
+                            eld.textContent = p.texto;
                             el.dataset.tipo = _("tipo_desplazamiento");
+                            el.classList.add("tipo_desplazamiento");
                             break;
                         case TipoOpEns.BIT:
+                            eld.textContent = p.texto;
                             el.dataset.tipo = _("tipo_bit");
+                            el.classList.add("tipo_bit");
                     }
+                    el.appendChild(eld);
                     e.appendChild(el);
-                    if (i == 0) e.appendChild(document.createTextNode(", "));
+                    if (i == 0 && inst[4].length > 1) e.appendChild(document.createTextNode(", "));
                 });
             }
+            /* Copia en histórico */
+            li = document.createElement("li");
+            li.innerHTML = e.parentNode.children[0].textContent + " " + e.innerHTML;
+            ol.appendChild(li);
+            /* Datos de tabla */
             document.getElementById("outTamInst").textContent = inst[3];
             document.getElementById("outTiempo2MHz").textContent = inst[1]/2.5;
             document.getElementById("outTiempoT").textContent = inst[1];
@@ -2592,7 +2653,7 @@ class Plataforma {
             c3.textContent = parseInt(c3.textContent) + inst[1];
             let c4 = document.getElementById("outTiempoMT");
             c4.textContent = parseInt(c4.textContent) + inst[2];
-            if (!todo) break;
+            if (!todo || inst[0] == "HALT") break;
         }
     }
 

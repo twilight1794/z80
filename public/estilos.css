@@ -375,6 +375,64 @@ body>footer {
     left: 2rem;
 }
 
+/* Panel Ejecución */
+/* FIX: añadir a Configuración */
+#outUltInstParams>span.tipo_numero {
+    background: black;
+    color: white;
+}
+#outUltInstParams>span.tipo_registro {
+    background: green;
+    color: white;
+}
+#outUltInstParams>span.tipo_registro_par {
+    background: teal;
+    color: white;
+}
+#outUltInstParams>span.tipo_bandera {
+    background: crimson;
+    color: white;
+}
+#outUltInstParams>span.tipo_direccion {
+    background: rebeccapurple;
+    color: white;
+}
+#outUltInstParams>span.tipo_direccion_r {
+    background: blue;
+    color: white;
+}
+#outUltInstParams>span.tipo_desplazamiento {
+    background: brown;
+    color: white;
+}
+#outUltInstParams>span.tipo_bit {
+    background: gray;
+    color: white;
+}
+#outUltInstParams>span {
+    display: inline-block;
+    padding: 2px;
+    border-radius: 4px;
+}
+#outUltInstParams>span::before {
+    content: attr(data-tipo);
+    font-size: small;
+    padding: 2px;
+}
+#outUltInstParams>span>span {
+    display: inline-block;
+    background: var(--f-m);
+    color: var(--c-m);
+    border-radius: 2px;
+    padding: 2px;
+}
+#hist_inst {
+    list-style-position: inside;
+}
+#hist_inst li::marker {
+    font-size: smaller;
+}
+
 /* Panel Código */
 #r-cod .CodeMirror {
     font-family: var(--txtEdTipo), monospace;

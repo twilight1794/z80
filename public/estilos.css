@@ -291,6 +291,8 @@ body>footer {
     width: 20rem;
     height: calc(100% - 1.85rem);
     overflow: auto;
+    background: var(--f-m);
+    color: var(--c-m);
 }
 #r-act [role=tabpanel]:not([aria-current=page]) { display: none; }
 #btnMenuExplorador span { mask-image: var(--i_expl_d); -webkit-mask-image: var(--i_expl_d); }

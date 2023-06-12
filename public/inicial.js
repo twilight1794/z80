@@ -25,6 +25,7 @@ window.funsConfig = {
             document.body.classList.remove("tema-c");
             document.body.classList.add("tema-o");
         }
+        confCMI();
     },
     colorClaroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-m", v); },
     colorClaroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-m", v); },
@@ -444,6 +445,35 @@ function onInputCMI(cm){
 }
 
 /* Configuración */
+
+/**
+ * Crea una instancia de CodeMirror, y la configura
+ *
+ */
+function confCMI(){
+    let w = document.querySelector("#codemirror")
+    w.textContent = "";
+    window.cmi = CodeMirror(w, {
+        lineNumbers: true,
+        gutters: ["CodeMirror-linenumbers", "breakpoints"],
+        theme: (window.matchMedia("(prefers-color-scheme: dark)").matches || document.body.classList.contains("tema-o"))?"monokai":null
+    });
+    cmi.setSize("100%", "100%");
+    cmi.on("gutterClick", (cm, n) => {
+        var info = cm.lineInfo(n);
+        cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : (() => {
+            var marker = document.createElement("u");
+            marker.classList.add("bp");
+            marker.textContent = "●";
+            return marker;
+        })());
+    });
+    cmi.on("change", onChangeCMI);
+    cmi.on("cursorActivity", onInputCMI);
+    onChangeCMI(cmi);
+    onInputCMI(cmi);
+}
+
 /**
  * Establece y aplica un valor en la configuración.
  *
@@ -607,26 +637,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     /* Estado */
     document.getElementById("outEstado").textContent = "Listo";
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', confCMI );
 
-    /* CodeMirror */
-    window.cmi = CodeMirror(document.querySelector("#codemirror"), {
-        lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "breakpoints"],
-    });
-    cmi.setSize("100%", "100%");
-    cmi.on("gutterClick", (cm, n) => {
-        var info = cm.lineInfo(n);
-        cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : (() => {
-            var marker = document.createElement("u");
-            marker.classList.add("bp");
-            marker.textContent = "●";
-            return marker;
-        })());
-    });
-    cmi.on("change", onChangeCMI);
-    cmi.on("cursorActivity", onInputCMI);
-    onChangeCMI(cmi);
-    onInputCMI(cmi);
     // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo. Esta bandera evita ese comportamiento.
     window.cambioCMI = false;
 

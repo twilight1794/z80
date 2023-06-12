@@ -50,7 +50,7 @@ El Emulador Z80 en Web proporciona una interfaz intuitiva y basada en clics para
 Ejecutar::
     Opción en la barra de herramientas superior izquierda
 
-image::BarraArchivo.png[]
+image::doc/BarraArchivo.png[]
 
     Nuevo archivo: Agregar un neuvo fichero de trabajo
     Cargar archivo en ensamblador/hexadecimal: Permite cargar un archivo de código fuente ensamblador desde su dispositivo local al emulador.

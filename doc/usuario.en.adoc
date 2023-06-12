@@ -1,171 +1,182 @@
-= Emulador Z80: Manual de usuario
-twilight1794 <rapunzel@disroot.org> Emi <rapunzel@disroot.org> 
+= Emulator Z80: User Manual
+twilight1794 rapunzel@disroot.org Emi rapunzel@disroot.org
 :doctype: book
-:toc: 
+:toc:
 :library: Asciidoctor
 
 [abstract]
-El Emulador de Ensamblador en Web es una herramienta basada en la web que permite ejecutar y depurar programas escritos en lenguaje ensamblador en un entorno virtual. Este manual proporciona instrucciones detalladas sobre cómo utilizar el emulador y sus características.
+The Web Assembler Emulator is a web-based tool that allows you to run and debug programs written in assembly language in a virtual environment. This manual provides detailed instructions on how to use the emulator and its features.
 
 [[purpose]]
-.Objetivo
-****
-Este documento da la información enfocada en la descripción del sistema para los encargados de desarrollarlo, implementarlo y utilizarlo en {library}.
-****
-TIP: Es más intuitivo probar los ejemplos que se muestran por cuenta misma.
+.Objective
 
-== Introducción
-El emulador para el microprocesador Z80 nos es de mucha utilidad para entener como funciona un mircroprocesaor, como cada línea o instrucción (mnemónicos) pueden afectar a los registros, la pila, la memoria y así con el conjunto de estos lograr ensamblar un programa en lenguaje ensamblador, asimismo poder desensamblar los mnemónicos que se carguen para obtener el código objeto.
-Esto con una interfaz de usuario dónde puede hacer una carga de archivos o poder ingresarlos manualmentecon la posibilidad de guardar temporalmente los archivos que se hayan estado utilizando. 
+This document provides information focused on system description for those responsible for developing, implementing, and using it in {library}.
 
-=== Requisitos del sistema
+TIP: It is more intuitive to try the examples shown on your own.
 
-El Emulador de Ensamblador en Web se ejecuta en un navegador web compatible. Asegúrese de tener los siguientes requisitos:
+== Introduction
+The emulator for the Z80 microprocessor is very useful for understanding how a microprocessor works, how each line or instruction (mnemonics) can affect the registers, stack, memory, and how, with the combination of these, you can assemble a program in assembly language. It also allows you to disassemble the mnemonics that are loaded to obtain the object code.
+This is done with a user interface where you can load files or enter them manually, with the ability to temporarily save the files that have been used.
 
-    Navegador web moderno (Google Chrome, Mozilla Firefox, Safari, etc.)
-    Conexión a Internet estable
+=== System Requirements
 
-== Instalación
+The Web Assembler Emulator runs on a compatible web browser. Make sure you have the following requirements:
+
+    Modern web browser (Google Chrome, Mozilla Firefox, Safari, etc.)
+    Stable Internet connection
+
+== Installation
 
 ??
 
-=== Uso básico
+=== Basic Usage
 
-A continuación se describen los pasos básicos para utilizar el Emulador de Ensamblador en Web:
+Below are the basic steps to use the Web Assembler Emulator:
 
-    Abra su navegador web y acceda a la página web del Emulador de Ensamblador.
-    En la interfaz del emulador, encontrará un editor de código fuente ensamblador y una sección de visualización de resultados.
-    Escriba o pegue su código fuente ensamblador en el editor.
-    Configure las opciones de emulación, como la dirección de carga de dónde se empezará a cargar el programa, el tamaño de emmoria que estará disponible durante la ejecución.
-    Haga clic en el botón "Ejecución" para iniciar la ejeucición dle programa.
-    Utilice las opciones de depuración disponibles, como "Paso a paso" o "Pausa", para realizar un seguimiento paso a paso del programa y analizar el estado de los registros y la memoria en cada paso.
-    Visualice los resultados dependiendo de su programa.
-    Finalice la ejecución cuando el programa haya terminado o haya alcanzado un punto de interrupción.
+    Open your web browser and access the Web Assembler Emulator webpage.
+    In the emulator interface, you will find an assembly source code editor and a results display section.
+    Write or paste your assembly source code into the editor.
+    Configure emulation options, such as the load address from where the program will start loading and the memory size available during execution.
+    Click the "Run" button to start the program execution.
+    Use the available debugging options, such as "Step by Step" or "Pause", to track the program step by step and analyze the state of registers and memory at each step.
+    View the results depending on your program.
+    End the execution when the program has finished or reached a breakpoint.
 
-=== Comandos y opciones
+=== Commands and Options
 
-El Emulador Z80 en Web proporciona una interfaz intuitiva y basada en clics para realizar las siguientes acciones:
+The Web Z80 Emulator provides an intuitive, click-based interface to perform the following actions:
 
 [[defs]]
-Ejecutar::
-    Opción en la barra de herramientas superior izquierda
+Run::
+Option in the top-left toolbar
 
 image::BarraArchivo.png[]
 
-    Nuevo archivo: Agregar un neuvo fichero de trabajo
-    Cargar archivo en ensamblador/hexadecimal: Permite cargar un archivo de código fuente ensamblador desde su dispositivo local al emulador.
-    Abrir proyecto: Permite abrir un conjunto de archivos en ensamblador.
-    Guardar archivo: Guarda los cambios que se le hicieron al archivo
-    Visualizar: ............................ 
-    Duplicar: Duplica alguno de los archivos que se tengan cargados
-    Borrar: Elimina un archivo de la página
-    Renombrar: Cambia el nombre del archivo
-    Establecer archivo como punto de entrada:
+    New file: Add a new working file.
+    Load assembly/hexadecimal file: Allows you to load an assembly source code file from your local device to the emulator.
+    Open project: Allows you to open a set of assembly files.
+    Save file: Saves the changes made to the file.
+    Display: ............................
+    Duplicate: Duplicates one of the loaded files.
+    Delete: Removes a file from the page.
+    Rename: Changes the name of the file.
+    Set file as entry point:
     .........................
-    Descargar archivo en ensamblador: Le permite guardar su código fuente ensamblador en su dispositivo local.
-    Descargar archivo en hexadecimal: Le permite guardar el código hexadecimal ensamblador en su dispositivo local.
-    Descargar proyecto: Descarga el conjunto de archivos que se designaron archivos en su dispositivo local.
+    Download assembly file: Allows you to save your assembly source code to your local device.
+    Download hexadecimal file: Allows you to save the assembly hexadecimal code to your local device.
+    Download project: Downloads the set of designated files as a project to your local device.
 
-Editar::
-    Manipulación del editor de texto
+Edit::
+Text editor manipulation
 
 image::BarraEditar.png[]
 
-    Cortar: Copia y elimina el elemento de texto seleccionado
-    Copiar: Guarda el elemento de texto seleccionado
-    Pegar: Coloca el elemento de texto guardado
-    Buscar y reemplazar: Encuentra coincidencias con el elemento de texto requerido y en caso de requerirlo, sustituirlo
-    Insertar etiqueta: ...........................
-    Insertar directiva: .........................
-    Insertar mnemotécnico: .......................
+    Cut: Copies and removes the selected text element.
+    Copy: Saves the selected text element.
+    Paste: Inserts the saved text element.
+    Find and Replace: Finds matches with the required text element and, if needed, replaces it.
+    Insert label: ...........................
+    Insert directive: .........................
+    Insert mnemonic: .......................
 
-
-Ejecutar::
-    Herramientas de ejecución para el archivo.
+Run::
+Execution tools for the file.
 
 image::BarraEjecutar.png[]
 
-    Ensamblar proyecto: Hace la lectura del archivo y ensambla este.
-    Ejecutar: Empieza la ejecución del archivo hasta alcanzar un punto de interrupción.
-    Ejecutar una sola instrucción: Con el archivo ensamblado hace una ejecución por instrucción.
-    Detener ejecución: En caso de que se haga ejecución completa lo detiene cuando el usuario lo indique.
-    Restablecer: Vuelve a poner como dirección inicial al programa sin argumentos
+    Assemble project: Reads the file and assembles it.
+    Run: Starts the execution of the file until a breakpoint is reached.
+    Execute single instruction: Executes the assembled file one instruction at a time.
+    Stop execution: Stops the execution when the user indicates.
+    Reset: Resets the program to the initial address without arguments.
 
-<<Ejecución>>
+<<Execution>>
 
-Ayuda::
-    Herramientas para el apoyo al usuario para el entendimiento del emulador.
+Help::
+
+    Tools to support users in understanding the emulator.
 
 image::BarraAyuda.png[]
 
-    Manual de usuario: Ayuda al usuario sin conceptos técnicos para facilitar el usuo del emulador.
-    Informar sobre un problema: Ayuda a los desarrolladores a informar sobre algún problema
-    Repositorio: URL directa para el repositorio de GitHub
-    Buscar actualizaciones: Notifica la versión más reciente 
-    Acerda de: Información general del emulador.
+    User Manual: Provides user assistance without technical concepts to facilitate the use of the emulator.
+    Report a Problem: Helps developers report any issues.
+    Repository: Direct URL to the GitHub repository.
+    Check for Updates: Notifies the latest version.
+    About: General information about the emulator.
 
 <<Manual>>
-<<Busquedas>>
+<<Searches>>
 
-=== Barra de actividades
+=== Activity Bar
 
-Explorador::
-[[Explorador]]
+Explorer::
+[[Explorer]]
 image::Explorado.png[]
-La principal función del explorador es poder ver todos los archivos que se abren o se creen para ejecutar código.
 
-Buscar y reemplazar::
-[[Busquedas]]
+The main function of the explorer is to view all the files that are opened or created to execute code.
+
+Find and Replace::
+[[Searches]]
 image::Busqueda.png[]
-El objetivo es ingresar una cadena que se quiera buscar, puede ser uns instrucción o cualquier elemento de texto y hacer una busqueda de coincidencias por el archivo, a su vez también se puede colocar una cadena por la cuál se pueda reemplazar y facilitar el trabajo de busqueda y reemplazo, se puede buscar tanto una cadena, como caracteres de escape o una expresión regular.
 
-Ejecución::
-[[Ejecución]]
+The goal is to enter a string that you want to search for, which can be an instruction or any text element, and find matches throughout the file. Additionally, you can enter a string to replace and facilitate the search and replace process. You can search for a string, escape characters, or a regular expression.
+
+Execution::
+[[Execution]]
 image::Ejecución.png[]
-Se encarga de mostrar el apuntador de instrucción en el cuál se está moviendo el ensamblador, el tamaño que se está utilizando, a partir del apuntador de instrucción nos dice que instrucción es la que se está ejecutando actualmente, la siugiente instrucción que se ejecutara, los ciclos que está teniendo, entre otros apra obtener información útil de que es lo que está pasando en la ejecución.
 
-Consola de mensajes::
-[[Consola]]
+It displays the instruction pointer that the assembler is currently moving to, the size being used, the current instruction being executed, the next instruction to be executed, the cycles being taken, and other information to obtain useful insights into the execution.
+
+Message Console::
+[[Console]]
 image::Consola.png[]
-Nos muestra los mensajes importantes que la ejecución estuvo teniendo, en estos puede ir si no se encontró una etiqueta, si el operando o el registro al que se hizo referencia es invalido o entre otros.
 
-Etiquetas::
-[[Etiquetas]]
+It shows important messages regarding the execution, such as if a label was not found, if the operand or referenced register is invalid, and other relevant information.
+
+Labels::
+[[Labels]]
 image::Etiquetas.png[]
-Nos muestra las etiquetas que la ejecución se dió cuenta que tenía, estás no necesariamente tienenn que estar declaradas o no, por lo que para saber que etiquetas se registraron se tiene que hacer primero la ejecución.
+
+It displays the labels that the execution recognized. These labels do not necessarily have to be declared, so to know which labels were registered, the execution must be performed first.
 
 Macros::
 [[Macros]]
 image::Macros.png[]
-Es el apartado de todas las macros que se detectaron al hacer la ejecución, nos permite tener un control de cuáles se identificaron correctamente y no se identificaron como una etiqueta.
+
+This section lists all the macros detected during execution, allowing us to keep track of which ones were correctly identified and not mistaken for labels.
 
 Manual::
 [[Manual]]
 image::Manual.png[]
-Nos proporciona la documentación directa del manual para saber tanto cómo fue desarrollado el emulador y cómo utilizarlo.
 
-=== Espacio de trabajo
-[[Memoria]]
+Provides direct documentation of the manual to understand how the emulator was developed and how to use it.
+
+=== Workspace
+[[Memory]]
 image::Memoria.png[]
-La sección de memoria nos permite poder ver en estado real con un formato hexadecimal como es que se guardó el archivo que estamos utilizando, en está se le pueden asignar los valores que se necesiten para que el mismo programa haga la recolección de memoria necesaria o la lectura, también se muestra en el lado izqquierdo en formato ASCII. La memoria en esté caso va creciendo.
 
-[[Ayuda]]
+The memory section allows us to view the actual state of the file being used in a hexadecimal format. It can assign values needed for the program to allocate necessary memory or perform read operations. The ASCII representation is shown on the left side. The memory in this case grows.
+
+[[Help]]
 image::Ayuda.png[]
-La sección de ayuda permite que el usuario esté teniendo la información necesaria de lo que está pasando en el programa, si tuvo un error o se ensamblo el programa con éxito.
 
-[[Pila]]
+The help section provides the necessary information for users to understand what is happening in the program, whether an error occurred or the program was successfully assembled.
+
+[[Stack]]
 image::Pila.png[]
-Una pila es una estructura de datos que se utiliza para almacenar información temporal de manera organizada. Su funcionamiento se basa en el principio de "último en entrar, primero en salir" (LIFO, por sus siglas en inglés), lo que significa que el último elemento que se coloca en la pila es el primero en ser retirado.
 
-La pila se implementa utilizando una sección de memoria denominada "pila" o "stack". En ensamblador, hay instrucciones específicas para realizar operaciones en la pila, como empujar (push) y sacar (pop) elementos.
+A stack is a data structure used to store temporary information in an organized manner. It operates on the principle of "last in, first out" (LIFO), meaning that the last element placed in the stack is the first one to be removed.
 
-La función principal de una pila en ensamblador es proporcionar un mecanismo para almacenar temporalmente registros, valores de retorno de funciones y variables locales.
+The stack is implemented using a memory section called the "stack." In assembly language, there are specific instructions for stack operations, such as pushing and popping elements.
 
-[[Registros]]
+The main function of a stack in assembly language is to provide a mechanism for temporarily storing registers, function return values, and local variables.
+
+[[Registers]]
 image::Registros.png[]
-Los registros son ubicaciones de almacenamiento internas de la CPU que se utilizan para almacenar datos temporales, direcciones de memoria, resultados de operaciones y otros fines. Los registros son de tamaño fijo y están directamente accesibles por las instrucciones del procesador, lo que permite un acceso rápido y eficiente a los datos.
 
-Los registros pueden variar dependiendo de la arquitectura del procesador. Sin embargo, hay algunos registros comunes que se encuentran en muchas arquitecturas de procesadores. En este caso se representan con valores hexadecimales y hay reigstros de banderas que prenderan una luz en caso de ser activados dependiendo de la función que se esté ejecutando.
+Registers are internal storage locations within the CPU used for temporarily storing data, memory addresses, operation results, and other purposes. Registers have a fixed size and are directly accessible by processor instructions, allowing fast and efficient data access.
 
-== Sobre este documento
+Registers may vary depending on the processor architecture. However, there are some common registers found in many processor architectures. In this case, they are represented with hexadecimal values, and there are flag registers that indicate specific conditions based on the executed function.
+
+== About this Document
 v1.0, 2023-05-20

@@ -50,7 +50,7 @@ El Emulador Z80 en Web proporciona una interfaz intuitiva y basada en clics para
 Ejecutar::
     Opción en la barra de herramientas superior izquierda
 
-image::doc/BarraArchivo.png[]
+image::docs/BarraArchivo.png[]
 
     Nuevo archivo: Agregar un neuvo fichero de trabajo
     Cargar archivo en ensamblador/hexadecimal: Permite cargar un archivo de código fuente ensamblador desde su dispositivo local al emulador.
@@ -69,7 +69,7 @@ image::doc/BarraArchivo.png[]
 Editar::
     Manipulación del editor de texto
 
-image::doc/BarraEditar.png[]
+image::docs/BarraEditar.png[]
 
     Cortar: Copia y elimina el elemento de texto seleccionado
     Copiar: Guarda el elemento de texto seleccionado
@@ -83,7 +83,7 @@ image::doc/BarraEditar.png[]
 Ejecutar::
     Herramientas de ejecución para el archivo.
 
-image::doc/BarraEjecutar.png[]
+image::docs/BarraEjecutar.png[]
 
     Ensamblar proyecto: Hace la lectura del archivo y ensambla este.
     Ejecutar: Empieza la ejecución del archivo hasta alcanzar un punto de interrupción.
@@ -96,7 +96,7 @@ image::doc/BarraEjecutar.png[]
 Ayuda::
     Herramientas para el apoyo al usuario para el entendimiento del emulador.
 
-image::doc/BarraAyuda.png[]
+image::docs/BarraAyuda.png[]
 
     Manual de usuario: Ayuda al usuario sin conceptos técnicos para facilitar el usuo del emulador.
     Informar sobre un problema: Ayuda a los desarrolladores a informar sobre algún problema
@@ -111,50 +111,50 @@ image::doc/BarraAyuda.png[]
 
 Explorador::
 [[Explorador]]
-image::doc/Explorado.png[]
+image::docs/Explorado.png[]
 La principal función del explorador es poder ver todos los archivos que se abren o se creen para ejecutar código.
 
 Buscar y reemplazar::
 [[Busquedas]]
-image::doc/Busqueda.png[]
+image::docs/Busqueda.png[]
 El objetivo es ingresar una cadena que se quiera buscar, puede ser uns instrucción o cualquier elemento de texto y hacer una busqueda de coincidencias por el archivo, a su vez también se puede colocar una cadena por la cuál se pueda reemplazar y facilitar el trabajo de busqueda y reemplazo, se puede buscar tanto una cadena, como caracteres de escape o una expresión regular.
 
 Ejecución::
 [[Ejecución]]
-image::doc/Ejecución.png[]
+image::docs/Ejecución.png[]
 Se encarga de mostrar el apuntador de instrucción en el cuál se está moviendo el ensamblador, el tamaño que se está utilizando, a partir del apuntador de instrucción nos dice que instrucción es la que se está ejecutando actualmente, la siugiente instrucción que se ejecutara, los ciclos que está teniendo, entre otros apra obtener información útil de que es lo que está pasando en la ejecución.
 
 Consola de mensajes::
 [[Consola]]
-image::doc/Consola.png[]
+image::docs/Consola.png[]
 Nos muestra los mensajes importantes que la ejecución estuvo teniendo, en estos puede ir si no se encontró una etiqueta, si el operando o el registro al que se hizo referencia es invalido o entre otros.
 
 Etiquetas::
 [[Etiquetas]]
-image::doc/Etiquetas.png[]
+image::docs/Etiquetas.png[]
 Nos muestra las etiquetas que la ejecución se dió cuenta que tenía, estás no necesariamente tienenn que estar declaradas o no, por lo que para saber que etiquetas se registraron se tiene que hacer primero la ejecución.
 
 Macros::
 [[Macros]]
-image::doc/Macros.png[]
+image::docs/Macros.png[]
 Es el apartado de todas las macros que se detectaron al hacer la ejecución, nos permite tener un control de cuáles se identificaron correctamente y no se identificaron como una etiqueta.
 
 Manual::
 [[Manual]]
-image::doc/Manual.png[]
+image::docs/Manual.png[]
 Nos proporciona la documentación directa del manual para saber tanto cómo fue desarrollado el emulador y cómo utilizarlo.
 
 === Espacio de trabajo
 [[Memoria]]
-image::doc/Memoria.png[]
+image::docs/Memoria.png[]
 La sección de memoria nos permite poder ver en estado real con un formato hexadecimal como es que se guardó el archivo que estamos utilizando, en está se le pueden asignar los valores que se necesiten para que el mismo programa haga la recolección de memoria necesaria o la lectura, también se muestra en el lado izqquierdo en formato ASCII. La memoria en esté caso va creciendo.
 
 [[Ayuda]]
-image::doc/Ayuda.png[]
+image::docs/Ayuda.png[]
 La sección de ayuda permite que el usuario esté teniendo la información necesaria de lo que está pasando en el programa, si tuvo un error o se ensamblo el programa con éxito.
 
 [[Pila]]
-image::doc/Pila.png[]
+image::docs/Pila.png[]
 Una pila es una estructura de datos que se utiliza para almacenar información temporal de manera organizada. Su funcionamiento se basa en el principio de "último en entrar, primero en salir" (LIFO, por sus siglas en inglés), lo que significa que el último elemento que se coloca en la pila es el primero en ser retirado.
 
 La pila se implementa utilizando una sección de memoria denominada "pila" o "stack". En ensamblador, hay instrucciones específicas para realizar operaciones en la pila, como empujar (push) y sacar (pop) elementos.
@@ -162,7 +162,7 @@ La pila se implementa utilizando una sección de memoria denominada "pila" o "st
 La función principal de una pila en ensamblador es proporcionar un mecanismo para almacenar temporalmente registros, valores de retorno de funciones y variables locales.
 
 [[Registros]]
-image::doc/Registros.png[]
+image::docs/Registros.png[]
 Los registros son ubicaciones de almacenamiento internas de la CPU que se utilizan para almacenar datos temporales, direcciones de memoria, resultados de operaciones y otros fines. Los registros son de tamaño fijo y están directamente accesibles por las instrucciones del procesador, lo que permite un acceso rápido y eficiente a los datos.
 
 Los registros pueden variar dependiendo de la arquitectura del procesador. Sin embargo, hay algunos registros comunes que se encuentran en muchas arquitecturas de procesadores. En este caso se representan con valores hexadecimales y hay reigstros de banderas que prenderan una luz en caso de ser activados dependiendo de la función que se esté ejecutando.

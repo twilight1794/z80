@@ -194,10 +194,10 @@
     <string name="r_pila_dir">Dirección</string>
     <string name="r_pila_val">Valor</string>
     <string name="r_reg">Registros</string>
-    <string name="r_r">Registros principales</string>
+    <string name="r_r">Registros generales</string>
     <string name="r_rx">Registros alternativos</string>
     <string name="r_16b">Registros de 16 bits</string>
-    <string name="r_e">Registros especiales</string>
+    <string name="r_e">Registros hardware</string>
     <string name="r_f">Registro F</string>
     <string name="r_fx">Registro F'</string>
     <string name="menubar_f_maquina">Máquina</string>

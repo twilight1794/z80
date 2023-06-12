@@ -725,7 +725,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
     /** Eventos de Pila **/
     /** Eventos de Registros **/
-    Array.from(document.querySelectorAll(":is(#r-r, #r-rx, #r-e) td:not(:empty)")).forEach((e) => {
+    Array.from(document.querySelectorAll(":is(#r-r, #r-rx, #r-e) td:not(:empty, #v-iff1, #v-iff2)")).forEach((e) => {
         e.addEventListener("dblclick", iniValidarEdicion);
         e.addEventListener("change", (c) => rValidarEdicion(c, 8) );
         e.addEventListener("blur", (c) => rValidarEdicion(c, 8) );
@@ -737,10 +737,10 @@ window.addEventListener("DOMContentLoaded", () => {
         e.addEventListener("blur", (c) => rValidarEdicion(c, 16) );
         e.addEventListener("input", (c) => rInputEdicion(c, 16) );
     });
-    Array.from(document.querySelectorAll("#r-f th[scope=row]")).forEach((e) => {
+    Array.from(document.querySelectorAll("#r-f th[scope=row], #t-iff1, #t-iff2")).forEach((e) => {
         e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.nextElementSibling.id.slice(2)) );
      });
-    Array.from(document.querySelectorAll("#r-f td")).forEach((e) => {
+    Array.from(document.querySelectorAll("#r-f td, #v-iff1, #v-iff2")).forEach((e) => {
         e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.id.slice(2)) );
      });
 

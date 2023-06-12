@@ -388,16 +388,16 @@ body>footer {
 #r-cod .breakpoints { width: .8rem; }
 
 /* Panel Registros */
-#r-reg th {
+#r-reg th, #t-iff1, #t-iff2 {
     -webkit-user-select: none;
     user-select: none;
 }
-#r-f td {
+#r-f td, #v-iff1, #v-iff2 {
     filter: grayscale(1);
     -webkit-user-select: none;
     user-select: none;
 }
-#r-f td.activo { filter: grayscale(0) drop-shadow(0 0 4px var(--s-band)); }
+#r-f td.activo, #v-iff1.activo, #v-iff2.activo { filter: grayscale(0) drop-shadow(0 0 4px var(--s-band)); }
 
 /* Ajuste de elementos */
 button {

@@ -50,7 +50,7 @@ The Web Z80 Emulator provides an intuitive, click-based interface to perform the
 Run::
 Option in the top-left toolbar
 
-image::BarraArchivo.png[]
+image::docs/BarraArchivo.png[]
 
     New file: Add a new working file.
     Load assembly/hexadecimal file: Allows you to load an assembly source code file from your local device to the emulator.
@@ -69,7 +69,7 @@ image::BarraArchivo.png[]
 Edit::
 Text editor manipulation
 
-image::BarraEditar.png[]
+image::docs/BarraEditar.png[]
 
     Cut: Copies and removes the selected text element.
     Copy: Saves the selected text element.
@@ -82,7 +82,7 @@ image::BarraEditar.png[]
 Run::
 Execution tools for the file.
 
-image::BarraEjecutar.png[]
+image::docs/BarraEjecutar.png[]
 
     Assemble project: Reads the file and assembles it.
     Run: Starts the execution of the file until a breakpoint is reached.
@@ -96,7 +96,7 @@ Help::
 
     Tools to support users in understanding the emulator.
 
-image::BarraAyuda.png[]
+image::docs/BarraAyuda.png[]
 
     User Manual: Provides user assistance without technical concepts to facilitate the use of the emulator.
     Report a Problem: Helps developers report any issues.
@@ -111,59 +111,59 @@ image::BarraAyuda.png[]
 
 Explorer::
 [[Explorer]]
-image::Explorado.png[]
+image::docs/Explorado.png[]
 
 The main function of the explorer is to view all the files that are opened or created to execute code.
 
 Find and Replace::
 [[Searches]]
-image::Busqueda.png[]
+image::docs/Busqueda.png[]
 
 The goal is to enter a string that you want to search for, which can be an instruction or any text element, and find matches throughout the file. Additionally, you can enter a string to replace and facilitate the search and replace process. You can search for a string, escape characters, or a regular expression.
 
 Execution::
 [[Execution]]
-image::Ejecución.png[]
+image::docs/Ejecución.png[]
 
 It displays the instruction pointer that the assembler is currently moving to, the size being used, the current instruction being executed, the next instruction to be executed, the cycles being taken, and other information to obtain useful insights into the execution.
 
 Message Console::
 [[Console]]
-image::Consola.png[]
+image::docs/Consola.png[]
 
 It shows important messages regarding the execution, such as if a label was not found, if the operand or referenced register is invalid, and other relevant information.
 
 Labels::
 [[Labels]]
-image::Etiquetas.png[]
+image::docs/Etiquetas.png[]
 
 It displays the labels that the execution recognized. These labels do not necessarily have to be declared, so to know which labels were registered, the execution must be performed first.
 
 Macros::
 [[Macros]]
-image::Macros.png[]
+image::docs/Macros.png[]
 
 This section lists all the macros detected during execution, allowing us to keep track of which ones were correctly identified and not mistaken for labels.
 
 Manual::
 [[Manual]]
-image::Manual.png[]
+image::docs/Manual.png[]
 
 Provides direct documentation of the manual to understand how the emulator was developed and how to use it.
 
 === Workspace
 [[Memory]]
-image::Memoria.png[]
+image::docs/Memoria.png[]
 
 The memory section allows us to view the actual state of the file being used in a hexadecimal format. It can assign values needed for the program to allocate necessary memory or perform read operations. The ASCII representation is shown on the left side. The memory in this case grows.
 
 [[Help]]
-image::Ayuda.png[]
+image::docs/Ayuda.png[]
 
 The help section provides the necessary information for users to understand what is happening in the program, whether an error occurred or the program was successfully assembled.
 
 [[Stack]]
-image::Pila.png[]
+image::docs/Pila.png[]
 
 A stack is a data structure used to store temporary information in an organized manner. It operates on the principle of "last in, first out" (LIFO), meaning that the last element placed in the stack is the first one to be removed.
 
@@ -172,7 +172,7 @@ The stack is implemented using a memory section called the "stack." In assembly 
 The main function of a stack in assembly language is to provide a mechanism for temporarily storing registers, function return values, and local variables.
 
 [[Registers]]
-image::Registros.png[]
+image::docs/Registros.png[]
 
 Registers are internal storage locations within the CPU used for temporarily storing data, memory addresses, operation results, and other purposes. Registers have a fixed size and are directly accessible by processor instructions, allowing fast and efficient data access.
 

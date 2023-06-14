@@ -23,6 +23,19 @@
 - Puertos e instrucciones I/O
 - Características avanzadas de macros
 
+## Compilación
+
+Para generar los ejecutables y el instalador desde un sistema Unix, se requieren las siguientes dependencias:
+
+- `makensis` para generar el instalador para Windows
+- `node` y `neu` para generar los ejecutables
+- `gcab` para empaquetar la versión portable para Windows
+- `sed` para versionar automáticamente los archivos fuente
+
+En la terminal, ejecuta `./preparar.sh todo $version`, donde `$version` es el número de versión a generar. Eso generará todos los archivos para distribuir. Para limpiar el espacio de trabajo, puedes ejecutar `./preparar.sh limpiar`.
+
+Para hacerlo desde un sistema Windows, el proceso debería ser similar, o también se puede utilizar WSL.
+
 ## Créditos
 
 - Integrantes del equipo, en orden alfabético:
@@ -32,11 +45,14 @@
   - Santiago Rodríguez
   - Carlos Villaseñor
 - **Logotipo**:
-  - Fue tomado del [tema de íconos Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
+  - Creado por Santiago Rodríguez
   - Tiene licencia GPLv3
 - **NeutralinoJS**:
   - Usamos NeutralinoJS para generar los binarios para Windows y Linux
   - Tiene licencia MIT
+- **NSIS**:
+  - Usamos NSIS para generar los instaladores para Windows
+  - Tiene licencia zlib
 - **Tipografías**:
   - Predeterminadamente, usamos dos tipografías:
   - *Carlito*: reemplazo libre de Calibri, para el texto base

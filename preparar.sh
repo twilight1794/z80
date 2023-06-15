@@ -39,7 +39,6 @@ fi
 if [[ "instalador" == "$1" || "todo" == "$1" ]]; then
     echo "* Generando instaladores..."
     mkdir -p dist/instalador
-    echo "makensis instalador.nsi -DVERSION=$2"
     sed "3 a \!define VERSION $2" < instalador.nsi | makensis -
 fi
 

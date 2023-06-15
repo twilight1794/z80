@@ -51,9 +51,8 @@ class ExpresionInvalidaError extends LexicoError {
         else if (tipo instanceof TipoVal) super("err_expresioninvalida_tipoval", {e: tipo.name});
     }
 }
-/// Errores ocurridos durante la reducción de símbolos de parámetros
 
-// Errores ocurridos durante la fase del análisis sintáctico
+// Errores ocurridos durante la fase del análisis sintáctico y semántico
 class SintacticoError extends BaseError {
     constructor(){
         if (arguments) super(...arguments);
@@ -74,6 +73,13 @@ class NumeroParametrosIncorrectoError extends SintacticoError {
             "nr": nr
         });
     }
+}
+class DesplazamientoNoAdmitidoError extends SintacticoError {
+    constructor(){ super("err_desplazamientonoadmitido"); }
+}
+/// Errores ocurridos durante la reducción de símbolos de parámetros
+class BucleInfinitoError extends SintacticoError {
+    constructor(){ super("err_bucleinfinito"); }
 }
 
 // Errores ocurridos durante la fase de ejecución

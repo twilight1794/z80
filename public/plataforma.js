@@ -1,6 +1,11 @@
 "use strict"
 
 // Enums
+/**
+ * Tipo de mensaje de registro
+ *
+ * @class TipoLog
+ */
 class TipoLog {
     static INFO = new TipoLog("info");
     static AVISO = new TipoLog("aviso");
@@ -8,6 +13,11 @@ class TipoLog {
     constructor(name){ this.name = name; }
 }
 
+/**
+ * Tipo de símbolo, para propósitos de representación en la interfaz
+ *
+ * @class TipoOpEns
+ */
 class TipoOpEns {
     static NUMERO = new TipoOpEns("numero");
     static REGISTRO = new TipoOpEns("registro");
@@ -17,6 +27,13 @@ class TipoOpEns {
     static DIRECCION_R = new TipoOpEns("direccion_r");
     static DESPLAZAMIENTO = new TipoOpEns("desplazamiento");
     static BIT = new TipoOpEns("bit");
+    constructor(name){ this.name = name; }
+}
+
+class Estado {
+    static LISTO = new Estado("listo");
+    static EJECUCION = new Estado("ejecucion");
+    static ESPERA = new Estado("espera");
     constructor(name){ this.name = name; }
 }
 
@@ -75,7 +92,13 @@ function ASCIIaCar(n){
  * @class Plataforma
  */
 class Plataforma {
-    inicio = 0;
+
+    /**
+     * Bandera que indica si hay algún programa en ejecución
+     *
+     * @memberof Plataforma
+     */
+    estado;
 
     /* Correspondencias Binario-Símbolos */
     /** Registros (r) */
@@ -634,6 +657,85 @@ class Plataforma {
             case 7:
                 return this.leerBandera("sf");
         }
+    }
+
+    /**
+     * Añade una etiqueta a la lista de etiquetas reconocidas
+     *
+     * @param {String} i Nombre de la etiqueta
+     * @param {String} t Tipo de dato que la etiqueta referencia
+     * @param {*} v Valor a establecer a la etiqueta
+     * @memberof Plataforma
+     */
+    anadirEtiqueta(i, t, v){
+        let ev = document.getElementById("eti-"+i);
+        if (ev) throw new EtiquetaExistenteError(obj.eti); // NOTE: Ver si esto se queda
+        /* ID */
+        let ei = document.createElement("dt");
+        ei.textContent = i;
+        /* Tipo */
+        switch (t.toLowerCase()){
+            case "dfb":
+                ei.dataset.tipo = "Byte";
+            case "dfs":
+                ei.dataset.tipo = "Espacio";
+            case "dwl":
+                ei.dataset.tipo = "Palabra, little-endian";
+            case "dwm":
+                ei.dataset.tipo = "Palabra, big-endian";
+            case "loc":
+                ei.dataset.tipo = "Localidad";
+            case "equ":
+                ei.dataset.tipo = "Entero";
+        }
+        /* Valor */
+        ev = document.createElement("dd");
+        ev.id = "eti-"+i;
+        if (Number.isNaN(v)){ // En proceso de definición
+            ev.className = "v-defnan";
+            ev.textContent = "Pendiente...";
+        } else if (v == null){ // Referenciado, pero no definido
+            ev.className = "v-ref";
+            ev.textContent = "No definido";
+        } else {
+            ev.className = "v-def"; // Definido
+            ev.textContent = v.toString(16).padStart(4, "0");
+        }
+        document.querySelector("#r-eti .lvars").append(ei, ev);
+    }
+
+    modificarEtiqueta(i, v){
+        let ev = document.getElementById("eti-"+i);
+        if (!ev) throw new BaseError("Etiqueta inexistente");
+        if (Number.isNaN(v)){
+            ev.className = "v-defnan";
+            ev.textContent = "Pendiente...";
+        } else if (v == null){
+            ev.className = "v-ref";
+            ev.textContent = "No definido";
+        } else {
+            ev.className = "v-def";
+            ev.textContent = v.toString(16).padStart(4, "0");
+        }
+    }
+
+    obtenerEtiqueta(i){
+        let ev = document.getElementById("v-"+i);
+        if (!ev) return [undefined, undefined];
+        let v, t;
+        switch (ev.className){
+            case "v-defnan": v = NaN; break;
+            case "v-ref": v = null; break;
+            case "v-def": v = parseInt(ev.textContent, 16); break;
+        }
+        switch (ev.dataset.tipo){
+            case "Byte": t = "dfb"; break;
+            case "Espacio": t = "dfs"; break;
+            case "Palabra, little-endian": t = "dwl"; break;
+            case "Palabra, big-endian": t = "dwm"; break;
+            case "Localidad": t = "loc"; break;
+        }
+        return [v, t];
     }
 
     /**
@@ -2571,17 +2673,16 @@ class Plataforma {
      */
     ejecutar(todo){
         let inst, li;
-        let instIni = document.getElementById("outNumInst");
-        if (instIni.textContent == "—"){
-            instIni.textContent = "0";
-            document.getElementById("outTiempo2MHzT").textContent = "0";
-            document.getElementById("outTiempo2MHzT").textContent = "0";
-            document.getElementById("outTiempoTT").textContent = "0";
-            document.getElementById("outTiempoMT").textContent = "0";
-        }
         let ol = document.getElementById("hist_inst");
+        let instIni = document.getElementById("outNumInst");
+        if (instIni.textContent == "—") instIni.textContent = "0";
         while (true){
-            inst = this.ejecutarInstruccion();
+            try {
+                inst = this.ejecutarInstruccion();
+            } catch (e){
+                plat.escribirLog(TipoLog.ERROR, e.message);
+                break;
+            }
             /* Datos principales */
             document.getElementById("outUltInstMnemo").textContent = inst[0];
             let e = document.getElementById("outUltInstParams");
@@ -2653,11 +2754,34 @@ class Plataforma {
             c3.textContent = parseInt(c3.textContent) + inst[1];
             let c4 = document.getElementById("outTiempoMT");
             c4.textContent = parseInt(c4.textContent) + inst[2];
-            if (!todo || inst[0] == "HALT") break;
+            if (!todo || inst[0] == "HALT"){
+                plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
+                break;
+            };
+        }
+    }
+    
+    /**
+     * Establece el estado de la CPU
+     *
+     * @param {Estado} es Estado: si verdadero, en ejecución, de lo contrario, en espera
+     * @memberof Plataforma
+     */
+    estEstado(es){
+        this.estado = es;
+        let eti = document.getElementById("outEstado");
+        switch (es){
+            case Estado.LISTO:
+                eti.textContent = _("estado_listo"); break;
+            case Estado.EJECUCION:
+                eti.textContent = _("estado_ejecucion"); break;
+            case Estado.ESPERA:
+                eti.textContent = _("estado_pausa");
         }
     }
 
     constructor(){
+        this.estEstado(Estado.LISTO);
         // Establecer SP
         this.escribirRegistro("SP", parseInt(localStorage.getItem("selPlatMem"))-1);
     }

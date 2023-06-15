@@ -25,7 +25,6 @@ window.funsConfig = {
             document.body.classList.remove("tema-c");
             document.body.classList.add("tema-o");
         }
-        confCMI();
     },
     colorClaroCM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-c-m", v); },
     colorClaroFM: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--c-f-m", v); },
@@ -101,10 +100,19 @@ window.funsConfig = {
             let nodos = document.querySelectorAll("html :not([translate=no]) *:not([translate=no])");
             let nodo, idcad;
             for (let i = 0; i < nodos.length; i++){
-                nodo = nodos[i].childNodes[0];
-                if (nodos[i].hasChildNodes() && nodo.nodeType == 3){
-                    idcad = nodo.nodeValue.match(/\$([A-Za-z0-9\._]+)/)?.[1];
-                    if (idcad) nodo.textContent = msgs[idcad];
+                for (let j = 0; j < nodos[i].childNodes.length; j++){
+                    nodo = nodos[i].childNodes[j];
+                    if (nodo.nodeType == 3){
+                        idcad = nodo.nodeValue.match(/\$([A-Za-z0-9\._]+)/)?.[1];
+                        if (idcad) nodo.textContent = msgs[idcad];
+                    }
+                }
+                let ats = Array.from(nodos[i].attributes).filter((e) => e.name == "title" || e.name == "aria-label" );
+                for (let j = 0; j < ats.length; j++){
+                    if (ats[j]){
+                        idcad = ats[j].nodeValue.match(/\$([A-Za-z0-9\._]+)/)?.[1];
+                        if (idcad) ats[j].textContent = msgs[idcad];    
+                    }
                 }
             }
         }
@@ -119,12 +127,12 @@ window.combTeclas = {
     "M-f a": btnAbrirAsm,
     "M-f b": btnAbrirHex,
     "M-f c": btnAbrirProj,
-    "M-f g": btnAccionesVisualizar,
-    "M-f h": btnAccionesGuardar,
-    "M-f i": btnAccionesDuplicar,
-    "M-f j": btnAccionesBorrar,
-    "M-f k": btnAccionesRenombrar,
-    "M-f l": btnAccionesEntralizar,
+    "M-f g": btnVisualizar,
+    "M-f h": btnGuardar,
+    "M-f i": btnDuplicar,
+    "M-f j": btnBorrar,
+    "M-f k": btnRenombrar,
+    "M-f l": btnEntralizar,
     "M-f d": null,
     "M-f e": null,
     "M-f f": null,
@@ -142,7 +150,7 @@ window.combTeclas = {
     "M-a a": btnManual,
     "M-a p": null,
     "M-a r": null,
-    "M-a m": null,
+    "M-a m": btnComprobarActs,
     "M-a s": btnAcercaDe,
 }
 
@@ -181,8 +189,41 @@ function btnAbrirHex(){
 function btnAbrirProj(){
     document.getElementById("archivoProj").click();
 }
+function btnVisualizar(){
+    proy.visualizarArchivo(document.querySelector("#archivos [aria-selected=true] button").textContent);
+}
+function btnGuardar(){
+    proy.guardarArchivo(document.querySelector("#archivos [aria-selected=true] button").textContent);
+}
+function btnDuplicar(){
+    let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
+    mostrarDialogo("dlgNuevoArchivo", null, (o) => {
+        if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
+            proy.duplicarArchivo(nom, o.txtDlgNuevoArchivoNombre);
+    });
+}
+function btnBorrar(){
+    let nom = document.querySelector("#archivos [aria-selected=true]");
+    if (nom.classList.contains("guardar"))
+        mostrarDialogo("dlgBorrarConfirmacion", null, (o) => {
+            if (o["@"] == "s") proy.borrarArchivo(nom.children[1].textContent);
+        });
+    else proy.borrarArchivo(e.children[1].textContent);
+}
+function btnRenombrar(){
+    let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
+    mostrarDialogo("dlgNuevoArchivo", null, (o) => {
+        if (o["@"] == "k" && o.txtDlgNuevoArchivoNombre)
+            proy.renombrarArchivo(nom, o.txtDlgNuevoArchivoNombre);
+    });
+}
+function btnEntralizar(){
+    let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
+    proy.entralizarArchivo(nom);
+}
 function btnCerrarProj(){
     let guardar = Array.from(document.querySelectorAll("#archivos .guardar"));
+    if (plat.estado != Estado.LISTO) return;
     if (guardar.length > 0) mostrarDialogo("dlgCerrarNoGuardadoConfirmacion", { "nom": nom }, (o) => {
         switch (o["@"]){
             case "s":
@@ -195,7 +236,6 @@ function btnCerrarProj(){
         if (o["@"] == "s") guardar.forEach((e) => proy.borrarArchivo());
     });
     // QUESTION: ¿basta con comprobar los archivos?
-    // FIX: comprobar que no haya nada en ejecución
 }
 function btnBuscar(){
     document.getElementById("btnMenuBuscar").children[0].click();
@@ -210,35 +250,55 @@ function btnInsX(e){
 function btnEnsamblar(){
     // Limpiar antes de cualquier otra cosa
     btnRestablecer();
-
     let a = document.querySelector("#archivos .entrada") || document.querySelector("#archivo [aria-selected=true]");
     window.prog = new ProgramaAsm(a.textContent);
     plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
 }
 function btnEjecutar(){
-    document.getElementById("btnMenuEjecucion").children[0].click();
-    try {
-        plat.ejecutar(true);
-        plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
-    } catch {}
+    if (document.getElementById("r-eje").getAttribute("aria-current") == "page")
+        document.getElementById("btnMenuEjecucion").children[0].click();
+    plat.ejecutar(true);
 }
 function btnAvanzar(){
-    document.getElementById("btnMenuEjecucion").children[0].click();
+    if (document.getElementById("r-eje").getAttribute("aria-current") == "page")
+        document.getElementById("btnMenuEjecucion").children[0].click();
     plat.ejecutar(false);
 }
 function btnDetener(){
-    plat.estPC(0);  // FIX: Implementa estPC
-                    // FIX: Implementar prog.inicio, para indicar en dónde debe empezar a ejecutarse esto
+    plat.estEstado(Estado.LISTO);
+    // Restablecer PC
+    plat.escribirRegistro("pc", window?.prog?.inicio || 0);
+    // Limpiar cuadro de Ejecución
+    document.getElementById("outNumInst").textContent = "—";
+    document.getElementById("outTiempo2MHzT").textContent = "0";
+    document.getElementById("outTiempo2MHzT").textContent = "0";
+    document.getElementById("outTiempoTT").textContent = "0";
+    document.getElementById("outTiempoMT").textContent = "0";
 }
-function btnRestablecer(){}
+function btnRestablecer(){
+    if (plat.estado == Estado.LISTO || plat.estado == Estado.ESPERA) btnDetener();
+    window.prog = undefined;
+}
 function btnManual(){
     document.getElementById("btnMenuManual").children[0].click();
+}
+function btnComprobarActs(){
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://raw.githubusercontent.com/twilight1794/z80/main/neutralino.config.json");
+    xhr.onload = () => {
+        if (xhr.readyState === xhr.DONE && (xhr.status === 200 || xhr.status === 304)){
+            let obj = JSON.parse(xhr.responseText);
+            if (obj.version != document.querySelector("meta[name=versionNumero]").getAttribute("content"))
+                window.open("https://github.com/twilight1794/z80/releases", "_blank");
+            else mostrarDialogo("dlgComprobarActs");
+        }
+    };
+    xhr.send();
 }
 function btnAcercaDe(){
     mostrarDialogo("dlgAcercaDe", {
         "version": document.querySelector("meta[name=versionNumero]").getAttribute("content"),
         "fecha": document.querySelector("meta[name=versionFecha]").getAttribute("content"),
-        "commit": document.querySelector("meta[name=versionCommit]").getAttribute("content"),
         "sistema": window?.NL_OS || "Web",
         "neu": window?.NL_VERSION || "N/A",
         "ua": navigator.userAgent,
@@ -254,7 +314,7 @@ function btnAccionesNuevo(){
 }
 function btnAccionesVisualizar(){
     let nom = document.querySelector("#archivos :checked");
-    proy.visualizarArchivo(nom);
+    proy.visualizarArchivo(nom.nextElementSibling.textContent);
 }
 function btnAccionesGuardar(){
     Array.from(document.querySelectorAll("#archivos :checked")).forEach((e) => {
@@ -291,10 +351,8 @@ function btnAccionesRenombrar(){
     });
 }
 function btnAccionesEntralizar(){
-    let vie = document.querySelector("#archivos .entrada");
-    if (vie) vie.classList.remove("entrada");
     let nom = document.querySelector("#archivos :checked");
-    nom.classList.add("entrada");
+    if (nom) proy.entralizarArchivo(nom.nextElementSibling.textContent);
 }
 
 /* Funciones de Buscar y reemplazar */
@@ -335,6 +393,19 @@ function btnByrReemplazarTodo(){
 
 }
 
+function btnAccionesLimpiarMsgs(){
+    document.querySelector("#r-msg [role=log]").textContent = "";
+}
+function chkAccionesMostrarInfo(e){
+    Array.from(document.querySelectorAll("#r-msg .info")).forEach((el) => el.hidden = !e.target.checked );
+}
+function chkAccionesMostrarAviso(e){
+    Array.from(document.querySelectorAll("#r-msg .aviso")).forEach((el) => el.hidden = !e.target.checked );
+}
+function chkAccionesMostrarError(e){
+    Array.from(document.querySelectorAll("#r-msg .error")).forEach((el) => el.hidden = !e.target.checked );
+}
+
 /* Eventos de edición manual */
 function iniValidarEdicion(c) {
     c.target.contentEditable = true;
@@ -347,12 +418,10 @@ function pilaValidarEdicion(c){
     plat.escribirPalabra(dir, parseInt(c.target.textContent, 16));
 }
 
-function memoriaValidarEdicion(c) {
+function memoriaValidarEdicion(c){
     c.target.contentEditable = false;
     if (!c.target.textContent.length) c.target.textContent = c.target.dataset.ultimoValor;
-    if (!c.target.classList.contains("ascii")) {
-        c.target.textContent = c.target.textContent.padStart(2, "0");
-    }
+    if (!c.target.classList.contains("ascii")) c.target.textContent = c.target.textContent.padStart(2, "0");
     // Actualización en la pila
     let fCel = Array.from(c.target.parentNode.children);
     let fFil = Array.from(c.target.parentNode.parentNode.children);
@@ -368,18 +437,18 @@ function memoriaValidarEdicion(c) {
         }
     }
 }
-function memoriaInputEdicion(c) {
+function memoriaInputEdicion(c){
     let f = Array.from(c.target.parentNode.children);
     let e = c.target;
     let otro, val;
-    if (e.classList.contains("ascii")) {
+    if (e.classList.contains("ascii")){
         otro = f[f.indexOf(e) - 16];
         val = e.textContent.charCodeAt(0);
         // val = 160 -> En el navegador, introducir un espacio es introducir un nbsp
         val = (val == 160) ? 32 : val;
         if (e.textContent.length > 1 || (e.textContent.length == 1 && !(val > 31 && val < 127)))
             e.textContent = e.dataset.ultimoValor;
-        else if (e.textContent.length) {
+        else if (e.textContent.length){
             e.dataset.ultimoValor = e.textContent;
             otro.textContent = val.toString(16).padStart(2, "0").toUpperCase();
         }
@@ -388,12 +457,12 @@ function memoriaInputEdicion(c) {
         e.textContent = e.textContent.toUpperCase();
         if (e.textContent.length > 2 || (!(/^[0-9A-F]?[0-9A-F]?$/).test(e.textContent)))
             e.textContent = e.dataset.ultimoValor.toUpperCase();
-        else if (e.textContent.length) {
+        else if (e.textContent.length){
             e.dataset.ultimoValor = e.textContent;
             otro.textContent = ASCIIaCar(parseInt(e.textContent, 16));
         }
     }
-    if (e.textContent.length) {
+    if (e.textContent.length){
         let range = document.createRange();
         let sel = window.getSelection();
         range.setStart(e.childNodes[0], e.textContent.length);
@@ -402,19 +471,19 @@ function memoriaInputEdicion(c) {
         sel.addRange(range);
     }
 }
-function rValidarEdicion(c, t) {
+function rValidarEdicion(c, t){
     let e = c.target;
     e.contentEditable = false;
     e.textContent = e.textContent.padStart(t / 4, "0");
 }
-function rInputEdicion(c, t) {
+function rInputEdicion(c, t){
     let r = (t == 8) ? (/^[0-9A-F]?[0-9A-F]?$/) : (/^[0-9A-F]?[0-9A-F]?[0-9A-F]?[0-9A-F]?$/);
     let e = c.target;
     e.textContent = e.textContent.toUpperCase();
     if (e.textContent.length > t / 4 || (!r.test(e.textContent)))
         e.textContent = e.dataset.ultimoValor;
     else e.dataset.ultimoValor = e.textContent;
-    if (e.textContent.length) {
+    if (e.textContent.length){
         let range = document.createRange();
         let sel = window.getSelection();
         range.setStart(e.childNodes[0], e.textContent.length);
@@ -433,9 +502,8 @@ function onChangeCMI(cm){
     if (e && !cambioCMI){
         e.classList.add("guardar");
         sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
-        if (document.getElementById("chkIntTitulo").checked && document.title.indexOf("★") == -1){
+        if (document.getElementById("chkIntTitulo").checked && document.title.indexOf("★") == -1)
             document.title = "★ " + document.title;
-        }
     }
 }
 function onInputCMI(cm){
@@ -447,34 +515,6 @@ function onInputCMI(cm){
 /* Configuración */
 
 /**
- * Crea una instancia de CodeMirror, y la configura
- *
- */
-function confCMI(){
-    let w = document.querySelector("#codemirror")
-    w.textContent = "";
-    window.cmi = CodeMirror(w, {
-        lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "breakpoints"],
-        theme: (window.matchMedia("(prefers-color-scheme: dark)").matches || document.body.classList.contains("tema-o"))?"monokai":null
-    });
-    cmi.setSize("100%", "100%");
-    cmi.on("gutterClick", (cm, n) => {
-        var info = cm.lineInfo(n);
-        cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : (() => {
-            var marker = document.createElement("u");
-            marker.classList.add("bp");
-            marker.textContent = "●";
-            return marker;
-        })());
-    });
-    cmi.on("change", onChangeCMI);
-    cmi.on("cursorActivity", onInputCMI);
-    onChangeCMI(cmi);
-    onInputCMI(cmi);
-}
-
-/**
  * Establece y aplica un valor en la configuración.
  *
  * @param {String} p Propiedad a establecer.
@@ -484,7 +524,7 @@ function estConfig(p, v){
     let val = v;
     let cfg = document.getElementById(p);
     try {
-        if (val != undefined) localStorage.setItem(p, v.toString());
+        if (val != undefined && val != null) localStorage.setItem(p, v.toString());
         else {
             val = localStorage.getItem(p);
             if (!val){
@@ -524,7 +564,7 @@ function iniMem(){
         tof.textContent = (i*16).toString(16).toUpperCase().padStart(4, "0");
         nFila.appendChild(tof);
         for (let j=0; j<16; j++) nFila.insertCell().textContent = "00";
-        for (let j=0; j<16; j++) {
+        for (let j=0; j<16; j++){
             let c = nFila.insertCell();
             c.textContent = "␀";
             c.classList.add("ascii");
@@ -635,9 +675,25 @@ window.addEventListener("DOMContentLoaded", () => {
         xhr.send();
     });
 
-    /* Estado */
-    document.getElementById("outEstado").textContent = "Listo";
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', confCMI );
+    /* CodeMirror */
+    window.cmi = CodeMirror(document.getElementById("codemirror"), {
+        lineNumbers: true,
+        gutters: ["CodeMirror-linenumbers", "breakpoints"],
+    });
+    cmi.setSize("100%", "100%");
+    cmi.on("gutterClick", (cm, n) => {
+        var info = cm.lineInfo(n);
+        cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : (() => {
+            var marker = document.createElement("u");
+            marker.classList.add("bp");
+            marker.textContent = "●";
+            return marker;
+        })());
+    });
+    cmi.on("change", onChangeCMI);
+    cmi.on("cursorActivity", onInputCMI);
+    onChangeCMI(cmi);
+    onInputCMI(cmi);
 
     // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo. Esta bandera evita ese comportamiento.
     window.cambioCMI = false;
@@ -659,16 +715,42 @@ window.addEventListener("DOMContentLoaded", () => {
             var reader = new FileReader();
             reader.readAsText(a, "UTF-8");
             reader.onload = function (e2){
-                proy.anadirArchivo(a.name.split(".").slice(0, -1).join("."), e2.target.result);
+                let n = a.name.split(".").slice(0, -1).join(".");
+                proy.nuevoArchivo(n, e2.target.result);
+                proy.anadirArchivo(n);
             }
-            reader.onerror = function (){ console.error("Error leyendo archivo"); }
+            reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_asm")); }
+        }
+    });
+    document.getElementById("archivoHex").addEventListener("change", (e) => {
+        for (let a of e.target.files){
+            var reader = new FileReader();
+            reader.readAsText(a, "UTF-8");
+            reader.onload = function (e2){
+                let hex = new programHex();
+                let prueba = e2.target.result.split("\n");
+                for (let i = 0; i < prueba.length; i++){
+                    hex.getElements(prueba[i].replace("\r", "").toUpperCase(),i);
+                }
+                hex.translate(hex.bytes);
+                let n = a.name.split(".").slice(0, -1).join(".");
+                proy.nuevoArchivo(n, hex.asmCode.join("\n"));
+                proy.anadirArchivo(n);
+            }
+            reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_hex")); }
         }
     });
 
-    /* Asignación de eventos Barra de menú  */
+    /* Asignación de eventos Barra de menú */
     document.getElementById("btnAbrirAsm").addEventListener("click", btnAbrirAsm);
     document.getElementById("btnAbrirHex").addEventListener("click", btnAbrirHex);
     document.getElementById("btnAbrirProj").addEventListener("click", btnAbrirProj);
+    document.getElementById("btnVisualizar").addEventListener("click", btnVisualizar);
+    document.getElementById("btnGuardar").addEventListener("click", btnGuardar);
+    document.getElementById("btnDuplicar").addEventListener("click", btnDuplicar);
+    document.getElementById("btnBorrar").addEventListener("click", btnBorrar);
+    document.getElementById("btnRenombrar").addEventListener("click", btnRenombrar);
+    document.getElementById("btnEntralizar").addEventListener("click", btnEntralizar);
     document.getElementById("btnCerrarProj").addEventListener("click", btnCerrarProj);
     document.getElementById("btnBuscar").addEventListener("click", btnBuscar);
     document.getElementById("btnEnsamblar").addEventListener("click", btnEnsamblar);
@@ -679,6 +761,7 @@ window.addEventListener("DOMContentLoaded", () => {
         e.addEventListener("click", (e2) => { btnInsX(e2.target); });
     });
     document.getElementById("btnManual").addEventListener("click", btnManual);
+    document.getElementById("btnComprobarActs").addEventListener("click", btnComprobarActs);
     document.getElementById("btnAcercaDe").addEventListener("click", btnAcercaDe);
 
     /* Asignación de eventos Actividades */
@@ -782,6 +865,5 @@ window.addEventListener("DOMContentLoaded", () => {
             }
             window.comb = undefined;
         }
-        return;
     });
 });

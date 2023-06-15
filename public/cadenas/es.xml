@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns="https://campanita.xyz/ns/resources">
-    <string name="nombre_app">Emulador Z80</string>
+    <string name="nombre_app">RetroZ80Simulator</string>
     <string name="input_archivoasm_aria_label">Carga de archivo en ensamblador</string>
     <string name="input_archivohex_aria_label">Carga de archivo en hexadecimal</string>
     <string name="input_archivoproj_aria_label">Carga de archivo de proyecto</string>
@@ -42,7 +42,7 @@
     <string name="btn_ejecutar">Ejecutar</string>
     <string name="btn_avanzar">Ejecutar una sola instrucción</string>
     <string name="btn_detener">Detener ejecución</string>
-    <string name="btn_restablecer">Restablecer</string>
+    <string name="btn_restablecer">Restablecer máquina</string>
     <string name="menubar_principal_macros">Macros</string>
     <string name="btn_crearmacro">Crear macro...</string>
     <string name="btn_macros">Macros...</string>
@@ -81,7 +81,7 @@
     <string name="r_eje">Ejecución</string>
     <string name="out_ultinst">Última instrucción</string>
     <string name="out_taminst">Tamaño</string>
-    <string name="out_tiempo2mhz">Tiempo a 2 MHz</string>
+    <string name="out_tiempo2mhz">Tiempo a 2.5 MHz</string>
     <string name="out_tiempot">Tiempo T</string>
     <string name="out_tiempom">Tiempo M</string>
     <string name="progt">Programa</string>
@@ -203,6 +203,9 @@
     <string name="r_fx">Registro F'</string>
     <string name="menubar_f_maquina">Máquina</string>
     <string name="out_estado_aria_label">Estado</string>
+    <string name="estado_listo">Listo</string>
+    <string name="estado_ejecucion">En ejecución</string>
+    <string name="estado_pausa">En pausa</string>
     <string name="out_memtam_aria_label">Tamaño de memoria</string>
     <string name="menubar_f_archivo">Archivo</string>
     <string name="out_arctam_aria_label">Tamaño</string>
@@ -215,10 +218,10 @@
     <string name="dlg_descargar_sel">Seleccione el formato a descargar:</string>
     <string name="dlg_descargar_asm">Ensamblador (%ext)</string>
     <string name="dlg_descargar_hex">Hexadecimal (.hex)</string>
-    <string name="dlg_acercade_iconode">Icono de Emulador Z80</string>
+    <string name="dlg_comprobaracts_actualizado">La aplicación está actualizada a la última versión.</string>
+    <string name="dlg_acercade_iconode">Icono de RetroZ80Simulator</string>
     <string name="dlg_acercade_version">Versión</string>
     <string name="dlg_acercade_fecha">Fecha</string>
-    <string name="dlg_acercade_commit">Commit</string>
     <string name="dlg_acercade_sistema">Sistema</string>
     <string name="dlg_acercade_ua">Agente de usuario</string>
     <string name="dlg_acercade_autores">Autores</string>
@@ -251,13 +254,19 @@
     <string name="err_noimplementado">El mnemotécnico o directiva %m no ha sido implementado aún.</string>
     <string name="err_tipoparametrosincorrecto">La instrucción %m ha recibido un parámetro de tipo incorrecto.</string>
     <string name="err_numeroparametrosincorrecto">La instrucción %ins esperaba %ne parámetros, pero ha recibido %nr.</string>
+    <string name="err_desplazamientonoadmitido">Esta instrucción no admite desplazamiento para IX e IY.</string>
+    <string name="err_bucleinfinito">Se encontró un bucle infinito mientras se reducía una expresión.</string>
     <string name="err_ejecucion">Error desconocido durante la ejecución del programa.</string>
     <string name="err_direccioninvalida">La dirección de memoria 0x%dir no existe.</string>
     <string name="err_valortamano">El tamaño del valor es demasiado grande para un registro de %t bytes.</string>
-    <string name="err_pilavacia">La pila ya está vacía</string>
+    <string name="err_pilavacia">La pila ya está vacía.</string>
     <string name="err_memoriallena">La pila ha llenado toda la memoria.</string>
     <string name="err_codigoilegal">La secuencia de bytes %b no corresponde a ninguna instrucción.</string>
+    <string name="err_archivo_asm">Hubo un error al cargar el archivo en ensamblador.</string>
+    <string name="err_archivo_hex">Hubo un error al cargar el archivo hexadecimal.</string>
     <!-- Mensajes de eventos informativos -->
     <string name="msg_ensamblado_finalizado">Ensamblado finalizado correctamente.</string>
     <string name="msg_ejecucion_finalizada">Ejecución finalizada correctamente.</string>
+    <!-- Mensajes de eventos de advertencia -->
+    <string name="av_directiva_ignorada">La directiva %d será ignorada.</string>
 </resources>

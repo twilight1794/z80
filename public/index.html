@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:l="https://campanita.xyz/ns/log" xml:lang="es" role="application">
     <head>
         <title>$nombre_app</title>
-        <meta name="versionNumero" content="1.0" />
-        <meta name="versionFecha" content="mié 14 jun 2023 13:25:39 UTC" />
+        <meta name="versionNumero" content="1.0.0.0" />
+        <meta name="versionFecha" content="mié 14 jun 2023 22:18:53 UTC" />
         <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
@@ -591,8 +591,8 @@
         </main>
         <footer>
             <ul aria-label="$menubar_f_maquina" role="menubar">
-                <li class="hint--top" aria-label="$out_estado_aria_label"><output id="outEstado"></output></li>
-                <li class="hint--top" aria-label="$out_memtam_aria_label"><output id="outMemTam"></output></li>
+                <li class="hint--top-right" aria-label="$out_estado_aria_label"><output id="outEstado"></output></li>
+                <li class="hint--top-right" aria-label="$out_memtam_aria_label"><output id="outMemTam"></output></li>
             </ul>
             <ul aria-label="$menubar_f_archivo" role="menubar">
                 <li class="hint--top-left" aria-label="$out_arctam_aria_label"><output id="outArcTam"></output></li>
@@ -619,6 +619,9 @@
         <dialog id="dlgDescargar" data-botones="a"><form method="dialog">
             <p>$dlg_descargar_sel</p>
             <div id="contDlgDescargar"><button id="btnDlgDescargarAsm">$dlg_descargar_asm</button><button id="btnDlgDescargarHex">$dlg_descargar_hex</button></div>
+        </form></dialog>
+        <dialog id="dlgComprobarActs" data-botones="a"><form method="dialog">
+            <p>$dlg_comprobaracts_actualizado</p>
         </form></dialog>
         <dialog id="dlgAcercaDe" data-botones="a"><form method="dialog">
             <div id="dlgAcercaDeEsque">

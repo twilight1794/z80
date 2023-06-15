@@ -147,18 +147,6 @@ class ProgramaAsm {
     lineas = []; //#
 
     /**
-     * Índice de etiquetas a resolver
-     * Posibles valores:
-     * No definida -> undefined
-     * Declarada, no definida aún -> [null, []]
-     * Definida -> number
-     * Referenciada, no definida -> [undefined, []]
-     * 
-     * @memberof ProgramaAsm
-     */
-    tablaSimbolos = {}; //#
-
-    /**
      * Listado de instrucciones cuyas referencias a etiquetas aún no han sido definidas
      * En este paso:
      * undefined -> pendiente; null -> definido parcialmente
@@ -223,20 +211,17 @@ class ProgramaAsm {
      */
     caseRelevante = false;
 
-    /* Valores de retorno */
-    #retEnd = Symbol("retEnd");
-
     /* Expresiones regulares */
     #r_defeti = /^([A-Za-z_\.\?][A-Za-z0-9_\.\?]*)\s*:\s*/;
     #r_eti = /^([A-Za-z_\.\?][A-Za-z0-9_\.\?]*)\s*/;
     #r_mnemo = /^([A-Z]+|[a-z]+)\s*/;
     #r_com = /^;.*$/;
     #r_num = /^((?:0x(?:(?:[0-9A-F]|[0-9a-f])+))|(?:0b[01]+)|(?:(?:[0-9A-F]|[0-9a-f])+[Hh])|(?:[01]+[Bb])|(?:[0-7]+[Oo])|(?:0[0-7]+)|(?:[0-9]+))\s*/;
-    #r_op = /^(!|~|INV|\*|\/|%|\+|\-|<<|>>|<|<=|>|>=|==|!=|&|\^|\||&&|\|\|)\s*/;
+    #r_op = /^(~|INV|\*|\/|%|\+|\-|<<|>>|<=|<|>=|>|==|!=|!|&|\^|&&|\|\||\|)\s*/;
     #r_cad = /^(?:"([^"]*)")\s*/;
-    #r_reg = /^(A|B|D|E|H|L|I|R|BC|DE|HL|SP|AF|IX|IY)\s*/i;
-    #r_band = /^(P|V|Z|S|NC|NP|NV|NZ|NS)\s*/i;
-    //#r_band = /^(Z|P|M|NZ|NC|PO|PE)\s*/i;
+    #r_reg = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)\s*/i;
+    #r_band = /^(NZ|NC|PO|PE|Z|P|M)\s*/i;
+    #r_amb = /^(C)\s*/i;
     #r_sep = /^,\s*/;
     #r_par_l = /^\{\s*/;
     #r_par_r = /^\}\s*/;
@@ -429,7 +414,7 @@ class ProgramaAsm {
                         bytes.push(0xed, 74+(this.ValsSS[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "add":
                 if (lop.length == 1){
@@ -453,7 +438,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 134, ...obtLittleEndianNum(lop[0].valor, 1));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } else if (lop.length == 2){
                     try {
                         this.esTipo(TipoParam.RHL, lop[0]);
@@ -473,7 +458,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 9+(this.ValsRR[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 }
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "and":
@@ -499,7 +484,7 @@ class ProgramaAsm {
                     bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor, 1), 70+(lop[0].valor<<3));
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "call":
                 if (lop.length == 1){
                     bytes.push(0xcd);
@@ -568,7 +553,7 @@ class ProgramaAsm {
                     bytes.push(0x11+(this.ValsSS[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "di":
                 bytes.push(0xf3);
                 break;
@@ -609,7 +594,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.RIY, lop[1]);
                         bytes.push(0xfd, 0xe3);
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 break;
             case "exx":
@@ -621,12 +606,12 @@ class ProgramaAsm {
             case "im":
                 bytes.push(0xed);
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                if (lop[0].tipo != TipoVal.Numero) throw new BaseError();
+                if (lop[0].tipo != TipoVal.Numero) throw new TipoParametrosIncorrectoError(ins,);
                 switch (lop[0].valor){
                     case 0: bytes.push(0x46); break;
                     case 1: bytes.push(0x56); break;
                     case 2: bytes.push(0x5e); break;
-                    default: throw new TipoParametrosIncorrectoError({m: ins});
+                    default: throw new TipoParametrosIncorrectoError(ins);
                 }
             case "inc":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
@@ -657,7 +642,7 @@ class ProgramaAsm {
                     bytes.push(3+(this.ValsSS[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "ind":
                 bytes.push(0xed, 0xaa);
                 break;
@@ -679,23 +664,23 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.HL, lop[1]);
-                        if (lop[1].valor != 0) throw new BaseError();
+                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xe9);
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IX, lop[1]);
-                        if (lop[1].valor != 0) throw new BaseError();
+                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xdd, 0xe9);
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IY, lop[1]);
-                        if (lop[1].valor != 0) throw new BaseError();
+                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xfd, 0xe9);
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 }
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
@@ -726,7 +711,7 @@ class ProgramaAsm {
                             bytes.push(0x28, ...obtLittleEndianNum(lop[1].valor-2, 1));
                             break;
                         default:
-                            throw new TipoParametrosIncorrectoError({m: ins});
+                            throw new TipoParametrosIncorrectoError(ins);
                     }
                     break;
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
@@ -749,7 +734,7 @@ class ProgramaAsm {
                         bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[0]);
@@ -768,7 +753,7 @@ class ProgramaAsm {
                         bytes.push(0xdf, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.R, lop[0]);
@@ -819,7 +804,7 @@ class ProgramaAsm {
                             break;
                         } catch {}
                     }
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.SP, lop[0]);
@@ -838,7 +823,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0xf9);
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.SS, lop[0]);
@@ -850,7 +835,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xed, 75+(this.ValsSS[lop[0].valor]<<4), ...obtLittleEndianNum(lop[1].valor, 2));
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.DIRECCION, lop[0]);
@@ -879,7 +864,7 @@ class ProgramaAsm {
                         bytes.push(0xfd, 0x22, ...obtLittleEndianNum(lop[0].valor, 2));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIX, lop[0]);
@@ -891,7 +876,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIY, lop[0]);
@@ -903,7 +888,7 @@ class ProgramaAsm {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
                         bytes.push(0xfd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RI, lop[0]);
@@ -929,7 +914,7 @@ class ProgramaAsm {
                     bytes.push(0x12);
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "ldd":
                 bytes.push(0xed, 0xa8);
                 break;
@@ -982,7 +967,7 @@ class ProgramaAsm {
                     bytes.push(193+(ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "push":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {
@@ -1000,7 +985,7 @@ class ProgramaAsm {
                     bytes.push(197+(ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "res":
                 bytes = this.#obtCodigoOp("set", lop);
                 bytes[3] = bytes[3]+64;
@@ -1043,7 +1028,7 @@ class ProgramaAsm {
                     bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor), 1);
                     break;
                 } catch {}
-                throw new TipoParametrosIncorrectoError({m: ins});
+                throw new TipoParametrosIncorrectoError(ins);
             case "rlca":
                 bytes.push(0x07);
                 break;
@@ -1086,7 +1071,7 @@ class ProgramaAsm {
                         bytes.push(0xed, 66+(this.ValsSS[lop[1].valor]<<4));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoError({m: ins});
+                    throw new TipoParametrosIncorrectoError(ins);
                 } else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "scf":
                 bytes.push(0x37);
@@ -1118,10 +1103,384 @@ class ProgramaAsm {
                 bytes[0] = bytes[0]+40;
                 break;
             default:
-                throw new NoImplementadoError({m: ins});
+                throw new NoImplementadoError(ins);
         }
         return bytes;
     }
+
+/**
+ *
+ * Devuelve el tamaño en bytes que ocupa una instrucción ya ensamblada
+ *
+ * @param {String} ins Mnemotécnico, en minúsculas, a procesar
+ * @param {Array} lop Array que contiene los parámetros pasados al mnemotécnico
+ * @return {Number} Tamaño en bytes de la instrucción
+ * @memberof ProgramaAsm
+ */
+#obtCodigoTam(ins, lop){
+    switch (ins){
+        case "adc":
+            if (lop.length == 1) return this.#obtCodigoTam("add", lop);
+            else if (lop.length == 2) return 2; // RHL, SS
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "add":
+            if (lop.length == 1){
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.N, lop[0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    return 3;
+                } catch {}
+                // A, HL -> 1
+                throw new BaseError();
+            } else if (lop.length == 2){
+                try {
+                    this.esTipo(TipoParam.RHL, lop[0]);
+                    this.esTipo(TipoParam.SS, lop[1]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0]);
+                    this.esTipo(TipoParam.PP, lop[1]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0]);
+                    this.esTipo(TipoParam.RR, lop[1]);
+                    return 2;
+                } catch {}
+                throw new BaseError();
+            }
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "and":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return this.#obtCodigoTam("add", lop);
+        case "bit":
+            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+            this.esTipo(TipoParam.B, lop[0]);
+            try {
+                this.esTipo(TipoParam.R, lop[1]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IX, lop[1]);
+                return 4;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IY, lop[1]);
+                return 4;
+            } catch {} // b, (HL) -> 2
+            throw new BaseError();
+        case "call":
+            if (lop.length == 1 || lop.length == 2) return 3;
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "ccf": return 1;
+        case "cp":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return this.#obtCodigoTam("add", lop);
+        case "cpd": return 2;
+        case "cpdr": return 2;
+        case "cpi": return 2;
+        case "cpir": return 2;
+        case "cpl": return 1;
+        case "daa": return 1;
+        case "dec":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            try { // (HL) -> 1
+                this.esTipo(TipoParam.R, lop[0]);
+                return 1;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IX, lop[0]);
+                return 3;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IY, lop[0]);
+                return 3;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIX, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIY, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.SS, lop[0]);
+                return 1;
+            } catch {}
+            throw new BaseError();
+        case "di": return 1;
+        case "djnz":
+            if (lop.length == 1) return 2;
+            else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+        case "ei": return 1;
+        case "ex":
+            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+            try {
+                this.esTipo(TipoParam.RAF, lop[0]);
+                return 1;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RDE, lop[0]);
+                return 1;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.SP, lop[0]);
+                try {
+                    this.esTipo(TipoParam.RHL, lop[1]);
+                    return 1;
+                } catch { return 2; } // SP, RIX; SP, RIY
+            } catch {}
+            break;
+        case "exx": return 1;
+        case "halt": return 1;
+        case "im":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return 2;
+        case "inc":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            try { // inc (hl) -> 1
+                this.esTipo(TipoParam.R, lop[0]);
+                return 1;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IX, lop[0]);
+                return 3;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IY, lop[0]);
+                return 3;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIX, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIY, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.SS, lop[0]);
+                return 1;
+            } catch {}
+            throw new BaseError();
+        case "ind": return 2;
+        case "indr": return 2;
+        case "ini": return 2;
+        case "inir": return 2;
+        case "jp":
+            if (lop.length == 1){
+                try {
+                    this.esTipo(TipoParam.HL, lop[1]);
+                    if (lop[1].valor != 0) throw new BaseError();
+                    return 1;
+                } catch { return 2; } // NN, IX, IY
+            }
+            else if (lop.length == 2) return 3;
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "jr":
+            if (lop.length == 1 || lop.length == 2) return 2;
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "ld":
+            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+            try {
+                this.esTipo(TipoParam.IX, lop[0]);
+                try {
+                    this.esTipo(TipoParam.R, lop[1]);
+                    return 3;
+                } catch { return 4; } // IX, N; IX, NN
+            } catch {}
+            try {
+                this.esTipo(TipoParam.IY, lop[0]);
+                try {
+                    this.esTipo(TipoParam.R, lop[1]);
+                    return 3;
+                } catch { return 4; } // IY, N; IY, NN
+            } catch {}
+            try {
+                this.esTipo(TipoParam.R, lop[0]);
+                try { // R, (HL) -> 1, (HL), R -> 1, (HL), n -> 2, HL, (nn) -> 3
+                    this.esTipo(TipoParam.IX, lop[1]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[1]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.N, lop[1]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.R, lop[1]);
+                    return 1;
+                } catch {}
+                if (lop[0].valor == "a"){
+                    try {
+                        this.esTipo(TipoParam.RI, lop[1]);
+                        return 2;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.RR, lop[1]);
+                        return 2;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.DBC, lop[1]);
+                        return 1;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.DDE, lop[1]);
+                        return 1;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        return 3;
+                    } catch {}
+                }
+                throw new BaseError();
+            } catch {}
+            try {
+                this.esTipo(TipoParam.SP, lop[0]);
+                try {
+                    this.esTipo(TipoParam.RHL, lop[1]);
+                    return 1;
+                } catch { return 2; } // SP, RIX; SP, RIY
+            } catch {}
+            try {
+                this.esTipo(TipoParam.SS, lop[0]);
+                try {
+                    this.esTipo(TipoParam.NN, lop[1]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.DIRECCION, lop[1]);
+                    return 4;
+                } catch {}
+                throw new BaseError();
+            } catch {}
+            try {
+                this.esTipo(TipoParam.DIRECCION, lop[0]);
+                try {
+                    this.esTipo(TipoParam.RA, lop[1]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RHL, lop[1]);
+                    return 3;
+                } catch { return 4; } // DIRECCION, SS; DIRECCION, RIX; DIRECCION, RIY
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIX, lop[0]);
+                return 4; // RIX, NN; RIX, DIRECCION
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RIY, lop[0]);
+                return 4; // RIY, NN; RIY, DIRECCION
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RI, lop[0]);
+                this.esTipo(TipoParam.RA, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.RR, lop[0]);
+                this.esTipo(TipoParam.RA, lop[0]);
+                return 2;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.DBC, lop[0]);
+                this.esTipo(TipoParam.RA, lop[0]);
+                return 1;
+            } catch {}
+            try {
+                this.esTipo(TipoParam.DDE, lop[0]);
+                this.esTipo(TipoParam.RA, lop[0]);
+                return 1;
+            } catch {}
+            throw new BaseError();
+        case "ldd": return 2;
+        case "lddr": return 2;
+        case "ldi": return 2;
+        case "ldir": return 2;
+        case "neg": return 2;
+        case "nop": return 1;
+        case "or":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return this.#obtCodigoTam("add", lop);
+        case "otdr": return 2;
+        case "otir": return 2;
+        case "outd": return 2;
+        case "outi": return 2;
+        case "pop":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            try {
+                this.esTipo(TipoParam.QQ, lop[0]);
+                return 1;
+            } catch { return 2; } // RIX, RIY
+        case "push":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            try {
+                this.esTipo(TipoParam.QQ, lop[0]);
+                return 1;
+            } catch { return 2; } // RIX, RIY
+        case "res":
+            return this.#obtCodigoTam("set", lop);
+        case "ret":
+            if (lop.length == 0) return 1;
+            else if (lop.length == 1) return 2; // CC
+            else throw new NumeroParametrosIncorrectoError(ins, [0, 1], lop.length);
+        case "reti": return 2;
+        case "retn": return 2;
+        case "rl": return this.#obtCodigoTam("rlc", lop);
+        case "rla": return 1;
+        case "rlc": // FIX: Corregir rlc: 1 parámetro siempre
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            try {
+                this.esTipo(TipoParam.R, lop[0]);
+                return 2;
+            } catch { return 4; } //IX, IY
+        case "rlca": return 1;
+        case "rld": return 2;
+        case "rr": return this.#obtCodigoTam("rlc", lop);
+        case "rra": return 1;
+        case "rrc": return this.#obtCodigoTam("rlc", lop);
+        case "rrca": return 1;
+        case "rrd": return 1;
+        case "rst":
+            if (lop.length == 1) return 1; // RST
+            else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+        case "sbc":
+            if (lop.length == 1) return this.#obtCodigoTam("add", lop);
+            else if (lop.length == 2) return 2; // RHL, SS
+            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+        case "scf": return 1;
+        case "set":
+            return this.#obtCodigoTam("set", lop);
+        case "sla": return this.#obtCodigoTam("rlc", lop);
+        case "sra": return this.#obtCodigoTam("rlc", lop);
+        case "srl": return this.#obtCodigoTam("rlc", lop);
+        case "sub":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return this.#obtCodigoTam("add", lop);
+        case "xor":
+            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            return this.#obtCodigoTam("add", lop);
+        default:
+            throw new NoImplementadoError(ins);
+    }
+}
 
     /**
      * Función auxiliar de analLexico que almacena un símbolo en el ámbito correcto
@@ -1138,12 +1497,12 @@ class ProgramaAsm {
 
     /**
      *
-     * Analiza léxicamente una línea de ensamblador
+     * Analiza léxica y sintácticamente una línea de ensamblador
      *
      * @memberof ProgramaAsm
      */
-    #analLexico(){
-        let l, obj, res, valEti;
+    #analLexicoSintactico(){
+        let l, obj, res;
         for (let i = 0; i < this.lineas.length; i++){
             l = this.lineas[i].trim();
             if (!l.length) continue;
@@ -1153,11 +1512,8 @@ class ProgramaAsm {
                 res = this.#r_defeti.exec(l);
                 l = l.substring(res[0].length);
                 obj.eti = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
-                // Validar que la etiqueta no esté ya declarada
-                valEti = this.tablaSimbolos[obj.eti];
-                if (valEti && !(valEti instanceof Array && valEti[0] == undefined)) throw new EtiquetaExistenteError(obj.eti); // NOTE: Ver si esto se queda
-                // Si es primera declaración, se marca
-                else this.tablaSimbolos[obj.eti] = [null, ["hehe"]];
+                // Añadimos la etiqueta a la lista
+                plat.anadirEtiqueta(obj.eti, "loc", NaN);
                 // FIX: Iterar sobre los símbolos en busca
                 //if (obj.eti in this.#etisIndef) this.#etisIndef = this.#etisIndef.filter((e) => e != obj.eti);
             }
@@ -1179,18 +1535,18 @@ class ProgramaAsm {
                 case "CASE":
                     if (obj.ops && obj.ops.length == 2 && ((obj.ops[0] == 111 && obj.pos[1] == 110) || (obj.ops[0] == 79 && obj.ops[1] == 78))) this.caseRelevante = true;
                     else if (obj.ops && obj.ops.length == 3 && ((obj.ops[0] == 111 && obj.pos[1] == 102 && obj.pos[2] == 102) || (obj.ops[0] == 79 && obj.ops[1] == 70 && obj.ops[2] == 70))) this.caseRelevante = false;
-                    else throw new ValorCASEInvalidoError({v: l});
+                    else throw new ValorCASEInvalidoError(l);
                     break;
                 case "DFS":
-                    if (!obj.ops) throw new ParametroInexistenteError({m: "DFS"});
-                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new MultiplesParametrosError({m: "DFS"});
+                    if (!obj.ops) throw new ParametroInexistenteError("DFS");
+                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new MultiplesParametrosError("DFS");
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
                 case "DFB":
                 case "DWL":
                 case "DWM":
-                    if (!obj.ops) throw new ParametroInexistenteError({m: obj.mnemo});
+                    if (!obj.ops) throw new ParametroInexistenteError(obj.mnemo);
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1199,8 +1555,8 @@ class ProgramaAsm {
                     this.#guardarEnAmbito(obj);
                     return;
                 case "EQU":
-                    if (!obj.ops) throw new ParametroInexistenteError({m: "EQU"});
-                    if (!obj.eti) throw new EtiquetaInexistenteError({m: "EQU"});
+                    if (!obj.ops) throw new ParametroInexistenteError("EQU");
+                    if (!obj.eti) throw new EtiquetaInexistenteError("EQU");
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1221,13 +1577,14 @@ class ProgramaAsm {
                     this.ambitos.pop();
                     break;
                 case "INCL":
-                    if (!obj.ops) throw new ParametroInexistenteError({m: "INCL"});
-                    if (this.#r_cad.test(res[0]))
-                        var arr = plat.cargarArchivoEnsamblador(this.#r_cad.exec(res[0])[0]);
-                    for (let j = 0; j<arr.length; j++) this.lineas.splice(i+j, 0, arr[j]);
+                    if (!obj.ops) throw new ParametroInexistenteError("INCL");
+                    if (this.#r_cad.test(l)){
+                        let arr = plat.cargarArchivoEnsamblador(this.#r_cad.exec(l)[1]);
+                        for (let j = 0; j<arr.length; j++) this.lineas.splice(i+j, 1, arr[j]);
+                    } else throw new TipoParametrosIncorrectoError("INCL");
                     break;
                 case "ORG":
-                    if (!obj.ops) throw new ParametroInexistenteError({m: "ORG"});
+                    if (!obj.ops) throw new ParametroInexistenteError("ORG");
                     obj.tipo = TipoSimbolo.ORG;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1235,7 +1592,7 @@ class ProgramaAsm {
                 case "HEX":
                 case "HOF":
                 case "LIST":
-                    plat.escribirLog(TipoLog.AVISO, "La directiva "+obj.mnemo+" será ignorada.");
+                    plat.escribirLog(TipoLog.AVISO, _("av_directiva_ignorada", {"d": obj.mnemo}));
                     continue;
                 default:
                     obj.tipo = TipoSimbolo.MNEMO;
@@ -1273,24 +1630,24 @@ class ProgramaAsm {
                     else if (res[1].startsWith("0")) return parseInt(res[1], 8);
                     else return parseInt(res[1]);
                 })();
-            } else if (this.#r_eti.test(cexp)){
-                res = this.#r_eti.exec(cexp);
-                cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.ETIQUETA);
-                obj.tipo = TipoVal.ETIQUETA;
-                obj.valor = res[1];
             } else if (this.#r_reg.test(cexp)){
                 res = this.#r_reg.exec(cexp);
                 cexp = cexp.substring(res[0].length);
                 if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.REGISTRO);
-                obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.REGISTRO);
+                obj.tipo = TipoVal.REGISTRO;
                 obj.valor = res[1].toLowerCase();
             } else if (this.#r_band.test(cexp)){
                 res = this.#r_band.exec(cexp);
                 cexp = cexp.substring(res[0].length);
                 if (ult.tipo != null) throw new ExpresionInvalidaError(TipoVal.BANDERA);
-                obj.tipo = ((res[1].toLowerCase() == "c")?TipoVal.AMB_C:TipoVal.BANDERA);
+                obj.tipo = TipoVal.BANDERA;
                 obj.valor = res[1].toLowerCase();
+            } else if (this.#r_amb.test(cexp)){
+                res = this.#r_amb.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.AMB_C);
+                obj.tipo = TipoVal.AMB_C;
+                obj.valor = "c";
             } else if (this.#r_cad.test(cexp)){
                 res = this.#r_cad.exec(cexp);
                 cexp = cexp.substring(res[0].length);
@@ -1300,28 +1657,38 @@ class ProgramaAsm {
             } else if (this.#r_op.test(cexp)){
                 res = this.#r_op.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                let disamb = null; // Indicador de aridad en el operador
+                let disamb = ""; // Indicador de aridad en el operador
                 obj.aridad = 2;
-                if (ult.tipo == TipoVal.REGISTRO) 
-                    if (res[1] == "+" || res[1] == "-") disamb = "o";
-                else if (ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.PARENTESIS_CI)
+                if (ult.tipo == TipoVal.REGISTRO){
+                    if (res[1] == "+" || res[1] == "-"){
+                        disamb = "o";
+                        obj.aridad = 1;
+                    }
+                } else if (ult.tipo == TipoVal.NUMERO || ult.tipo == TipoVal.ETIQUETA || ult.tipo == TipoVal.PARENTESIS_CI){
                     if (res[1] == "+" || res[1] == "-") disamb = "x";
+                }
                 if (ult.tipo == TipoVal.CADENA || (ult.tipo == TipoVal.OP && obj.aridad != 1)) throw new ExpresionInvalidaError(TipoVal.OP);
                 obj.tipo = TipoVal.OP;
                 obj.valor = TipoOp.obtTipo(disamb+res[1]);
                 if (obj.valor == TipoOp.NEG || obj.valor == TipoOp.COMP_1 || obj.valor == TipoOp.COMP_2  || obj.valor == TipoOp.POS || obj.valor == TipoOp.INV) obj.aridad = 1;
-                if ((obj.aridad == 1 && (
+                if ((obj.aridad == 1 && !(
                     ult.tipo == TipoVal.PARENTESIS_AP ||
                     ult.tipo == TipoVal.PARENTESIS_CI ||
                     (ult.tipo == TipoVal.OP && ult.aridad == 2) ||
-                    ult.tipo == null
+                    ult.tipo == null ||
+                    (ult.tipo == TipoVal.REGISTRO && (obj.valor == TipoOp.OFF_P || obj.valor == TipoOp.OFF_N))
                 )) ||
                 (obj.aridad == 2 && !(
                     ult.tipo == TipoVal.NUMERO ||
                     ult.tipo == TipoVal.PARENTESIS_CI ||
-                    ult.tipo == TipoVal.ETIQUETA ||
-                    (ult.tipo == TipoVal.REGISTRO && (obj.valor == TipoOp.OFF_P || obj.valor == TipoOp.OFF_N))
+                    ult.tipo == TipoVal.ETIQUETA
                 ))) throw new ExpresionInvalidaError(TipoVal.OP);
+            } else if (this.#r_eti.test(cexp)){
+                res = this.#r_eti.exec(cexp);
+                cexp = cexp.substring(res[0].length);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.ETIQUETA);
+                obj.tipo = TipoVal.ETIQUETA;
+                obj.valor = res[1];
             } else if (this.#r_com.test(cexp)){
                 res = this.#r_com.exec(cexp);
                 cexp = cexp.substring(res[0].length);
@@ -1333,7 +1700,7 @@ class ProgramaAsm {
             } else if (this.#r_par_l.test(cexp)){
                 res = this.#r_par_l.exec(cexp);
                 cexp = cexp.substring(res[0].length);
-                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.OFF_L || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.PARENTESIS_AP);
+                if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.PARENTESIS_AP);
                 obj.tipo = TipoVal.PARENTESIS_AP;
             } else if (this.#r_par_r.test(cexp)){
                 res = this.#r_par_r.exec(cexp);
@@ -1354,74 +1721,413 @@ class ProgramaAsm {
             ult = obj;
             sims.push(obj);
         }
-        return sims;
-    }
 
-    /**
-     * Reduce una lista de símbolos lo máximo posible en el momento de la llamada, ejecutando las operaciones representadas y substituyendo las etiquetas
-     *
-     * @param {Array} sims Cadena de caracteres a analizar léxica y sintácticamente
-     * @return {Array} Array de símbolos reducidos
-     * @memberof ProgramaAsm
-     */
-    reducirExpresion(sims){
         /* Análisis semántico */
-        // Aquí no hay mucho misterio: esto es básicamente el algoritmo shunting-yard
+        /* Esto es básicamente el algoritmo shunting-yard */
         let simsp = []; // Cola de salida
         let pila = []; // Pila de operadores
-        while (sims){
+        let t1, t2; // Variables temporales
+        let c; // Bandera de conformidad
+        let u = 0; // Contador de operadores unarios
+        while (sims.length){
             let sim = sims.shift();
             switch (sim.tipo){
-                // DIRECCION DESPLAZAMIENTO
                 case TipoVal.NUMERO:
                 case TipoVal.REGISTRO:
                 case TipoVal.BANDERA:
                 case TipoVal.AMB_C:
                     simsp.push(sim);
+                    if (u){
+                        simsp.push(pila.pop());
+                        u--;
+                    }
                     break;
                 case TipoVal.CADENA:
                     for (let l of sim.valor)
-                        simsp.push({ tipo: TipoVal.NUMERO, valor: l.codePointAt() }, { tipo: TipoVal.SEPARADOR });
+                        simsp.push({ "tipo": TipoVal.NUMERO, "valor": l.codePointAt() }, { "tipo": TipoVal.SEPARADOR });
+                    simsp.pop(); // El último separador en realidad no va
                     break;
                 case TipoVal.OP:
+                    if (sim.aridad == 1) u++;
+                    else {
+                        while (pila.length){
+                            t1 = pila.pop();
+                            if (t1.tipo == TipoVal.OP && (t1.precedencia >= sim.precedencia)) simsp.push(t1);
+                            else {
+                                pila.push(t1);
+                                break;
+                            }
+                        }
+                    }
+                    pila.push(sim);
                     break;
                 case TipoVal.ETIQUETA:
+                    t1 = plat.obtenerEtiqueta(sim.valor)[0];
+                    simsp.push(t1 || { "tipo": TipoVal.NUMERO, "valor": sim.valor }); // Revisar esto
                     break;
                 case TipoVal.SEPARADOR:
                     simsp.push(sim);
                     break;
                 case TipoVal.PARENTESIS_AP:
+                    pila.push(sim);
                     break;
                 case TipoVal.PARENTESIS_CI:
+                    c = false;
+                    while (pila.length){
+                        t1 = pila.pop();
+                        if (t1.tipo == TipoVal.PARENTESIS_AP){
+                            c = true;
+                            break;
+                        } else simsp.push(t1);
+                    }
+                    if (!c) throw new ExpresionInvalidaError("");
+                    if (u){
+                        simsp.push(pila.pop());
+                        u--;
+                    }
                     break;
                 case TipoVal.DESPLAZAMIENTO_AP:
+                    pila.push(sim);
+                    t1 = sims.shift();
+                    if (t1.tipo == TipoVal.REGISTRO) t2 = { "tipo": TipoVal.DESPLAZAMIENTO, "valor": 0, "registro": t1.valor };
+                    else {
+                        t2 = { "tipo": TipoVal.DIRECCION, "valor": 0 };
+                        sims.unshift(t1);
+                    }
+                    simsp.push(t2);
                     break;
                 case TipoVal.DESPLAZAMIENTO_CI:
+                    c = false;
+                    while (pila.length){
+                        t1 = pila.pop();
+                        if (t1.tipo == TipoVal.DESPLAZAMIENTO_AP){
+                            c = true;
+                            break;
+                        } else simsp.push(t1);
+                    }
+                    if (!c) throw new ExpresionInvalidaError("");
+                    if (u){
+                        simsp.push(pila.pop());
+                        u--;
+                    }
+                    simsp.push(sim);
                     break;
             }
         }
-        /*
-        mientras haya simbolos a leer:
-            leer simbolo:
-            si simbolo es
-                numero:
-                    ponerlo en la salida
-                operador o1:
+        while (pila.length){
+            t1 = pila.pop();
+            if (t1.tipo == TipoVal.PARENTESIS_AP || t1.tipo == TipoVal.PARENTESIS_CI || t1.tipo == TipoVal.DESPLAZAMIENTO_AP || t1.tipo == TipoVal.DESPLAZAMIENTO_CI)
+                throw new ExpresionInvalidaError("");
+            simsp.push(t1);
+        }
 
-                coma:
-                    fin de subexpresion:
-                        si hay paréntesis en la pila, es que hubo un error
-                parapertura:
-                parcerradura:
+        /* Separar argumentos */
+        let simsa = [[]];
+        for (let i = 0; i<simsp.length; i++){
+            if (simsp[i].tipo == TipoVal.SEPARADOR) simsa.push([]);
+            else simsa[simsa.length - 1].push(simsp[i]);
+        }
+        return simsa;
+    }
 
-         */
-        return sims;
+    /**
+     * Reduce una lista de símbolos lo máximo posible en el momento de la llamada, ejecutando las operaciones representadas y substituyendo las etiquetas
+     *
+     * @param {Array} sims Array de símbolos a reducir
+     * @return {Array} Array de símbolos reducidos
+     * @memberof ProgramaAsm
+     */
+    reducirExpresion(sims){
+        let simsw = JSON.parse(JSON.stringify(sims));
+        let simsp = [];
+        let sim;
+        let op1, op2;
+        while (simsw.length){
+            sim = simsw.shift();
+            if (sim.tipo == TipoVal.OP){
+                switch (sim.valor){
+                    case TipoOp.NEG:
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor?1:0
+                        });
+                        break;
+                    case TipoOp.COMP_1:
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Plataforma.obtComplemento(obtLittleEndianNum(op1.valor), 1)
+                        });
+                        break;
+                    case TipoOp.COMP_2:
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Plataforma.obtComplemento(obtLittleEndianNum(op1.valor), 1)
+                        });
+                        break;
+                    case TipoOp.POS:
+                        // op1 = simsp.pop();
+                        // if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push(op1);
+                        break;
+                    case TipoOp.INV:
+                        if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": parseInt(Array.from(obtLittleEndianNum(op1.valor, 1).toString(2).padStart(8, "0")).reverse().join(""))
+                        });
+                        break;
+                    case TipoOp.MUL:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor*op2.valor
+                        });
+                        break;
+                    case TipoOp.DIV:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Math.floor(op1.valor/op2.valor)
+                        });
+                        break;
+                    case TipoOp.MOD:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor%op2.valor
+                        });
+                        break;
+                    case TipoOp.ADD:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor+op2.valor
+                        });
+                        break;
+                    case TipoOp.SUB:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor-op2.valor
+                        });
+                        break;
+                    case TipoOp.SHIFT_L:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor<<op2.valor
+                        });
+                        break;
+                    case TipoOp.SHIFT_R:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": op1.valor>>op2.valor
+                        });
+                        break;
+                    case TipoOp.LT:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor<op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.LE:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor<=op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.GT:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor>op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.GE:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor>=op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.EQ:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor==op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.NEQ:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor!=op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.B_AND:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Plataforma.obtAnd(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                        });
+                        break;
+                    case TipoOp.B_XOR:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Plataforma.obtXor(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                        });
+                        break;
+                    case TipoOp.B_OR:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": Plataforma.obtOr(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                        });
+                        break;
+                    case TipoOp.L_AND:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor && op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.L_OR:
+                        op2 = simsp.pop();
+                        op1 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
+                            "tipo": TipoVal.NUMERO,
+                            "valor": (op1.valor || op2.valor)?1:0
+                        });
+                        break;
+                    case TipoOp.OFF_P:
+                        op1 = simsp.pop();
+                        op2 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.DESPLAZAMIENTO)
+                            op2.valor += op1.valor;
+                        simsp.push(op2);
+                        break;
+                    case TipoOp.OFF_N:
+                        op1 = simsp.pop();
+                        op2 = simsp.pop();
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.DESPLAZAMIENTO){
+                            op2.valor += op1.valor;
+                            op2.valor *= (-1);
+                        }
+                        simsp.push(op2);
+                        break;
+                }
+            } else if (sim.tipo == TipoVal.ETIQUETA){
+                op1 = plat.obtenerEtiqueta(sim.valor);
+                if (op1[0]) simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
+                else {
+                    simsw.unshift(sim);
+                    return [...simsp, ...simsw];
+                }
+            } else simsp.push(sim);
+        }
+        return simsw;
+    }
+
+    /**
+     * Analiza semánticamente una línea de ensamblador, resolviendo todas las referencias faltantes
+     * 
+     * Si este punto se resuelve correctamente, la línea de ensamblador es completamente válida y puede ser ensamblada en código objeto
+     *
+     * @param {Number} fin Tiempo máximo de ejecución
+     * @memberof ProgramaAsm
+     */
+    #analSemantico(fin){
+        /*let finalizado = false;
+        let op1, op2, inst, eti;
+        while (!finalizado){
+            finalizado = true;
+            this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
+            if (Date.now() > fin) return;
+            for (let i = 0; i<this.simbolos.length; i++){
+                inst = this.simbolos[i];
+                // Etiqueta
+                if (inst.eti){
+                    eti = plat.obtenerEtiqueta(inst.eti);
+                    if (!eti[0]) plat.modificarEtiqueta(inst.eti, this.cl);
+                }
+                if (inst.ops.length == 3){
+                    op1 = inst.ops[0];
+                    op2 = inst.ops[2];
+                } else if (inst.ops.length == 4){
+                    op1 = inst.ops[1];
+                    op2 = inst.ops[3];
+                }//Dir
+                if (op1.tipo == TipoVal.ETIQUETA){
+                    eti = plat.obtenerEtiqueta(op1.valor);
+                    if (eti[0]){
+                        if (inst.ops.length == 3){
+                            this.simbolos[i].ops[0].tipo == TipoVal.DIRECCION;
+                            this.simbolos[i].ops[0].valor = eti[0];
+                        } else if (inst.ops.length == 4){
+                            this.simbolos[i].ops[1].tipo == TipoVal.DIRECCION;
+                            this.simbolos[i].ops[1].valor = eti[0];
+                        }
+                    } else {
+                        finalizado = false;
+                        continue;
+                    }
+                }
+                if (op2.tipo == TipoVal.ETIQUETA){
+                    eti = plat.obtenerEtiqueta(op2.valor);
+                    if (eti[0]){
+                        if (inst.ops.length == 3){
+                            this.simbolos[i].ops[2].tipo == TipoVal.DIRECCION;
+                            this.simbolos[i].ops[2].valor = eti[0];
+                        } else if (inst.ops.length == 4){
+                            this.simbolos[i].ops[3].tipo == TipoVal.DIRECCION;
+                            this.simbolos[i].ops[3].valor = eti[0];
+                        }
+                    } else {
+                        finalizado = false;
+                        continue;
+                    }
+                }
+                tam = this.#obtCodigoTam(inst.mnemo, [op1, op2]);
+                this.cl += tam;
+            }
+        }*/
     }
 
     constructor(nom){
-        this.lineas = plat.cargarArchivoEnsamblador(nom);
-        this.#analLexico();
-        //this.#analSintactico();
+        try {
+            this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
+            this.lineas = plat.cargarArchivoEnsamblador(nom);
+            this.#analLexicoSintactico();
+            /* Esto es para evitar bucles infinitos por referencias recursivas */
+            const fin = Date.now() + 5000; // FIX: Pasar esto a Configuración
+                                           // 5 segundos son suficientes
+        } catch (e){
+            plat.escribirLog(TipoLog.ERROR, e.message);
+        }
+    }
+      
         /*for (let l of lineas){
             try {
                 /

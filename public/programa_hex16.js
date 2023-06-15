@@ -79,8 +79,7 @@ class programHex {
 
         if(!this.checkGeneralSintax(hexLine)) { return -1; } // Error en sintaxis de línea de código
         // Revisamos si se trata de la línea terminal
-        if (hexLine === ":00000001FF") { 
-            window.alert("SE TERMINÓ LA TRADUCCIÓN");
+        if (hexLine === ":00000001FF") {
             return 1; 
         } // Se terminó la traducción
         // Se procede a separar por partes la línea hexadecimal (validando parte por parte)

@@ -312,7 +312,7 @@ body>footer {
 #btnMenuConfig span { mask-image: var(--i_config_d); -webkit-mask-image: var(--i_config_d); }
 #btnMenuConfig[aria-selected=true] span { mask-image: var(--i_config_a); -webkit-mask-image: var(--i_config_a); }
 
-/* Estilos de Widgets de actividades*/
+/* Estilos de Widgets de actividades */
 #r-act [role=tabpanel] h3 { font-size: 1.75rem; }
 #r-act [role=tabpanel] h3:not(:first-of-type){ margin-top: 2rem; }
 #r-act [role=tabpanel] legend {
@@ -321,7 +321,7 @@ body>footer {
 }
 #r-act [role=tabpanel] fieldset { margin-bottom: 1rem; }
 #r-act [role=tabpanel] p { opacity: .75; }
-#r-act [role=tabpanel] .aviso {
+#r-act [role=tabpanel]:not(#r-msg) .aviso {
     margin-block: .5rem;
     background: var(--f-aviso);
     padding: .5rem;
@@ -338,8 +338,8 @@ body>footer {
     border: 1px solid lightgray; /* FIX: agregar a colores */
 }
 #r-act [role=tabpanel] dl.natural.form dt { vertical-align: super; }
-#r-act :not([role=toolbar]) :is([type=radio], [type=checkbox])+label { padding-left: .5rem; }
-#r-act :not([role=toolbar]) :is([type=radio], [type=checkbox])+label::after {
+#r-act :not([role=toolbar])>:is([type=radio], [type=checkbox])+label { padding-left: .5rem; }
+#r-act :not([role=toolbar])>:is([type=radio], [type=checkbox])+label::after {
     content: '\a';
     white-space: pre;
 }
@@ -440,12 +440,20 @@ body>footer {
     font-family: var(--txtEdTipo), monospace;
     font-size: var(--txtEdTipoTam);
 }
-#r-cod>div, #codemirror { height: 100%; }
+#codemirror { height: 100%; }
 #r-cod .bp {
     text-decoration: none;
     color: var(--f-a);
 }
 #r-cod .breakpoints { width: .8rem; }
+.CodeMirror-scroll {
+    background: var(--f-m);
+    color: var(--c-m);
+}
+#codemirror .CodeMirror-gutters {
+    background-color: var(--f-a);
+    color: var(--c-a);
+}
 
 /* Panel Registros */
 #r-reg th, #t-iff1, #t-iff2 {
@@ -563,6 +571,7 @@ body>footer [role="menubar"] li>ul {
     width: 2rem;
     height: 2rem;
     background: var(--f-bbh);
+    font-weight: bold;
 }
 [role=toolbar] :is(button, [type="checkbox"] + label) span {
     display: inline-block;
@@ -643,15 +652,14 @@ dl.natural dd::after {
 }
 
 /* Lista de variables */
-.lvars [data-tipo="Cadena"]{ --dtipo: "Cadena"; }
-.lvars [data-tipo="Entero"]{ --dtipo: "Entero"; }
-.lvars [data-tipo="Caracter"]{ --dtipo: "Caracter"; }
+.lvars [data-tipo]{ --dtipo: attr(data-tipo); }
 .lvars dt::after {
     margin-left: 1ch;
     content: "(" var(--dtipo) ")";
     filter: opacity(.6);
     font-style: italic;
 }
+.v-defnan, .v-ref { font-style: italic; }
 
 /* Cuadros de diálogo */
 dialog {

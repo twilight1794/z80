@@ -32,6 +32,7 @@ function manejarCasillasToolbar() {
         btn[4].disabled = (c>1);
         btn[5].disabled = (cas.length == 1);
         btn[6].disabled = (c>1);
+        btn[7].disabled = (c>1);
     } else btn.forEach((e) => { if (e.id != "btnAccionesNuevo") e.disabled = true; });
 }
 
@@ -54,7 +55,6 @@ class Proyecto {
         li.append(chk, btn);
         li.id = "archivo_"+n;
         arcs.appendChild(li);
-        if (arcs.childElementCount == 1) li.classList.add("entrada");
         sessionStorage.setItem("archivo_"+n, localStorage.getItem("archivo_"+n));
     }
 
@@ -76,7 +76,7 @@ class Proyecto {
     crearArchivo(nom){
         this.nuevoArchivo(nom, "");
         this.anadirArchivo(nom);
-        document.querySelector("#archivos button").click();
+        if (document.getElementById("archivos").childElementCount == 1) this.entralizarArchivo(nom);
     }
     visualizarArchivo(nom){
         let win = window.open("", nom, "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes");
@@ -105,14 +105,26 @@ class Proyecto {
      }
     borrarArchivo(nom){
         let nodo = document.querySelector("#archivo_"+nom);
+        let e = localStorage.getItem("entrada");
+        if (e == nom) localStorage.removeItem("entrada");
         nodo.parentNode.removeChild(nodo);
         sessionStorage.removeItem("archivo_"+nom);
         localStorage.removeItem("archivo_"+nom);
         localStorage.setItem("archivos", localStorage.getItem("archivos").split("/").filter((e) => e != nom).join("/"));
         if (document.getElementById("archivos").childElementCount == 0) this.crearArchivo("programa");
         manejarCasillasToolbar();
+        if (!localStorage.getItem("entrada")) this.entralizarArchivo(localStorage.getItem("archivos").split("/")[0]);
+    }
+    entralizarArchivo(nom){
+        let vie = document.querySelector("#archivos .entrada");
+        if (vie) vie.classList.remove("entrada");
+        let nodo = document.getElementById("archivo_"+nom);
+        if (nodo) nodo.classList.add("entrada");
+        localStorage.setItem("entrada", nom);
     }
     renombrarArchivo(nom, nom2){
+        let e = localStorage.getItem("entrada");
+        if (e == nom) localStorage.setItem("entrada", nom2);
         this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));
         this.anadirArchivo(nom2);
         this.borrarArchivo(nom);
@@ -124,10 +136,12 @@ class Proyecto {
             // Para generar desde archivo XML, genera todo
         } else {
             let l = localStorage.getItem("archivos");
+            let e = localStorage.getItem("entrada");
             if (l){
-                for (let i of l.split("/")){ this.anadirArchivo(i); }
-                document.querySelector("#archivos button").click();
+                for (let i of l.split("/")) this.anadirArchivo(i);
+                this.entralizarArchivo(e);
             } else this.crearArchivo("programa");
+            document.querySelector("#archivos .entrada button").click();
         }
     }
 }

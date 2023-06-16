@@ -77,7 +77,17 @@ class NumeroParametrosIncorrectoError extends SintacticoError {
 class DesplazamientoNoAdmitidoError extends SintacticoError {
     constructor(){ super("err_desplazamientonoadmitido"); }
 }
-/// Errores ocurridos durante la reducción de símbolos de parámetros
+
+// Errores ocurridos durante la reducción de símbolos de parámetros: errores semánticos
+class SemanticoError extends BaseError {
+    constructor(){
+        if (arguments) super(...arguments);
+        else super("err_semantico");
+    }
+}
+class EtiquetaIndefinidaError extends SintacticoError {
+    constructor(i){ super("err_etiquetaindefinida", {"i": i}); }
+}
 class BucleInfinitoError extends SintacticoError {
     constructor(){ super("err_bucleinfinito"); }
 }

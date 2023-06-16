@@ -221,7 +221,8 @@ class ProgramaAsm {
     #r_cad = /^(?:"([^"]*)")\s*/;
     #r_reg = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)\s*/i;
     #r_band = /^(NZ|NC|PO|PE|Z|P|M)\s*/i;
-    #r_amb = /^(C)\s*/i;
+    #r_amb = /^(c)[^A-Za-z_\.\?]\s*/i;
+    #r_amb_e = /^(c)\s*/i;
     #r_sep = /^,\s*/;
     #r_par_l = /^\{\s*/;
     #r_par_r = /^\}\s*/;
@@ -425,17 +426,17 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[0]);
-                        bytes.push(198, ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(198, ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IX, lop[0]);
-                        bytes.push(0xdd, 134, ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xdd, 134, ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IY, lop[0]);
-                        bytes.push(0xfd, 134, ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xfd, 134, ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
@@ -476,12 +477,12 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IX, lop[1]);
-                    bytes.push(0xdd, 0xcb, ...obtLittleEndianNum(lop[1].valor, 1), 70+(lop[0].valor<<3));
+                    bytes.push(0xdd, 0xcb, ...codificarValor(lop[1].valor, 1), 70+(lop[0].valor<<3, true, true));
                     break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[1]);
-                    bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor, 1), 70+(lop[0].valor<<3));
+                    bytes.push(0xfd, 0xcb, ...codificarValor(lop[1].valor, 1), 70+(lop[0].valor<<3, true, true));
                     break;
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
@@ -489,12 +490,12 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     bytes.push(0xcd);
                     this.esTipo(TipoParam.NN, lop[0]);
-                    bytes.push(...obtLittleEndianNum(lop[1].valor, 2));
+                    bytes.push(...codificarValor(lop[1].valor, 2, true, true));
                 }
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.NN, lop[1]);
-                    bytes.push(196+(lop[0].valor<<3), ...obtLittleEndianNum(lop[1].valor, 2));
+                    bytes.push(196+(lop[0].valor<<3), ...codificarValor(lop[1].valor, 2, true, true));
                 }
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
                 break;
@@ -532,11 +533,11 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IX, lop[0]);
-                    bytes.push(0xdd, 0x35, ...obtLittleEndianNum(lop[0].valor, 1));
+                    bytes.push(0xdd, 0x35, ...codificarValor(lop[0].valor, 1, true, true));
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[0]);
-                    bytes.push(0xfd, 0x35, ...obtLittleEndianNum(lop[0].valor, 1));
+                    bytes.push(0xfd, 0x35, ...codificarValor(lop[0].valor, 1, true, true));
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIX, lop[0]);
@@ -561,7 +562,7 @@ class ProgramaAsm {
                 bytes.push(0x10);
                 if (lop.length == 1){
                     this.esTipo(TipoParam.E, lop[0]);
-                    bytes.push(...obtLittleEndianNum(lop[0].valor-2, 1));
+                    bytes.push(...codificarValor(lop[0].valor-2, 1, true, true));
                 }
                 else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 break;
@@ -621,11 +622,11 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IX, lop[0]);
-                    bytes.push(0xdd, 0x34, ...obtLittleEndianNum(lop[0].valor, 1));
+                    bytes.push(0xdd, 0x34, ...codificarValor(lop[0].valor, 1, true, true));
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[0]);
-                    bytes.push(0xfd, 0x34, ...obtLittleEndianNum(lop[0].valor, 1));
+                    bytes.push(0xfd, 0x34, ...codificarValor(lop[0].valor, 1, true, true));
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RIX, lop[0]);
@@ -659,7 +660,7 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(0xc3, ...obtLittleEndianNum(lop[0].valor, 2));
+                        bytes.push(0xc3, ...codificarValor(lop[0].valor, 2, true, true));
                         break;
                     } catch {}
                     try {
@@ -685,30 +686,30 @@ class ProgramaAsm {
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.NN, lop[1]);
-                    bytes.push(194+(this.ValsCC[lop[0].valor]<<3), ...obtLittleEndianNum(lop[1].valor, 2));
+                    bytes.push(194+(this.ValsCC[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 2, true, true));
                 } else
                     throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
                 break;
             case "jr":
                 if (lop.length == 1){
                     this.esTipo(TipoParam.E, lop[0]);
-                    bytes.push(0x18, ...obtLittleEndianNum(lop[0].valor-2, 1));
+                    bytes.push(0x18, ...codificarValor(lop[0].valor-2, 1, true, true));
                     break;
                 } else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.E, lop[1]);
                     switch (lop[0].valor){
                         case "c":
-                            bytes.push(0x38, ...obtLittleEndianNum(lop[1].valor-2, 1));
+                            bytes.push(0x38, ...codificarValor(lop[1].valor-2, 1, true, true));
                             break;
                         case "nc":
-                            bytes.push(0x30, ...obtLittleEndianNum(lop[1].valor-2, 1));
+                            bytes.push(0x30, ...codificarValor(lop[1].valor-2, 1, true, true));
                             break;
                         case "z":
-                            bytes.push(0x20, ...obtLittleEndianNum(lop[1].valor-2, 1));
+                            bytes.push(0x20, ...codificarValor(lop[1].valor-2, 1, true, true));
                             break;
                         case "nz":
-                            bytes.push(0x28, ...obtLittleEndianNum(lop[1].valor-2, 1));
+                            bytes.push(0x28, ...codificarValor(lop[1].valor-2, 1, true, true));
                             break;
                         default:
                             throw new TipoParametrosIncorrectoError(ins);
@@ -721,17 +722,17 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.IX, lop[0]);
                     try {
                         this.esTipo(TipoParam.R, lop[1]);
-                        bytes.push(0xdd, 112+this.ValsR[lop[1].valor], ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xdd, 112+this.ValsR[lop[1].valor], ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        bytes.push(0xdd, 0x36, ...obtLittleEndianNum(lop[1].valor, 1), ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xdd, 0x36, ...codificarValor(lop[1].valor, 1, true, true), ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xdd, 0x2a, ...codificarValor(lop[1].valor, 2, true, true));
                         break;
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
@@ -740,17 +741,17 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.IY, lop[0]);
                     try {
                         this.esTipo(TipoParam.R, lop[1]);
-                        bytes.push(0xfd, 112+this.ValsR[lop[1].valor], ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xfd, 112+this.ValsR[lop[1].valor], ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        bytes.push(0xfd, 0x36, ...obtLittleEndianNum(lop[1].valor, 1), ...obtLittleEndianNum(lop[0].valor, 1));
+                        bytes.push(0xfd, 0x36, ...codificarValor(lop[1].valor, 1, true, true), ...codificarValor(lop[0].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(0xdf, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xdf, 0x2a, ...codificarValor(lop[1].valor, 2, true, true));
                         break;
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
@@ -759,17 +760,17 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.R, lop[0]);
                     try {
                         this.esTipo(TipoParam.IX, lop[1]);
-                        bytes.push(0xdd, 70+(this.ValsR[lop[0].valor]<<3), ...obtLittleEndianNum(lop[1].valor, 1));
+                        bytes.push(0xdd, 70+(this.ValsR[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IY, lop[1]);
-                        bytes.push(0xfd, 70+(this.ValsR[lop[0].valor]<<3), ...obtLittleEndianNum(lop[1].valor, 1));
+                        bytes.push(0xfd, 70+(this.ValsR[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        bytes.push(6+(this.ValsR[lop[0].valor]<<3), ...obtLittleEndianNum(lop[1].valor, 1));
+                        bytes.push(6+(this.ValsR[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 1, true, true));
                         break;
                     } catch {}
                     try {
@@ -800,7 +801,7 @@ class ProgramaAsm {
                         } catch {}
                         try {
                             this.esTipo(TipoParam.DIRECCION, lop[1]);
-                            bytes.push(0x3a, ...obtLittleEndianNum(lop[1].valor, 2));
+                            bytes.push(0x3a, ...codificarValor(lop[1].valor, 2, true, true));
                             break;
                         } catch {}
                     }
@@ -829,11 +830,11 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.SS, lop[0]);
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(1+(this.ValsSS[lop[0].valor]<<4), ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(1+(this.ValsSS[lop[0].valor]<<4), ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     try {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
-                        bytes.push(0xed, 75+(this.ValsSS[lop[0].valor]<<4), ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xed, 75+(this.ValsSS[lop[0].valor]<<4), ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
@@ -841,27 +842,27 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.DIRECCION, lop[0]);
                     try {
                         this.esTipo(TipoParam.RA, lop[1]);
-                        bytes.push(0x32, ...obtLittleEndianNum(lop[0].valor, 2));
+                        bytes.push(0x32, ...codificarValor(lop[0].valor, 2, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RHL, lop[1]);
-                        bytes.push(0x22, ...obtLittleEndianNum(lop[1].valor, 2))
+                        bytes.push(0x22, ...codificarValor(lop[1].valor, 2, true, true))
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.SS, lop[1]);
-                        bytes.push(0xed, 67 + this.ValsSS[lop[1].valor]<<4, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xed, 67 + this.ValsSS[lop[1].valor]<<4, ...codificarValor(lop[1].valor, 2, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RIX, lop[1]);
-                        bytes.push(0xdd, 0x22, ...obtLittleEndianNum(lop[0].valor, 2));
+                        bytes.push(0xdd, 0x22, ...codificarValor(lop[0].valor, 2, true, true));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RIY, lop[1]);
-                        bytes.push(0xfd, 0x22, ...obtLittleEndianNum(lop[0].valor, 2));
+                        bytes.push(0xfd, 0x22, ...codificarValor(lop[0].valor, 2, true, true));
                         break;
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
@@ -870,11 +871,11 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.RIX, lop[0]);
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(0xdd, 0x21, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xdd, 0x21, ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     try {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
-                        bytes.push(0xdd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xdd, 0x2a, ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
@@ -882,11 +883,11 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.RIY, lop[0]);
                     try {
                         this.esTipo(TipoParam.NN, lop[1]);
-                        bytes.push(0xfd, 0x21, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xfd, 0x21, ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     try {
                         this.esTipo(TipoParam.DIRECCION, lop[1]);
-                        bytes.push(0xfd, 0x2a, ...obtLittleEndianNum(lop[1].valor, 2));
+                        bytes.push(0xfd, 0x2a, ...codificarValor(lop[1].valor, 2, true, true));
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
@@ -1020,12 +1021,12 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IX, lop[0]);
-                    bytes.push(0xdd, 0xcb, ...obtLittleEndianNum(lop[1].valor), 1);
+                    bytes.push(0xdd, 0xcb, ...codificarValor(lop[1].valor), 1, true, true);
                     break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.IY, lop[0]);
-                    bytes.push(0xfd, 0xcb, ...obtLittleEndianNum(lop[1].valor), 1);
+                    bytes.push(0xfd, 0xcb, ...codificarValor(lop[1].valor), 1, true, true);
                     break;
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
@@ -1643,7 +1644,7 @@ class ProgramaAsm {
                 obj.tipo = TipoVal.BANDERA;
                 obj.valor = res[1].toLowerCase();
             } else if (this.#r_amb.test(cexp)){
-                res = this.#r_amb.exec(cexp);
+                res = this.#r_amb_e.exec(cexp);
                 cexp = cexp.substring(res[0].length);
                 if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.AMB_C);
                 obj.tipo = TipoVal.AMB_C;
@@ -1688,7 +1689,7 @@ class ProgramaAsm {
                 cexp = cexp.substring(res[0].length);
                 if (!(ult.tipo == null || ult.tipo == TipoVal.PARENTESIS_AP || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.OP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.ETIQUETA);
                 obj.tipo = TipoVal.ETIQUETA;
-                obj.valor = res[1];
+                obj.nombre = res[1];
             } else if (this.#r_com.test(cexp)){
                 res = this.#r_com.exec(cexp);
                 cexp = cexp.substring(res[0].length);
@@ -1763,7 +1764,7 @@ class ProgramaAsm {
                     break;
                 case TipoVal.ETIQUETA:
                     t1 = plat.obtenerEtiqueta(sim.valor)[0];
-                    simsp.push(t1 || { "tipo": TipoVal.NUMERO, "valor": sim.valor }); // Revisar esto
+                    simsp.push((t1?({ "tipo": TipoVal.NUMERO, "valor": sim.valor }):sim));
                     break;
                 case TipoVal.SEPARADOR:
                     simsp.push(sim);
@@ -1838,7 +1839,7 @@ class ProgramaAsm {
      * @memberof ProgramaAsm
      */
     reducirExpresion(sims){
-        let simsw = JSON.parse(JSON.stringify(sims));
+        let simsw = sims;
         let simsp = [];
         let sim;
         let op1, op2;
@@ -1857,14 +1858,14 @@ class ProgramaAsm {
                         op1 = simsp.pop();
                         if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": Plataforma.obtComplemento(obtLittleEndianNum(op1.valor), 1)
+                            "valor": Plataforma.obtComplemento(codificarValor(op1.valor, 4, true, true), 1, 1)
                         });
                         break;
                     case TipoOp.COMP_2:
                         op1 = simsp.pop();
                         if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": Plataforma.obtComplemento(obtLittleEndianNum(op1.valor), 1)
+                            "valor": Plataforma.obtComplemento(codificarValor(op1.valor, 4, true, true), 1, 1)
                         });
                         break;
                     case TipoOp.POS:
@@ -1874,7 +1875,7 @@ class ProgramaAsm {
                     case TipoOp.INV:
                         if (op1 && op1.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": parseInt(Array.from(obtLittleEndianNum(op1.valor, 1).toString(2).padStart(8, "0")).reverse().join(""))
+                            "valor": parseInt(Array.from(codificarValor(op1.valor, 4, true, true).toString(2).padStart(8, "0")).reverse().join(""))
                         });
                         break;
                     case TipoOp.MUL:
@@ -1986,7 +1987,7 @@ class ProgramaAsm {
                         op1 = simsp.pop();
                         if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": Plataforma.obtAnd(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                            "valor": Plataforma.obtAnd(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
                         break;
                     case TipoOp.B_XOR:
@@ -1994,7 +1995,7 @@ class ProgramaAsm {
                         op1 = simsp.pop();
                         if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": Plataforma.obtXor(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                            "valor": Plataforma.obtXor(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
                         break;
                     case TipoOp.B_OR:
@@ -2002,7 +2003,7 @@ class ProgramaAsm {
                         op1 = simsp.pop();
                         if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
                             "tipo": TipoVal.NUMERO,
-                            "valor": Plataforma.obtOr(obtLittleEndianNum(op1.valor), obtLittleEndianNum(op2.valor))
+                            "valor": Plataforma.obtOr(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
                         break;
                     case TipoOp.L_AND:
@@ -2039,15 +2040,18 @@ class ProgramaAsm {
                         break;
                 }
             } else if (sim.tipo == TipoVal.ETIQUETA){
-                op1 = plat.obtenerEtiqueta(sim.valor);
-                if (op1[0]) simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
-                else {
-                    simsw.unshift(sim);
+                op1 = plat.obtenerEtiqueta(sim.nombre);
+                console.log(op1);
+                if (op1[0] == undefined) throw new EtiquetaIndefinidaError(sim.nombre);
+                else if (isNaN(op1[0])){
+                    simsp.push(sim);
                     return [...simsp, ...simsw];
                 }
+                else simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
             } else simsp.push(sim);
         }
-        return simsw;
+        console.log(simsp);
+        return simsp;
     }
 
     /**
@@ -2059,60 +2063,34 @@ class ProgramaAsm {
      * @memberof ProgramaAsm
      */
     #analSemantico(fin){
-        /*let finalizado = false;
-        let op1, op2, inst, eti;
+        let finalizado = false;
+        let op1, inst, eti;
         while (!finalizado){
             finalizado = true;
             this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
-            if (Date.now() > fin) return;
+            if (Date.now() > fin) throw new BucleInfinitoError();
             for (let i = 0; i<this.simbolos.length; i++){
                 inst = this.simbolos[i];
+                console.log(inst);
                 // Etiqueta
                 if (inst.eti){
                     eti = plat.obtenerEtiqueta(inst.eti);
-                    if (!eti[0]) plat.modificarEtiqueta(inst.eti, this.cl);
+                    plat.modificarEtiqueta(inst.eti, this.cl); // Quité "if (!eti[0])", siempre es verdadero
                 }
-                if (inst.ops.length == 3){
-                    op1 = inst.ops[0];
-                    op2 = inst.ops[2];
-                } else if (inst.ops.length == 4){
-                    op1 = inst.ops[1];
-                    op2 = inst.ops[3];
-                }//Dir
-                if (op1.tipo == TipoVal.ETIQUETA){
-                    eti = plat.obtenerEtiqueta(op1.valor);
-                    if (eti[0]){
-                        if (inst.ops.length == 3){
-                            this.simbolos[i].ops[0].tipo == TipoVal.DIRECCION;
-                            this.simbolos[i].ops[0].valor = eti[0];
-                        } else if (inst.ops.length == 4){
-                            this.simbolos[i].ops[1].tipo == TipoVal.DIRECCION;
-                            this.simbolos[i].ops[1].valor = eti[0];
+                // Operandos
+                if (inst.ops){
+                    for (let j = 0; j<inst.ops.length; j++){
+                        inst.ops[j] = this.reducirExpresion(inst.ops[j]);
+                        if (inst.ops[j].length > 1){
+                            finalizado = false;
+                            continue;
                         }
-                    } else {
-                        finalizado = false;
-                        continue;
                     }
                 }
-                if (op2.tipo == TipoVal.ETIQUETA){
-                    eti = plat.obtenerEtiqueta(op2.valor);
-                    if (eti[0]){
-                        if (inst.ops.length == 3){
-                            this.simbolos[i].ops[2].tipo == TipoVal.DIRECCION;
-                            this.simbolos[i].ops[2].valor = eti[0];
-                        } else if (inst.ops.length == 4){
-                            this.simbolos[i].ops[3].tipo == TipoVal.DIRECCION;
-                            this.simbolos[i].ops[3].valor = eti[0];
-                        }
-                    } else {
-                        finalizado = false;
-                        continue;
-                    }
-                }
-                tam = this.#obtCodigoTam(inst.mnemo, [op1, op2]);
-                this.cl += tam;
+                //tam = this.#obtCodigoTam(inst.mnemo);
+                //this.cl += tam;
             }
-        }*/
+        }
     }
 
     constructor(nom){
@@ -2121,10 +2099,11 @@ class ProgramaAsm {
             this.lineas = plat.cargarArchivoEnsamblador(nom);
             this.#analLexicoSintactico();
             /* Esto es para evitar bucles infinitos por referencias recursivas */
-            const fin = Date.now() + 5000; // FIX: Pasar esto a Configuración
-                                           // 5 segundos son suficientes
+            const fin = Date.now() + 500; // FIX: Pasar esto a Configuración
+            this.#analSemantico(fin);
         } catch (e){
             plat.escribirLog(TipoLog.ERROR, e.message);
+            console.error(e);
         }
     }
       
@@ -2146,6 +2125,6 @@ class ProgramaAsm {
         }
         while (true){
             
-        }*/
-    }
+        }
+    }*/
 }

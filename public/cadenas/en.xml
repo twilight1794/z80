@@ -20,6 +20,7 @@
     <string name="btn_descargarhex">Download hex file...</string>
     <string name="btn_descargarproj">Download project...</string>
     <string name="btn_cerrarproj">Close project</string>
+    <string name="btn_salir">Quit</string>
     <string name="menubar_principal_editar">Edit</string>
     <string name="btn_cortar">Cut</string>
     <string name="btn_copiar">Copy</string>
@@ -255,6 +256,8 @@
     <string name="err_tipoparametrosincorrecto">The instruction %m has received a parameter of the wrong type.</string>
     <string name="err_numeroparametrosincorrecto">The instruction %ins expected %ne parameters, but %nr were received.</string>
     <string name="err_desplazamientonoadmitido">The instruction doesn't admit an offset for IX and IY.</string>
+    <string name="err_semantico">Unknown error during argument semantic analysis.</string>
+    <string name="err_etiquetaindefinida">The label %i has not been defined.</string>
     <string name="err_bucleinfinito">An infinite loop was found while reducing an expression.</string>
     <string name="err_ejecucion">Unknown error during program execution.</string>
     <string name="err_direccioninvalida">The memory address 0x%dir does not exist.</string>

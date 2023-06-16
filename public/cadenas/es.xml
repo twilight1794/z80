@@ -20,6 +20,7 @@
     <string name="btn_descargarhex">Descargar archivo hex...</string>
     <string name="btn_descargarproj">Descargar proyecto...</string>
     <string name="btn_cerrarproj">Cerrar proyecto</string>
+    <string name="btn_salir">Salir</string>
     <string name="menubar_principal_editar">Editar</string>
     <string name="btn_cortar">Cortar</string>
     <string name="btn_copiar">Copiar</string>
@@ -255,6 +256,8 @@
     <string name="err_tipoparametrosincorrecto">La instrucción %m ha recibido un parámetro de tipo incorrecto.</string>
     <string name="err_numeroparametrosincorrecto">La instrucción %ins esperaba %ne parámetros, pero ha recibido %nr.</string>
     <string name="err_desplazamientonoadmitido">Esta instrucción no admite desplazamiento para IX e IY.</string>
+    <string name="err_semantico">Error desconocido durante el análisis semántico de argumentos.</string>
+    <string name="err_etiquetaindefinida">La etiqueta %i no ha sido definida.</string>
     <string name="err_bucleinfinito">Se encontró un bucle infinito mientras se reducía una expresión.</string>
     <string name="err_ejecucion">Error desconocido durante la ejecución del programa.</string>
     <string name="err_direccioninvalida">La dirección de memoria 0x%dir no existe.</string>

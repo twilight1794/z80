@@ -133,7 +133,7 @@ window.combTeclas = {
     "M-f j": btnBorrar,
     "M-f k": btnRenombrar,
     "M-f l": btnEntralizar,
-    "M-f d": null,
+    "M-f d": () => { Neutralino.app.killProcess(); },
     "M-f e": null,
     "M-f f": null,
     "M-f x": btnCerrarProj,
@@ -277,6 +277,7 @@ function btnDetener(){
 }
 function btnRestablecer(){
     if (plat.estado == Estado.LISTO || plat.estado == Estado.ESPERA) btnDetener();
+    document.querySelector("#r-eti .lvars").textContent = "";
     window.prog = undefined;
 }
 function btnManual(){
@@ -841,6 +842,15 @@ window.addEventListener("DOMContentLoaded", () => {
     Array.from(document.querySelectorAll("#r-f td, #v-iff1, #v-iff2")).forEach((e) => {
         e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.id.slice(2)) );
      });
+
+    /* Adecuaciones a interfaz nativa */
+    if (window.NL_VERSION){
+        Neutralino.init();
+        let btnSalir = document.createElement("li");
+        btnSalir.innerHTML = "<button id=\"btnSalir\" role=\"menuitem\"><span>"+_("btn_salir")+"</span></button>";
+        document.querySelector("[aria-label=Principal]>li>ul").appendChild(btnSalir);
+        btnSalir.addEventListener("click", () => Neutralino.app.exit() );
+    }
 
     /* Combinaciones de teclas */
     document.addEventListener("keydown", (e) => {

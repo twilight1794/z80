@@ -45,33 +45,56 @@ class Estado {
  * 
  * @param {Number} x Número a procesar
  * @param {Number} t Tamaño en bytes del valor a escribir
+ * @param {Boolean} e Si verdadero, indica que el valor será little-endian, de lo contrario, big-endian
+ * @param {Boolean} s Si verdadero, indica que el valor es signado, de lo contrario, es no signado
  * @return {Array<Number>} Array con los bytes a escribir
- * @see obtNumLittleEndian
+ * @see decodificarValor
  */
-function obtLittleEndianNum(x, t){
+function codificarValor(x, t, e, s){
+    let n, end;
+    let rango = Math.pow(256, t);
+    let max = rango/(s?2:1);
+    let min = s?((-rango)/2+1):0;
+    /* Validación */
+    if (x>max || x<min) throw new ValorTamanoError(t);
+
     /* Signo */
-    let n;
-    if (x>-1) n = x.toString(16).padStart(t*2, "0");
-    else n = (parseInt(Array.from(Math.abs(x).toString(2).padStart(t*8, 0)).map((d) => ((d=="1")?0:1) ).join(""), 2) + 1).toString(16).padStart(t*8, "0");
+    if (x> -1) n = x.toString(16).padStart(t*2, "0");
+    else n = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0");
+
     /* Endianness */
-    return n.substring(n.length-t*2).match(/.{2}/g).reverse().map((p) => parseInt(p, 16) );
+    if (e) end = n.match(/.{2}/g).reverse();
+    else end = n.match(/.{2}/g);
+    return end.map((p) => parseInt(p, 16));
 }
 
 /**
  * Dado un valor codificado, devuelve el valor real, según sus características
  *
- * @param {Number} x Número codificado en memoria
+ * @param {Number} x Array de bytes codificado en memoria
  * @param {Number} t Tamaño en bytes del valor a escribir
+ * @param {Boolean} e Si verdadero, indica que el valor será little-endian, de lo contrario, big-endian
  * @param {Boolean} s Si verdadero, indica que el valor es signado, de lo contrario, es no signado
  * @return {Number} Valor real representado
- * @see obtLittleEndianNum
+ * @see codificarValor
  */
-function obtNumLittleEndian(x, t, s){
+function decodificarValor(x, t, e, s){
+    /* Endianness */
+    let n, val;
+    if (e) n = x.reverse().reduce((a, b) => a + b.toString(16));
+    else n = x.reduce((a, b) => a + b.toString(16));
+
+    /* Signo */
+    if (!s || (s && x>-1)) val = n;
+    else val = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0")*-1;
+    return parseInt(val, 16);
+
+/*
     if (t == 2) return x; // Al no manejar palabras signadas, el valor obtenido ya es el correcto
     else if (!s) return x; // Lo mismo con bytes no signados
     // En este punto, el número debe ser de 1 byte, y signado
     else if (x < 128) return x;
-    else return Plataforma.obtComplemento(x, 2)*-1;
+    else return Plataforma.obtComplemento(x, 1, 2)*-1; // FIX: Corr*/
 }
 
 /**
@@ -156,12 +179,13 @@ class Plataforma {
      * Devuelve el complemento a 1 o 2 de un valor
      *
      * @param {Number} x Valor a complementar
-     * @param {Number} t Tipo de operación: n para complemento a n
+     * @param {Number} t Tamaño en bytes del valor
+     * @param {Number} o Tipo de operación: n para complemento a n
      * @return {Number} Valor complementado
      * @memberof Plataforma
      */
-    static obtComplemento(x, t){
-        return parseInt(Array.from(x.toString(2).padStart(8, "0")).map((d) => ((d == "1")?"0":"1") ).join(""), 2) + (t-1);
+    static obtComplemento(x, t, o){
+        return parseInt(Array.from(Math.abs(x).toString(2).padStart(t*8, "0")).map((d) => ((d == "1")?"0":"1") ).join(""), 2) + (o-1);
     }
 
     /* Funciones para manejar la plataforma */
@@ -610,7 +634,7 @@ class Plataforma {
                 break;
             case "RLD":
             case "RRD":
-                x1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                x1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 this.escribirBandera("sf", (x1<0));
                 this.escribirBandera("zf", (x1 == 0));
                 this.escribirBandera("hf", false);
@@ -618,7 +642,7 @@ class Plataforma {
                 this.escribirBandera("nf", false);
                 break;
             case "BIT": // [r, b]
-                this.escribirBandera("zf", (Plataforma.obtComplemento(ops[0], 1)&(1<<ops[1])));
+                this.escribirBandera("zf", (Plataforma.obtComplemento(ops[0], 1, 1)&(1<<ops[1])));
                 this.escribirBandera("hf", true);
                 this.escribirBandera("nf", false);
                 break;
@@ -640,22 +664,14 @@ class Plataforma {
      */
     comprobarCondicion(cc){
         switch (cc){
-            case 0:
-                return !this.leerBandera("zf");
-            case 1:
-                return this.leerBandera("zf");
-            case 2:
-                return !this.leerBandera("cf");
-            case 3:
-                return this.leerBandera("cf");
-            case 4:
-                return !this.leerBandera("pf");
-            case 5:
-                return this.leerBandera("pf");
-            case 6:
-                return !this.leerBandera("sf");
-            case 7:
-                return this.leerBandera("sf");
+            case 0: return !this.leerBandera("zf");
+            case 1: return this.leerBandera("zf");
+            case 2: return !this.leerBandera("cf");
+            case 3: return this.leerBandera("cf");
+            case 4: return !this.leerBandera("pf");
+            case 5: return this.leerBandera("pf");
+            case 6: return !this.leerBandera("sf");
+            case 7: return this.leerBandera("sf");
         }
     }
 
@@ -669,24 +685,24 @@ class Plataforma {
      */
     anadirEtiqueta(i, t, v){
         let ev = document.getElementById("eti-"+i);
-        if (ev) throw new EtiquetaExistenteError(obj.eti); // NOTE: Ver si esto se queda
+        if (ev) throw new EtiquetaExistenteError(i); // NOTE: Ver si esto se queda
         /* ID */
         let ei = document.createElement("dt");
         ei.textContent = i;
         /* Tipo */
-        switch (t.toLowerCase()){
+        switch (t.toLowerCase()){ // FIX: ¿deberíamos usar tipos enumerados?
             case "dfb":
-                ei.dataset.tipo = "Byte";
+                ei.dataset.tipo = "Byte"; break;
             case "dfs":
-                ei.dataset.tipo = "Espacio";
+                ei.dataset.tipo = "Espacio"; break;
             case "dwl":
-                ei.dataset.tipo = "Palabra, little-endian";
+                ei.dataset.tipo = "Palabra, little-endian"; break;
             case "dwm":
-                ei.dataset.tipo = "Palabra, big-endian";
+                ei.dataset.tipo = "Palabra, big-endian"; break;
             case "loc":
-                ei.dataset.tipo = "Localidad";
+                ei.dataset.tipo = "Localidad"; break;
             case "equ":
-                ei.dataset.tipo = "Entero";
+                ei.dataset.tipo = "Entero"; break;
         }
         /* Valor */
         ev = document.createElement("dd");
@@ -697,16 +713,23 @@ class Plataforma {
         } else if (v == null){ // Referenciado, pero no definido
             ev.className = "v-ref";
             ev.textContent = "No definido";
-        } else {
-            ev.className = "v-def"; // Definido
+        } else { // Definido
+            ev.className = "v-def";
             ev.textContent = v.toString(16).padStart(4, "0");
         }
         document.querySelector("#r-eti .lvars").append(ei, ev);
     }
 
+    /**
+     * Modifica el valor de la etiqueta
+     *
+     * @param {String} i Identificador de la etiqueta
+     * @param {*} v Valor a establecer a la etiqueta
+     * @memberof Plataforma
+     */
     modificarEtiqueta(i, v){
         let ev = document.getElementById("eti-"+i);
-        if (!ev) throw new BaseError("Etiqueta inexistente");
+        if (!ev) throw new EtiquetaIndefinidaError(i);
         if (Number.isNaN(v)){
             ev.className = "v-defnan";
             ev.textContent = "Pendiente...";
@@ -719,8 +742,43 @@ class Plataforma {
         }
     }
 
+    /**
+     * Modifica el tipo de la etiqueta
+     * Al principio, todas las etiquetas son marcadas como tipo Localidad
+     *
+     * @param {String} i Identificador de la etiqueta
+     * @param {String} t Cadena que identifica el tipo de la etiqueta
+     * @memberof Plataforma
+     */
+    modificarTipoEtiqueta(i, t){
+        let ev = document.getElementById("eti-"+i);
+        if (!ev) throw new EtiquetaIndefinidaError(i);
+        let ei = ev.previousElementSibling();
+        switch (t.toLowerCase()){
+            case "dfb":
+                ei.dataset.tipo = "Byte"; break;
+            case "dfs":
+                ei.dataset.tipo = "Espacio"; break;
+            case "dwl":
+                ei.dataset.tipo = "Palabra, little-endian"; break;
+            case "dwm":
+                ei.dataset.tipo = "Palabra, big-endian"; break;
+            case "loc":
+                ei.dataset.tipo = "Localidad"; break;
+            case "equ":
+                ei.dataset.tipo = "Entero"; break;
+        }
+    }
+
+    /**
+     * Obtiene el valor y tipo asociado a una etiqueta
+     *
+     * @param {String} i Identificador de la etiqueta
+     * @return {Array<String, String>} Un array que contiene el valor y el tipo de la etiqueta
+     * @memberof Plataforma
+     */
     obtenerEtiqueta(i){
-        let ev = document.getElementById("v-"+i);
+        let ev = document.getElementById("eti-"+i);
         if (!ev) return [undefined, undefined];
         let v, t;
         switch (ev.className){
@@ -828,7 +886,7 @@ class Plataforma {
                 // TODO: Regresar
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
-                op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                 auxv1 = this.leerRegistro("b");
                 if (auxv1>0){
                     this.escribirRegistro("b", auxv1-1);
@@ -860,7 +918,7 @@ class Plataforma {
                 // TODO: Regresar
                 return ["RLA", 4, 1, 1, []];
             case 0x18:
-                op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                 this.escribirRegistro("pc", dir + op1 + 2);
                 return ["JR", 12, 3, 2, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -884,7 +942,7 @@ class Plataforma {
                 return ["RRA", 4, 1, 1, []];
             case 0x20:
             case 0x28:
-                op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                 auxv1 = this.leerBandera("zf");
                 if ((!auxv1 && cod == 0x20) || (auxv1 && cod == 0x28)){
                     this.escribirRegistro("pc", dir + op1 + 2);
@@ -937,7 +995,7 @@ class Plataforma {
                 return ["CPL", 4, 1, 1, []];
             case 0x30:
             case 0x38:
-                op1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 if ((!auxv1 && cod == 0x30) || (auxv1 && cod == 0x38)){
                     this.escribirRegistro("pc", dir + op1 + 2);
@@ -970,8 +1028,8 @@ class Plataforma {
             case 0x34:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
-                op1 = obtNumLittleEndian(this.leerMemoria(dir1), 1, true) + 1;
-                this.escribirMemoria(dir1, obtLittleEndianNum(op1, 1));
+                op1 = decodificarValor(this.leerMemoria(dir1), 1, true, true) + 1;
+                this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 11, 3, 1, [{
                     "tipo": TipoOpEns.DIRECCION_R,
@@ -980,8 +1038,8 @@ class Plataforma {
             case 0x35:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
-                op1 = obtNumLittleEndian(this.leerMemoria(dir1), 1, true) - 1;
-                this.escribirMemoria(dir1, obtLittleEndianNum(op1, 1));
+                op1 = decodificarValor(this.leerMemoria(dir1), 1, true, true) - 1;
+                this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 11, 3, 1, [{
                     "tipo": TipoOpEns.DIRECCION_R,
@@ -1024,8 +1082,8 @@ class Plataforma {
             case 0x86:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op1+op2;
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 7, 2, 1, [{
@@ -1038,11 +1096,11 @@ class Plataforma {
             case 0x8E:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1054,10 +1112,10 @@ class Plataforma {
             case 0x96:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1069,11 +1127,11 @@ class Plataforma {
             case 0x9E:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1121,8 +1179,8 @@ class Plataforma {
             case 0xBE:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 1, [{
@@ -1139,8 +1197,8 @@ class Plataforma {
                 }]];
             case 0xC6:
                 this.escribirRegistro("pc", dir+2);
-                op1 = obtNumLittleEndian(this.leerRegistro("A"), 1, true);
-                op2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                 res =  op1+op2;
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 7, 2, 2, [{
@@ -1166,11 +1224,11 @@ class Plataforma {
                 }]];
             case 0xCE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1188,10 +1246,10 @@ class Plataforma {
                 }]];
             case 0xD6:
                 this.escribirRegistro("pc", dir+2);
-                op2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1240,11 +1298,11 @@ class Plataforma {
                 }]];
             case 0xDE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = obtNumLittleEndian(this.leerMemoria(dir + 1), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir + 1), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1354,8 +1412,8 @@ class Plataforma {
                 return ["EI", 4, 1, 1, []];
             case 0xFE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 2, [{
@@ -1379,8 +1437,8 @@ class Plataforma {
             case 4: case 12: case 20: case 28: case 36: case 44: case 60:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-4)>>3;
-                op1 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir1]), 1, true) + 1;
-                this.escribirRegistro(this.ValsR[dir1], obtLittleEndianNum(op1, 1));
+                op1 = decodificarValor(this.leerRegistro(this.ValsR[dir1]), 1, true, true) + 1;
+                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1390,8 +1448,8 @@ class Plataforma {
             case 5: case 13: case 21: case 29: case 37: case 45: case 61:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-5)>>3;
-                op1 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir1]), 1, true) - 1;
-                this.escribirRegistro(this.ValsR[dir1], obtLittleEndianNum(op1, 1));
+                op1 = decodificarValor(this.leerRegistro(this.ValsR[dir1]), 1, true, true) - 1;
+                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1492,10 +1550,10 @@ class Plataforma {
             case 128: case 129: case 130: case 131: case 132: case 133: case 135:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-128;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 res =  op1+op2;
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1508,11 +1566,11 @@ class Plataforma {
             case 136: case 137: case 138: case 139: case 140: case 141: case 143:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-136;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 4, 4, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1525,10 +1583,10 @@ class Plataforma {
             case 144: case 145: case 146: case 147: case 148: case 149: case 151:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-144;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1541,11 +1599,11 @@ class Plataforma {
             case 152: case 153: case 154: case 155: case 156: case 157: case 159:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-152;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1558,8 +1616,8 @@ class Plataforma {
             case 160: case 161: case 162: case 163: case 164: case 165: case 167:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-160;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 res = Plataforma.obtAnd(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("AND", [res, op1, op2]);
@@ -1571,8 +1629,8 @@ class Plataforma {
             case 168: case 169: case 170: case 171: case 172: case 173: case 175:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-168;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 res = Plataforma.obtXor(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("XOR", [res]);
@@ -1584,8 +1642,8 @@ class Plataforma {
             case 176: case 177: case 178: case 179: case 180: case 181: case 183:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-176;
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
-                op2 = obtNumLittleEndian(this.leerRegistro(this.ValsR[dir2]), 1, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
                 res = Plataforma.obtOr(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("OR", [res, op1, op2]);
@@ -1597,8 +1655,8 @@ class Plataforma {
             case 184: case 185: case 186: case 187: case 188: case 189: case 183:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-184;
-                op2 = obtNumLittleEndian(this.leerMemoria(dir2), 1, true);
-                op1 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
+                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 1, [{
@@ -1917,7 +1975,7 @@ class Plataforma {
                     case 0x44:
                         this.escribirRegistro("pc", dir+1);
                         op1 = this.leerRegistro("a");
-                        res = Plataforma.obtComplemento(op1, 2);
+                        res = Plataforma.obtComplemento(op1, 1, 2);
                         this.escribirRegistro("a", res);
                         this.estBanderasOp("NEG", [res]);
                         return ["NEG", 8, 2, 2, []];
@@ -2297,8 +2355,8 @@ class Plataforma {
                     case 0x34:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true)+1;
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)+1;
                         this.escribirPalabra(dir1+auxd1, op1);
                         this.estBanderasOp("INC", [op1]);
                         return ["INC", 23, 6, 3, [{
@@ -2308,8 +2366,8 @@ class Plataforma {
                     case 0x35:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true)-1;
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)-1;
                         this.escribirPalabra(dir1+auxd1, op1);
                         this.estBanderasOp("DEC", [op1]);
                         return ["DEC", 23, 6, 3, [{
@@ -2319,9 +2377,9 @@ class Plataforma {
                     case 0x36:
                         this.escribirRegistro("pc", dir+3);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true)-1;
-                        op2 = obtNumLittleEndian(this.leerMemoria(dir+2), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)-1;
+                        op2 = decodificarValor(this.leerMemoria(dir+2), 1, true, true);
                         this.escribirPalabra(dir1+auxd1, op1);
                         return ["LD", 23, 6, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -2333,11 +2391,11 @@ class Plataforma {
                     case 0x86:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true);
-                        op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
+                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                         res = op1+op2;
-                        this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("ADD", [res, op1, op2]);
                         return ["ADD", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2349,12 +2407,12 @@ class Plataforma {
                     case 0x8E:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true);
-                        op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
+                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1+op2+(auxv1?1:0);
-                        this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("ADC", [res, op1, op2]);
                         return ["ADC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2366,11 +2424,11 @@ class Plataforma {
                     case 0x96:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir1+auxd1), 1, true);
-                        op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
+                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                         res = op1-op2;
-                        this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("SUB", [res, op1, op2]);
                         return ["ADC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2382,12 +2440,12 @@ class Plataforma {
                     case 0x9E:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
-                        op1 = obtNumLittleEndian(this.leerMemoria(dir2+auxd2), 1, true);
-                        op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        op1 = decodificarValor(this.leerMemoria(dir2+auxd2), 1, true, true);
+                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1-op2-(auxv1?1:0);
-                        this.escribirRegistro("a", obtLittleEndianNum(res, 1));
+                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("SBC", [res, op1, op2]);
                         return ["SBC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2399,7 +2457,7 @@ class Plataforma {
                     case 0xA6:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2412,7 +2470,7 @@ class Plataforma {
                     case 0xAE:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         op1 = this.leerMemoria(dir2+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2425,7 +2483,7 @@ class Plataforma {
                     case 0xB6:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2438,9 +2496,9 @@ class Plataforma {
                     case 0xBE:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
-                        op2 = obtNumLittleEndian(this.leerRegistro("a"), 1, true);
+                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
                         res = op1-op2;
                         this.estBanderasOp("AND", [res, op1, op2]);
                         return ["CP", 19, 5, 3, [{
@@ -2452,7 +2510,7 @@ class Plataforma {
                         cod = this.leerMemoria(dir);
                         codl.push(cod);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir-1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir-1), 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         switch (cod){
                             case 6:
@@ -2604,7 +2662,7 @@ class Plataforma {
                         dir2 = cod-112;
                         op2 = this.leerRegistro(this.ValsR[dir1]);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         this.escribirMemoria(dir1+auxd1, op2);
                         return ["LD", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -2618,7 +2676,7 @@ class Plataforma {
                         this.escribirRegistro("pc", dir+2);
                         dir1 = (cod-70)>>3;
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = obtNumLittleEndian(this.leerMemoria(dir+1), 1, true);
+                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
                         op2 = this.leerMemoria(dir2+auxd2);
                         this.escribirRegistro(this.ValsR[dir1], op2);
                         return ["LD", 19, 5, 3, [{
@@ -2681,6 +2739,7 @@ class Plataforma {
                 inst = this.ejecutarInstruccion();
             } catch (e){
                 plat.escribirLog(TipoLog.ERROR, e.message);
+                console.error(e);
                 break;
             }
             /* Datos principales */

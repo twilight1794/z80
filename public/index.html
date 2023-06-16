@@ -4,7 +4,7 @@
     <head>
         <title>$nombre_app</title>
         <meta name="versionNumero" content="1.0.0.0" />
-        <meta name="versionFecha" content="mié 14 jun 2023 22:18:53 UTC" />
+        <meta name="versionFecha" content="vie 16 jun 2023 16:03:35 UTC" />
         <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
@@ -29,7 +29,7 @@
             <input type="file" id="archivoHex" multiple="multiple" hidden="hidden" aria-label="$input_archivohex_aria_label" accept=".hex" />
             <input type="file" id="archivoProj" hidden="hidden" aria-label="$input_archivoproj_aria_label" accept=".xml, .z80p" />
             <ul aria-label="$menubar_principal" role="menubar">
-                <li><span>$menubar_principal_archivo</span>
+                <li aria-selected="false"><span>$menubar_principal_archivo</span>
                     <ul>
                         <li><button role="menuitem" id="btnNuevo">$btn_nuevo <kbd>M-f n</kbd></button></li>
                         <li><button role="menuitem" id="btnAbrirAsm">$btn_abrirasm <kbd>M-f a</kbd></button></li>
@@ -50,7 +50,7 @@
                         <li><button role="menuitem" id="btnCerrarProj">$btn_cerrarproj <kbd>M-f x</kbd></button></li>
                     </ul>
                 </li>
-                <li><span>$menubar_principal_editar</span>
+                <li aria-selected="false"><span>$menubar_principal_editar</span>
                     <ul>
                         <li><button role="menuitem" id="btnCortar">$btn_cortar <kbd>C-x</kbd></button></li>
                         <li><button role="menuitem" id="btnCopiar">$btn_copiar <kbd>C-c</kbd></button></li>
@@ -63,7 +63,9 @@
                             <ul id="f_dir">
                                 <li><button role="menuitem">CASE</button></li>
                                 <li><button role="menuitem">DFB</button></li>
+                                <li><button role="menuitem">DFL</button></li>
                                 <li><button role="menuitem">DFS</button></li>
+                                <li><button role="menuitem">DLL</button></li>
                                 <li><button role="menuitem">DWL</button></li>
                                 <li><button role="menuitem">DWM</button></li>
                                 <li><button role="menuitem">END</button></li>
@@ -119,9 +121,9 @@
                                         <li><button role="menuitem">DI</button></li>
                                         <li><button role="menuitem">EI</button></li>
                                         <li><button role="menuitem">HALT</button></li>
-                                        <li><button role="menuitem">IM0</button></li>
-                                        <li><button role="menuitem">IM1</button></li>
-                                        <li><button role="menuitem">IM2</button></li>
+                                        <li><button role="menuitem">IM 0</button></li>
+                                        <li><button role="menuitem">IM 1</button></li>
+                                        <li><button role="menuitem">IM 2</button></li>
                                         <li><button role="menuitem">NEG</button></li>
                                         <li><button role="menuitem">NOP</button></li>
                                         <li><button role="menuitem">SCF</button></li>
@@ -189,7 +191,7 @@
                         </li>
                     </ul>
                 </li>
-                <li><span>$menubar_principal_ejecutar</span>
+                <li aria-selected="false"><span>$menubar_principal_ejecutar</span>
                     <ul>
                         <li><button role="menuitem" id="btnEnsamblar">$btn_ensamblar <kbd>M-e c</kbd></button></li>
                         <li><button role="menuitem" id="btnEjecutar">$btn_ejecutar <kbd>M-e e</kbd></button></li>
@@ -198,7 +200,7 @@
                         <li><button role="menuitem" id="btnRestablecer">$btn_restablecer <kbd>M-e r</kbd></button></li>
                     </ul>
                 </li>
-                <li><span>$menubar_principal_macros</span>
+                <li aria-selected="false"><span>$menubar_principal_macros</span>
                     <ul>
                         <li><button role="menuitem" id="btnAnadMacro_001">WHILE</button></li>
                         <li><button role="menuitem" id="btnAnadMacro_002">DO .. WHILE</button></li>
@@ -208,7 +210,7 @@
                         <li><button role="menuitem" id="btnMacros">$btn_macros</button></li>
                     </ul>
                 </li>
-                <li><span>$menubar_principal_ayuda</span>
+                <li aria-selected="false"><span>$menubar_principal_ayuda</span>
                     <ul>
                         <li><button role="menuitem" id="btnManual">$btn_manual <kbd>M-a a</kbd></button></li>
                         <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">$lnk_incidencias <kbd>M-a p</kbd></a></li>

@@ -44,6 +44,7 @@ class programHex {
     // Se guardará la traducción de hexadecimal a mnemónicos
     constructor(PC) {
         this.bytes = [];
+        this.listaBytes = [];
         this.asmCode = [];
         this.hexCode = [];
         this.CL;
@@ -99,7 +100,8 @@ class programHex {
         // Validamos que la checksum esté en un rango válido
         if (padding !== "00") { throw new paddingError(lnum) };
         // Se validan los códigos operacionales
-        this.bytes = this.bytes.concat(bytes)
+        this.bytes = this.bytes.concat(bytes);
+        this.listaBytes = this.listaBytes.concat(bytes);
     }
 
     // Función que nos permite determinar si la línea puede ser válida o no
@@ -141,7 +143,6 @@ class programHex {
     translate(bytes) {
         // Por cada código de operación, tendremos un discriminante, el cual será el primer elemento
         while(bytes.length != 0) {
-            console.log(bytes);
             this.checkMnemonics(bytes.shift(),bytes);
         }
     }
@@ -1127,18 +1128,3 @@ class programHex {
         }
     }
 }
-/*
-let hex = new programHex();
-let prueba = [];
-prueba[0] = ":1001B0003A0002470516000E0058DD210A027AB8FF";
-prueba[1] = ":1001C000FAC40176DD7E00DD2BDDBE00FADF011D05";
-prueba[2] = ":1001D0007B3DBAF2C40179FE01CAED01C3C301DD62";
-prueba[3] = ":1001E0006600DD7700DD74010E01C3CF011458DD18";
-prueba[4] = ":0801F000210A020E00C3BE014A";
-prueba[5] = ":00000001FF";
-for (let i = 0; i < prueba.length; i++) {
-    hex.getElements(prueba[i].toUpperCase(),i);
-}
-hex.translate(hex.bytes);
-console.log(hex.asmCode);
-console.log(hex.hexCode);*/

@@ -1,9 +1,15 @@
 "use strict"
 
+// FIX: Tareas de limpieza secundarias:
+// No es esencial para entregar, pero conviene
+// - Mover esto a errores.js, y usar las clases abstractas apropiadas
+// - Convertirlo al formato de programa_asm
+// - Añadir función para obtener el hexadecimal Intel desde una lista de bytes
+
 class numBytesError extends Error {
     constructor(lnum) {
         super();
-        this.message = `El número de bytes de instrucción en la línea ${lnum} es incorrectol.`;
+        this.message = `El número de bytes de instrucción en la línea ${lnum} es incorrecto.`;
         this.name = "numBytesError";
     }
 }

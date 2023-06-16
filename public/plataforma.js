@@ -71,7 +71,7 @@ function codificarValor(x, t, e, s){
 /**
  * Dado un valor codificado, devuelve el valor real, según sus características
  *
- * @param {Number} x Array de bytes codificado en memoria
+ * @param {Array<Number>} x Array de bytes codificado en memoria
  * @param {Number} t Tamaño en bytes del valor a escribir
  * @param {Boolean} e Si verdadero, indica que el valor será little-endian, de lo contrario, big-endian
  * @param {Boolean} s Si verdadero, indica que el valor es signado, de lo contrario, es no signado
@@ -225,7 +225,7 @@ class Plataforma {
      */
     leerMemoria(dir){
         let t = parseInt(localStorage.getItem("selPlatMem"));
-        if (dir < 0 || t < dir) throw new DireccionInvalidaError({"dir": dir});
+        if (dir < 0 || t < dir) throw new DireccionInvalidaError(dir);
         let s = Math.trunc(dir/16);
         let d = dir%16;
         let p = document.querySelector("#r-mem table").tBodies[0].rows;
@@ -254,8 +254,8 @@ class Plataforma {
      */
     escribirMemoria(dir, val){
         let t = parseInt(localStorage.getItem("selPlatMem"));
-        if (dir < 0 || t < dir) throw new DireccionInvalidaError({"dir": dir});
-        if (val > 255) throw new ValorTamanoError({"t": 1});
+        if (dir < 0 || t < dir) throw new DireccionInvalidaError(dir);
+        if (val > 255) throw new ValorTamanoError(1);
         let s = Math.trunc(dir/16);
         let d = dir%16;
         let p = document.querySelector("#r-mem table").tBodies[0].rows;
@@ -271,7 +271,7 @@ class Plataforma {
      * @memberof Plataforma
      */
     escribirPalabra(dir, val){
-        if (val > 65535) throw new ValorTamanoError({"t": 2});
+        if (val > 65535) throw new ValorTamanoError(2);
         let l = (val & 0xff);
         let h = (val & 0xff00)>>8;
         this.escribirMemoria(dir, l);
@@ -634,7 +634,7 @@ class Plataforma {
                 break;
             case "RLD":
             case "RRD":
-                x1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                x1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 this.escribirBandera("sf", (x1<0));
                 this.escribirBandera("zf", (x1 == 0));
                 this.escribirBandera("hf", false);
@@ -886,7 +886,7 @@ class Plataforma {
                 // TODO: Regresar
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
-                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 auxv1 = this.leerRegistro("b");
                 if (auxv1>0){
                     this.escribirRegistro("b", auxv1-1);
@@ -918,7 +918,7 @@ class Plataforma {
                 // TODO: Regresar
                 return ["RLA", 4, 1, 1, []];
             case 0x18:
-                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 this.escribirRegistro("pc", dir + op1 + 2);
                 return ["JR", 12, 3, 2, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -942,7 +942,7 @@ class Plataforma {
                 return ["RRA", 4, 1, 1, []];
             case 0x20:
             case 0x28:
-                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 auxv1 = this.leerBandera("zf");
                 if ((!auxv1 && cod == 0x20) || (auxv1 && cod == 0x28)){
                     this.escribirRegistro("pc", dir + op1 + 2);
@@ -995,7 +995,7 @@ class Plataforma {
                 return ["CPL", 4, 1, 1, []];
             case 0x30:
             case 0x38:
-                op1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 if ((!auxv1 && cod == 0x30) || (auxv1 && cod == 0x38)){
                     this.escribirRegistro("pc", dir + op1 + 2);
@@ -1028,7 +1028,7 @@ class Plataforma {
             case 0x34:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
-                op1 = decodificarValor(this.leerMemoria(dir1), 1, true, true) + 1;
+                op1 = decodificarValor([this.leerMemoria(dir1)], 1, true, true) + 1;
                 this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 11, 3, 1, [{
@@ -1038,7 +1038,7 @@ class Plataforma {
             case 0x35:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
-                op1 = decodificarValor(this.leerMemoria(dir1), 1, true, true) - 1;
+                op1 = decodificarValor([this.leerMemoria(dir1)], 1, true, true) - 1;
                 this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 11, 3, 1, [{
@@ -1082,8 +1082,8 @@ class Plataforma {
             case 0x86:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op1+op2;
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 7, 2, 1, [{
@@ -1096,8 +1096,8 @@ class Plataforma {
             case 0x8E:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -1112,8 +1112,8 @@ class Plataforma {
             case 0x96:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op1-op2;
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
@@ -1127,8 +1127,8 @@ class Plataforma {
             case 0x9E:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1));
@@ -1179,8 +1179,8 @@ class Plataforma {
             case 0xBE:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = this.leerRegistro("hl");
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 1, [{
@@ -1197,8 +1197,8 @@ class Plataforma {
                 }]];
             case 0xC6:
                 this.escribirRegistro("pc", dir+2);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 res =  op1+op2;
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 7, 2, 2, [{
@@ -1224,8 +1224,8 @@ class Plataforma {
                 }]];
             case 0xCE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -1246,8 +1246,8 @@ class Plataforma {
                 }]];
             case 0xD6:
                 this.escribirRegistro("pc", dir+2);
-                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op1-op2;
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
@@ -1298,8 +1298,8 @@ class Plataforma {
                 }]];
             case 0xDE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = decodificarValor(this.leerMemoria(dir + 1), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir + 1)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -1412,8 +1412,8 @@ class Plataforma {
                 return ["EI", 4, 1, 1, []];
             case 0xFE:
                 this.escribirRegistro("pc", dir+2);
-                op2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 2, [{
@@ -1437,7 +1437,7 @@ class Plataforma {
             case 4: case 12: case 20: case 28: case 36: case 44: case 60:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-4)>>3;
-                op1 = decodificarValor(this.leerRegistro(this.ValsR[dir1]), 1, true, true) + 1;
+                op1 = decodificarValor([this.leerRegistro(this.ValsR[dir1])], 1, true, true) + 1;
                 this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 4, 1, 1, [{
@@ -1448,7 +1448,7 @@ class Plataforma {
             case 5: case 13: case 21: case 29: case 37: case 45: case 61:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-5)>>3;
-                op1 = decodificarValor(this.leerRegistro(this.ValsR[dir1]), 1, true, true) - 1;
+                op1 = decodificarValor([this.leerRegistro(this.ValsR[dir1])], 1, true, true) - 1;
                 this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 4, 1, 1, [{
@@ -1550,8 +1550,8 @@ class Plataforma {
             case 128: case 129: case 130: case 131: case 132: case 133: case 135:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-128;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res =  op1+op2;
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("ADD", [res, op1, op2]);
@@ -1566,8 +1566,8 @@ class Plataforma {
             case 136: case 137: case 138: case 139: case 140: case 141: case 143:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-136;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -1583,8 +1583,8 @@ class Plataforma {
             case 144: case 145: case 146: case 147: case 148: case 149: case 151:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-144;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res = op1-op2;
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
@@ -1599,8 +1599,8 @@ class Plataforma {
             case 152: case 153: case 154: case 155: case 156: case 157: case 159:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-152;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
                 this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -1616,8 +1616,8 @@ class Plataforma {
             case 160: case 161: case 162: case 163: case 164: case 165: case 167:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-160;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res = Plataforma.obtAnd(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("AND", [res, op1, op2]);
@@ -1629,8 +1629,8 @@ class Plataforma {
             case 168: case 169: case 170: case 171: case 172: case 173: case 175:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-168;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res = Plataforma.obtXor(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("XOR", [res]);
@@ -1642,8 +1642,8 @@ class Plataforma {
             case 176: case 177: case 178: case 179: case 180: case 181: case 183:
                 this.escribirRegistro("pc", dir+2);
                 dir2 = cod-176;
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
-                op2 = decodificarValor(this.leerRegistro(this.ValsR[dir2]), 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res = Plataforma.obtOr(op1, op2);
                 this.escribirRegistro("a", res);
                 this.estBanderasOp("OR", [res, op1, op2]);
@@ -1655,8 +1655,8 @@ class Plataforma {
             case 184: case 185: case 186: case 187: case 188: case 189: case 183:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-184;
-                op2 = decodificarValor(this.leerMemoria(dir2), 1, true, true);
-                op1 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
                 return ["CP", 7, 2, 1, [{
@@ -2355,8 +2355,8 @@ class Plataforma {
                     case 0x34:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)+1;
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true)+1;
                         this.escribirPalabra(dir1+auxd1, op1);
                         this.estBanderasOp("INC", [op1]);
                         return ["INC", 23, 6, 3, [{
@@ -2366,8 +2366,8 @@ class Plataforma {
                     case 0x35:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)-1;
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true)-1;
                         this.escribirPalabra(dir1+auxd1, op1);
                         this.estBanderasOp("DEC", [op1]);
                         return ["DEC", 23, 6, 3, [{
@@ -2377,9 +2377,9 @@ class Plataforma {
                     case 0x36:
                         this.escribirRegistro("pc", dir+3);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true)-1;
-                        op2 = decodificarValor(this.leerMemoria(dir+2), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true)-1;
+                        op2 = decodificarValor([this.leerMemoria(dir+2)], 1, true, true);
                         this.escribirPalabra(dir1+auxd1, op1);
                         return ["LD", 23, 6, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -2391,9 +2391,9 @@ class Plataforma {
                     case 0x86:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
-                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                        auxd2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true);
+                        op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         res = op1+op2;
                         this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("ADD", [res, op1, op2]);
@@ -2407,9 +2407,9 @@ class Plataforma {
                     case 0x8E:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
-                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                        auxd2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true);
+                        op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1+op2+(auxv1?1:0);
                         this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -2424,9 +2424,9 @@ class Plataforma {
                     case 0x96:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir1+auxd1), 1, true, true);
-                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                        auxd2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true);
+                        op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         res = op1-op2;
                         this.escribirRegistro("a", codificarValor(res, 1, true, true));
                         this.estBanderasOp("SUB", [res, op1, op2]);
@@ -2440,9 +2440,9 @@ class Plataforma {
                     case 0x9E:
                         this.escribirRegistro("pc", dir+2);
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
-                        op1 = decodificarValor(this.leerMemoria(dir2+auxd2), 1, true, true);
-                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                        auxd2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                        op1 = decodificarValor([this.leerMemoria(dir2+auxd2)], 1, true, true);
+                        op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1-op2-(auxv1?1:0);
                         this.escribirRegistro("a", codificarValor(res, 1, true, true));
@@ -2457,7 +2457,7 @@ class Plataforma {
                     case 0xA6:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2470,7 +2470,7 @@ class Plataforma {
                     case 0xAE:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         op1 = this.leerMemoria(dir2+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2483,7 +2483,7 @@ class Plataforma {
                     case 0xB6:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         op2 = this.leerRegistro("a");
                         res = Plataforma.obtAnd(op1, op2);
@@ -2496,9 +2496,9 @@ class Plataforma {
                     case 0xBE:
                         this.escribirRegistro("pc", dir+2);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
-                        op2 = decodificarValor(this.leerRegistro("a"), 1, true, true);
+                        op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         res = op1-op2;
                         this.estBanderasOp("AND", [res, op1, op2]);
                         return ["CP", 19, 5, 3, [{
@@ -2510,7 +2510,7 @@ class Plataforma {
                         cod = this.leerMemoria(dir);
                         codl.push(cod);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir-1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir-1)], 1, true, true);
                         op1 = this.leerMemoria(dir1+auxd1);
                         switch (cod){
                             case 6:
@@ -2662,7 +2662,7 @@ class Plataforma {
                         dir2 = cod-112;
                         op2 = this.leerRegistro(this.ValsR[dir1]);
                         dir1 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd1 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         this.escribirMemoria(dir1+auxd1, op2);
                         return ["LD", 19, 5, 3, [{
                             "tipo": TipoOpEns.DESPLAZAMIENTO,
@@ -2676,7 +2676,7 @@ class Plataforma {
                         this.escribirRegistro("pc", dir+2);
                         dir1 = (cod-70)>>3;
                         dir2 = this.leerRegistro((codl[0] == 0xDD)?"ix":"iy");
-                        auxd2 = decodificarValor(this.leerMemoria(dir+1), 1, true, true);
+                        auxd2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                         op2 = this.leerMemoria(dir2+auxd2);
                         this.escribirRegistro(this.ValsR[dir1], op2);
                         return ["LD", 19, 5, 3, [{

@@ -133,7 +133,7 @@ window.combTeclas = {
     "M-f j": btnBorrar,
     "M-f k": btnRenombrar,
     "M-f l": btnEntralizar,
-    "M-f d": () => { Neutralino.app.killProcess(); },
+    "M-f d": null,
     "M-f e": null,
     "M-f f": null,
     "M-f x": btnCerrarProj,
@@ -178,6 +178,40 @@ function _(id, params){
 }
 
 /* Funciones de eventos */
+
+/* Funciones de carga de archivos */
+function archivoAsm(e){
+    for (let a of e.target.files){
+        var reader = new FileReader();
+        reader.readAsText(a, "UTF-8");
+        reader.onload = function (e2){
+            let n = a.name.split(".").slice(0, -1).join(".");
+            proy.nuevoArchivo(n, e2.target.result);
+            proy.anadirArchivo(n);
+        }
+        reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_asm")); }
+    }
+}
+function archivoHex(e){
+    for (let a of e.target.files){
+        var reader = new FileReader();
+        reader.readAsText(a, "UTF-8");
+        reader.onload = function (e2){
+            // FIX: Esto es temporal: debería integrarse dentro de programaAsm o una superclase más adelante
+            window.progHex = new programHex();
+            let prueba = e2.target.result.split("\n");
+            for (let i = 0; i < prueba.length; i++){
+                progHex.getElements(prueba[i].replace("\r", "").toUpperCase(), i);
+            }
+            progHex.translate(progHex.bytes);
+            let n = a.name.split(".").slice(0, -1).join(".");
+            proy.nuevoArchivo(n, progHex.asmCode.join("\n"));
+            proy.anadirArchivo(n);
+            plat.cargarBytes(parseInt(localStorage.getItem("txtEnsOrg")), progHex.listaBytes.map((e) => parseInt(e, 16)) );
+        }
+        reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_hex")); }
+    }
+}
 
 /* Funciones de Barra de menú */
 function btnAbrirAsm(){
@@ -711,36 +745,8 @@ window.addEventListener("DOMContentLoaded", () => {
     window.plat = new Plataforma();
 
     /* Asignación de eventos de Archivo */
-    document.getElementById("archivoAsm").addEventListener("change", (e) => {
-        for (let a of e.target.files){
-            var reader = new FileReader();
-            reader.readAsText(a, "UTF-8");
-            reader.onload = function (e2){
-                let n = a.name.split(".").slice(0, -1).join(".");
-                proy.nuevoArchivo(n, e2.target.result);
-                proy.anadirArchivo(n);
-            }
-            reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_asm")); }
-        }
-    });
-    document.getElementById("archivoHex").addEventListener("change", (e) => {
-        for (let a of e.target.files){
-            var reader = new FileReader();
-            reader.readAsText(a, "UTF-8");
-            reader.onload = function (e2){
-                let hex = new programHex();
-                let prueba = e2.target.result.split("\n");
-                for (let i = 0; i < prueba.length; i++){
-                    hex.getElements(prueba[i].replace("\r", "").toUpperCase(),i);
-                }
-                hex.translate(hex.bytes);
-                let n = a.name.split(".").slice(0, -1).join(".");
-                proy.nuevoArchivo(n, hex.asmCode.join("\n"));
-                proy.anadirArchivo(n);
-            }
-            reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_hex")); }
-        }
-    });
+    document.getElementById("archivoAsm").addEventListener("change", archivoAsm);
+    document.getElementById("archivoHex").addEventListener("change", archivoHex);
 
     /* Asignación de eventos Barra de menú */
     document.getElementById("btnAbrirAsm").addEventListener("click", btnAbrirAsm);

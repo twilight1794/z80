@@ -148,8 +148,9 @@ window.combTeclas = {
     "M-e d": btnDetener,
     "M-e r": null,
     "M-a a": btnManual,
-    "M-a p": null,
-    "M-a r": null,
+    "M-a p": (e) => { document.getElementById("lnk_incidencias").click(); },
+    "M-a r": (e) => { document.getElementById("lnk_repositorio").click(); },
+    "M-a w": (e) => { document.getElementById("lnk_pwa").click(); },
     "M-a m": btnComprobarActs,
     "M-a s": btnAcercaDe,
 }
@@ -284,17 +285,21 @@ function btnInsX(e){
 function btnEnsamblar(){
     // Limpiar antes de cualquier otra cosa
     btnRestablecer();
+    if (!document.querySelector("#r-act [aria-current=page]")) 
+        document.getElementById("btnMenuMensajes").children[0].click();
     let a = document.querySelector("#archivos .entrada") || document.querySelector("#archivo [aria-selected=true]");
-    window.prog = new ProgramaAsm(a.textContent);
-    plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
+    try {
+        window.prog = new ProgramaAsm(a.textContent);
+        plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
+    } catch {}
 }
 function btnEjecutar(){
-    if (document.getElementById("r-eje").getAttribute("aria-current") == "page")
+    if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
     plat.ejecutar(true);
 }
 function btnAvanzar(){
-    if (document.getElementById("r-eje").getAttribute("aria-current") == "page")
+    if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
     plat.ejecutar(false);
 }
@@ -729,6 +734,7 @@ window.addEventListener("DOMContentLoaded", () => {
     cmi.on("cursorActivity", onInputCMI);
     onChangeCMI(cmi);
     onInputCMI(cmi);
+    document.getElementsByClassName("CodeMirror-code")[0].addEventListener("click", (e) => { cmi.refresh(); });
 
     // Al cambiar el contenido del editor al cambiar de archivo, el sistema piensa que se ha editado el archivo. Esta bandera evita ese comportamiento.
     window.cambioCMI = false;

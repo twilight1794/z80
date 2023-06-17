@@ -532,7 +532,9 @@ tbody:last-child>tr:last-child>:is(th, td) { border-bottom-color: var(--b-m); }
     margin: 0 4px;
     height: 1px;
     background: var(--c-t);
-    width: calc(100% - 8px);
+    width: calc(100% - .5rem);
+    display: block;
+    margin-block: .5rem;
 }
 [role="menubar"] button {
     background: transparent;

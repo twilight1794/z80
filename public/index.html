@@ -213,9 +213,10 @@
                 <li aria-selected="false"><span>$menubar_principal_ayuda</span>
                     <ul>
                         <li><button role="menuitem" id="btnManual">$btn_manual <kbd>M-a a</kbd></button></li>
-                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80/issues">$lnk_incidencias <kbd>M-a p</kbd></a></li>
-                        <li><a role="menuitem" target="_blank" href="https://github.com/twilight1794/z80">$lnk_repositorio <kbd>M-a r</kbd></a></li>
+                        <li><a role="menuitem" target="_blank" id="lnk_incidencias" href="https://github.com/twilight1794/z80/issues">$lnk_incidencias <kbd>M-a p</kbd></a></li>
+                        <li><a role="menuitem" target="_blank" id="lnk_repositorio" href="https://github.com/twilight1794/z80">$lnk_repositorio <kbd>M-a r</kbd></a></li>
                         <li><button role="menuitem" id="btnComprobarActs">$btn_comprobaracts <kbd>M-a m</kbd></button></li>
+                        <li><a role="menuitem" target="_blank" id="lnk_pwa" href="https://twilight1794.github.io/z80/">$lnk_pwa <kbd>M-a w</kbd></a></li>
                         <li><button role="menuitem" id="btnAcercaDe">$btn_acercade <kbd>M-a s</kbd></button></li>
                     </ul>
                 </li>
@@ -386,7 +387,7 @@
                                 <dt><label for="colorClaroCAviso">$color_caviso</label></dt><dd><input type="color" id="colorClaroCAviso" value="#ffa500" /></dd>
                                 <dt><label for="colorClaroFAviso">$color_faviso</label></dt><dd><input type="color" id="colorClaroFAviso" value="#ffdead" /></dd>
                                 <dt><label for="colorClaroCError">$color_cerror</label></dt><dd><input type="color" id="colorClaroCError" value="#ff0000" /></dd>
-                                <dt><label for="colorClaroFError">$color_ferror</label></dt><dd><input type="color" id="colorClaroFError" value="#f08080" /></dd>
+                                <dt><label for="colorClaroFError">$color_ferror</label></dt><dd><input type="color" id="colorClaroFError" value="#ffc0cb" /></dd>
                             </dl>
                         </fieldset>
                         <fieldset>
@@ -422,7 +423,7 @@
                                 <dt><label for="colorOscuroCAviso">$color_caviso</label></dt><dd><input type="color" id="colorOscuroCAviso" value="#ffa500" /></dd>
                                 <dt><label for="colorOscuroFAviso">$color_faviso</label></dt><dd><input type="color" id="colorOscuroFAviso" value="#ffdead" /></dd>
                                 <dt><label for="colorOscuroCError">$color_cerror</label></dt><dd><input type="color" id="colorOscuroCError" value="#ff0000" /></dd>
-                                <dt><label for="colorOscuroFError">$color_ferror</label></dt><dd><input type="color" id="colorOscuroFError" value="#f08080" /></dd>
+                                <dt><label for="colorOscuroFError">$color_ferror</label></dt><dd><input type="color" id="colorOscuroFError" value="#ffc0cb" /></dd>
                             </dl>
                         </fieldset>
                         <h3>$r_cfg_editor</h3>
@@ -475,6 +476,11 @@
                             <p>$txt_ensorg_d</p>
                             <input type="text" id="txtEnsOrg" value="0" />
                         </fieldset>
+                        <fieldset>
+                            <legend><label for="txtPlatTMEns">$txt_plattmens</label></legend>
+                            <p>$txt_plattmens_d</p>
+                            <input type="number" value=".5" id="txtPlatTMEns" />
+                        </fieldset>
                         <h3>$r_cfg_plataforma</h3>
                         <fieldset>
                             <legend><label for="selPlatMem">$sel_platmem</label></legend>
@@ -492,6 +498,11 @@
                                 <option value="32768">32 KiB (0x7FFF)</option>
                                 <option value="65536">64 KiB (0xFFFF)</option>
                             </select>
+                        </fieldset>
+                        <fieldset>
+                            <legend><label for="txtPlatTMEjec">$txt_plattmejec</label></legend>
+                            <p>$txt_plattmejec_d</p>
+                            <input type="number" value=".5" id="txtPlatTMEjec" />
                         </fieldset>
                         <h3>$r_cfg_interfaz</h3>
                         <fieldset>

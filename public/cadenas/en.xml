@@ -48,10 +48,11 @@
     <string name="btn_crearmacro">Create macro...</string>
     <string name="btn_macros">Macros...</string>
     <string name="menubar_principal_ayuda">Help</string>
-    <string name="btn_manual">User Manual</string>
-    <string name="lnk_incidencias">Report an isue</string>
+    <string name="btn_manual">User manual</string>
+    <string name="lnk_incidencias">Report an issue</string>
     <string name="lnk_repositorio">Repository</string>
     <string name="btn_comprobaracts">Check for updates...</string>
+    <string name="lnk_pwa">Web version...</string>
     <string name="btn_acercade">About...</string>
     <string name="menu_actividades_aria-label">Activities</string>
     <string name="btn_menuexplorador">Explorer</string>
@@ -172,11 +173,15 @@
     <string name="r_cfg_assembly">Assembly</string>
     <string name="txt_ensorg">Default Load Address</string>
     <string name="txt_ensorg_d">Default memory address from which the assembled program will start loading. This value will be used unless specified otherwise in the source code using the ORG directive.</string>
+    <string name="txt_plattmens">Maximum assembly time</string>
+    <string name="txt_plattmens_d">Defines the maximum time the system let run the assembly phase, in seconds.</string>
     <string name="r_cfg_platform">Platform</string>
     <string name="sel_platmem">Memory Size</string>
     <string name="sel_platmem_d">Defines the size of the working memory available during program execution.</string>
     <string name="sel_platmem_a">Changing the memory size will reset its content!</string>
     <string name="sel_platmem_a2">Do not choose a memory size larger than necessary! Values larger than 8 KB can use hundreds of megabytes of RAM, which can slow down your computer.</string>
+    <string name="txt_plattmejec">Maximum execution time</string>
+    <string name="txt_plattmejec_d">Defines the maximum time the system let run the program, in seconds.</string>
     <string name="r_cfg_interface">Interface</string>
     <string name="txt_inttipo">Typography</string>
     <string name="txt_inttipo_d">Defines the typography to use within the program.</string>
@@ -250,6 +255,7 @@
     <string name="err_etiquetainexistente">The mnemonic or directive %m requires specifying a label.</string>
     <string name="err_directivaendi">There is no IF block to close.</string>
     <string name="err_expresioninvalida_cad">The expression %e is invalid.</string>
+    <string name="err_expresioninvalida_cadcorchetes">Using [] for grouping as in the expression %e is invalid. Did you want to use {} instead?</string>
     <string name="err_expresioninvalida_tipoval">A symbol of type %e was not expected in the expression.</string>
     <string name="err_sintactico">Unknown error during syntactic analysis.</string>
     <string name="err_noimplementado">The mnemonic or directive %m has not been implemented yet.</string>
@@ -257,6 +263,7 @@
     <string name="err_numeroparametrosincorrecto">The instruction %ins expected %ne parameters, but %nr were received.</string>
     <string name="err_desplazamientonoadmitido">The instruction doesn't admit an offset for IX and IY.</string>
     <string name="err_semantico">Unknown error during argument semantic analysis.</string>
+    <string name="err_division_cero">Can't divide by zero.</string>
     <string name="err_etiquetaindefinida">The label %i has not been defined.</string>
     <string name="err_bucleinfinito">An infinite loop was found while reducing an expression.</string>
     <string name="err_ejecucion">Unknown error during program execution.</string>

@@ -396,7 +396,11 @@ class ProgramaAsm {
                 break;
             case "DFB":
                 break;
+            case "DFL":
+                break;
             case "DFS":
+                break;
+            case "DLL":
                 break;
             case "DWL":
                 break;
@@ -1753,7 +1757,7 @@ class ProgramaAsm {
                     else {
                         while (pila.length){
                             t1 = pila.pop();
-                            if (t1.tipo == TipoVal.OP && (t1.precedencia >= sim.precedencia)) simsp.push(t1);
+                            if (t1.tipo == TipoVal.OP && (t1.precedencia <= sim.precedencia)) simsp.push(t1);
                             else {
                                 pila.push(t1);
                                 break;
@@ -1790,8 +1794,13 @@ class ProgramaAsm {
                 case TipoVal.DESPLAZAMIENTO_AP:
                     pila.push(sim);
                     t1 = sims.shift();
-                    if (t1.tipo == TipoVal.REGISTRO) t2 = { "tipo": TipoVal.DESPLAZAMIENTO, "valor": 0, "registro": t1.valor };
-                    else {
+                    if (t1.tipo == TipoVal.REGISTRO){
+                        t2 = { "tipo": TipoVal.DESPLAZAMIENTO, "valor": 0, "registro": t1.valor };
+                        let t3 = sims.shift();
+                        if (t3.valor == TipoOp.OFF_P) t2.sentido = true;
+                        else if (t3.valor == TipoOp.OFF_N) t2.sentido = false;
+                        else sims.unshift(t3);
+                    } else {
                         t2 = { "tipo": TipoVal.DIRECCION, "valor": 0 };
                         sims.unshift(t1);
                     }
@@ -1844,6 +1853,8 @@ class ProgramaAsm {
         let sim;
         let op1, op2;
         while (simsw.length){
+            console.log(JSON.stringify(simsp));
+            console.warn(JSON.stringify(simsw));
             sim = simsw.shift();
             if (sim.tipo == TipoVal.OP){
                 switch (sim.valor){
@@ -1853,6 +1864,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.COMP_1:
                         op1 = simsp.pop();
@@ -1860,6 +1872,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": Plataforma.obtComplemento(codificarValor(op1.valor, 4, true, true), 1, 1)
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.COMP_2:
                         op1 = simsp.pop();
@@ -1867,6 +1880,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": Plataforma.obtComplemento(codificarValor(op1.valor, 4, true, true), 1, 1)
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.POS:
                         // op1 = simsp.pop();
@@ -1877,6 +1891,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": parseInt(Array.from(codificarValor(op1.valor, 4, true, true).toString(2).padStart(8, "0")).reverse().join(""))
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.MUL:
                         op2 = simsp.pop();
@@ -1885,14 +1900,19 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor*op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.DIV:
                         op2 = simsp.pop();
                         op1 = simsp.pop();
-                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO) simsp.push({
-                            "tipo": TipoVal.NUMERO,
-                            "valor": Math.floor(op1.valor/op2.valor)
-                        });
+                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.NUMERO){
+                            if (op2.valor == 0) throw new DivisionCeroError();
+                            simsp.push({
+                                "tipo": TipoVal.NUMERO,
+                                "valor": Math.floor(op1.valor/op2.valor)
+                            });
+                        }
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.MOD:
                         op2 = simsp.pop();
@@ -1901,6 +1921,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor%op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.ADD:
                         op2 = simsp.pop();
@@ -1909,6 +1930,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor+op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.SUB:
                         op2 = simsp.pop();
@@ -1917,6 +1939,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor-op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.SHIFT_L:
                         op2 = simsp.pop();
@@ -1925,6 +1948,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor<<op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.SHIFT_R:
                         op2 = simsp.pop();
@@ -1933,6 +1957,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": op1.valor>>op2.valor
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.LT:
                         op2 = simsp.pop();
@@ -1941,6 +1966,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor<op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.LE:
                         op2 = simsp.pop();
@@ -1949,6 +1975,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor<=op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.GT:
                         op2 = simsp.pop();
@@ -1965,6 +1992,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor>=op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.EQ:
                         op2 = simsp.pop();
@@ -1973,6 +2001,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor==op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.NEQ:
                         op2 = simsp.pop();
@@ -1981,6 +2010,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor!=op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.B_AND:
                         op2 = simsp.pop();
@@ -1989,6 +2019,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": Plataforma.obtAnd(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.B_XOR:
                         op2 = simsp.pop();
@@ -1997,6 +2028,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": Plataforma.obtXor(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.B_OR:
                         op2 = simsp.pop();
@@ -2005,6 +2037,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": Plataforma.obtOr(codificarValor(op1.valor, 4, true, true), codificarValor(op2.valor, 4, true, true))
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.L_AND:
                         op2 = simsp.pop();
@@ -2013,6 +2046,7 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor && op2.valor)?1:0
                         });
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                     case TipoOp.L_OR:
                         op2 = simsp.pop();
@@ -2021,27 +2055,20 @@ class ProgramaAsm {
                             "tipo": TipoVal.NUMERO,
                             "valor": (op1.valor || op2.valor)?1:0
                         });
-                        break;
-                    case TipoOp.OFF_P:
-                        op1 = simsp.pop();
-                        op2 = simsp.pop();
-                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.DESPLAZAMIENTO)
-                            op2.valor += op1.valor;
-                        simsp.push(op2);
-                        break;
-                    case TipoOp.OFF_N:
-                        op1 = simsp.pop();
-                        op2 = simsp.pop();
-                        if (op1 && op1.tipo == TipoVal.NUMERO && op2 && op2.tipo == TipoVal.DESPLAZAMIENTO){
-                            op2.valor += op1.valor;
-                            op2.valor *= (-1);
-                        }
-                        simsp.push(op2);
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
                 }
+            } else if (sim.tipo == TipoVal.DESPLAZAMIENTO_CI){
+                op1 = simsp.pop();
+                op2 = simsp.pop();
+                if (op1 && op2 && op1.tipo == TipoVal.NUMERO){
+                    if (op2.tipo == TipoVal.DIRECCION) op2.valor = op1.valor;
+                    else if (op2.tipo == TipoVal.DESPLAZAMIENTO) op2.valor = op1.valor*((op2.sentido)?1:-1);
+                    else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
+                    simsp.push(op2);
+                } else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
             } else if (sim.tipo == TipoVal.ETIQUETA){
                 op1 = plat.obtenerEtiqueta(sim.nombre);
-                console.log(op1);
                 if (op1[0] == undefined) throw new EtiquetaIndefinidaError(sim.nombre);
                 else if (isNaN(op1[0])){
                     simsp.push(sim);
@@ -2050,7 +2077,6 @@ class ProgramaAsm {
                 else simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
             } else simsp.push(sim);
         }
-        console.log(simsp);
         return simsp;
     }
 
@@ -2071,7 +2097,6 @@ class ProgramaAsm {
             if (Date.now() > fin) throw new BucleInfinitoError();
             for (let i = 0; i<this.simbolos.length; i++){
                 inst = this.simbolos[i];
-                console.log(inst);
                 // Etiqueta
                 if (inst.eti){
                     eti = plat.obtenerEtiqueta(inst.eti);
@@ -2099,11 +2124,12 @@ class ProgramaAsm {
             this.lineas = plat.cargarArchivoEnsamblador(nom);
             this.#analLexicoSintactico();
             /* Esto es para evitar bucles infinitos por referencias recursivas */
-            const fin = Date.now() + 500; // FIX: Pasar esto a Configuración
+            const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"));
             this.#analSemantico(fin);
         } catch (e){
             plat.escribirLog(TipoLog.ERROR, e.message);
             console.error(e);
+            throw e;
         }
     }
       

@@ -52,6 +52,7 @@
     <string name="lnk_incidencias">Informar sobre un problema</string>
     <string name="lnk_repositorio">Repositorio</string>
     <string name="btn_comprobaracts">Buscar actualizaciones...</string>
+    <string name="lnk_pwa">Versión web...</string>
     <string name="btn_acercade">Acerca de...</string>
     <string name="menu_actividades_aria-label">Actividades</string>
     <string name="btn_menuexplorador">Explorador</string>
@@ -172,11 +173,15 @@
     <string name="r_cfg_ensamblado">Ensamblado</string>
     <string name="txt_ensorg">Dirección de carga predeterminada</string>
     <string name="txt_ensorg_d">Dirección de memoria predeterminada desde la cual se empezará a cargar el programa ensamblado. Se usará este valor, a menos de que se especifique otro en el código fuente, mediante la directiva ORG.</string>
+    <string name="txt_plattmens">Tiempo máximo de ensamblado</string>
+    <string name="txt_plattmens_d">Define el tiempo que el sistema permitirá que dure la fase de ensamblador, en segundos.</string>
     <string name="r_cfg_plataforma">Plataforma</string>
     <string name="sel_platmem">Tamaño de memoria</string>
     <string name="sel_platmem_d">Define el tamaño de la memoria de trabajo que estará disponible durante la ejecución del programa.</string>
     <string name="sel_platmem_a">¡Cambiar el tamaño de la memoria reinicializará su contenido!</string>
     <string name="sel_platmem_a2">¡No escojas un tamaño de memoria demasiado alto si no es necesario! Valores mayores de 8 KB pueden ocupar cientos de megabytes de memora RAM, lo que podría alentar tu equipo.</string>
+    <string name="txt_plattmejec">Tiempo máximo de ejecución</string>
+    <string name="txt_plattmejec_d">Define el tiempo que el sistema permitirá que la ejecución del programa se prolongue, en segundos.</string>
     <string name="r_cfg_interfaz">Interfaz</string>
     <string name="txt_inttipo">Tipografía</string>
     <string name="txt_inttipo_d">Define la tipografía a usar dentro del programa.</string>
@@ -250,6 +255,7 @@
     <string name="err_etiquetainexistente">El mnemotécnico o directiva %m requiere especificar una etiqueta.</string>
     <string name="err_directivaendi">No existe un bloque IF para cerrar.</string>
     <string name="err_expresioninvalida_cad">La expresión %e es inválida.</string>
+    <string name="err_expresioninvalida_cadcorchetes">Usar [] para agrupar, como en la expresión %e es inválido. ¿Querías usar en vez {}?</string>
     <string name="err_expresioninvalida_tipoval">No se esperaba un símbolo de tipo %e en la expresión.</string>
     <string name="err_sintactico">Error desconocido durante el análisis sintáctico.</string>
     <string name="err_noimplementado">El mnemotécnico o directiva %m no ha sido implementado aún.</string>
@@ -257,6 +263,7 @@
     <string name="err_numeroparametrosincorrecto">La instrucción %ins esperaba %ne parámetros, pero ha recibido %nr.</string>
     <string name="err_desplazamientonoadmitido">Esta instrucción no admite desplazamiento para IX e IY.</string>
     <string name="err_semantico">Error desconocido durante el análisis semántico de argumentos.</string>
+    <string name="err_division_cero">No se puede dividir entre cero.</string>
     <string name="err_etiquetaindefinida">La etiqueta %i no ha sido definida.</string>
     <string name="err_bucleinfinito">Se encontró un bucle infinito mientras se reducía una expresión.</string>
     <string name="err_ejecucion">Error desconocido durante la ejecución del programa.</string>

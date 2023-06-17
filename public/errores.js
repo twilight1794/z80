@@ -47,7 +47,10 @@ class DirectivaENDIError extends LexicoError {
 /// Errores ocurridos durante la simbolización de parámetros
 class ExpresionInvalidaError extends LexicoError {
     constructor(tipo){
-        if (typeof tipo == "string") super("err_expresioninvalida_cad", {e: tipo});
+        if (typeof tipo == "string"){
+            if (tipo.startsWith("[")) super("err_expresioninvalida_cadcorchetes", {e: tipo});
+            else super("err_expresioninvalida_cad", {e: tipo});
+        }
         else if (tipo instanceof TipoVal) super("err_expresioninvalida_tipoval", {e: tipo.name});
     }
 }
@@ -84,6 +87,9 @@ class SemanticoError extends BaseError {
         if (arguments) super(...arguments);
         else super("err_semantico");
     }
+}
+class DivisionCeroError extends SintacticoError {
+    constructor(){ super("err_division_cero"); }
 }
 class EtiquetaIndefinidaError extends SintacticoError {
     constructor(i){ super("err_etiquetaindefinida", {"i": i}); }

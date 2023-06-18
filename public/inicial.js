@@ -146,7 +146,7 @@ window.combTeclas = {
     "M-e e": btnEjecutar,
     "M-e a": btnAvanzar,
     "M-e d": btnDetener,
-    "M-e r": null,
+    "M-e r": btnRestablecer,
     "M-a a": btnManual,
     "M-a p": (e) => { document.getElementById("lnk_incidencias").click(); },
     "M-a r": (e) => { document.getElementById("lnk_repositorio").click(); },
@@ -296,7 +296,7 @@ function btnEnsamblar(){
 function btnEjecutar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
-    const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"))*1000;
+    const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEjec"))*1000;
     plat.ejecutar(true, fin);
 }
 function btnAvanzar(){
@@ -782,6 +782,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnEjecutar").addEventListener("click", btnEjecutar);
     document.getElementById("btnAvanzar").addEventListener("click", btnAvanzar);
     document.getElementById("btnDetener").addEventListener("click", btnDetener);
+    document.getElementById("btnRestablecer").addEventListener("click", btnDetener);
     Array.from(document.querySelectorAll(":is(#f_dir, #f_mnemo) button")).forEach((e) => {
         e.addEventListener("click", (e2) => { btnInsX(e2.target); });
     });

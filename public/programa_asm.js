@@ -392,7 +392,6 @@ class ProgramaAsm {
      */
     #obtCodigoOp(ins, lop){
         let bytes = [];
-        console.log(lop);
         switch (ins.toLowerCase()){
             /* Las directivas que generan bytes en memoria serán tratadas como mnemotécnicos */
             case "dfb":
@@ -681,24 +680,24 @@ class ProgramaAsm {
             case "jp":
                 if (lop.length == 1){
                     try {
-                        this.esTipo(TipoParam.NN, lop[1]);
+                        this.esTipo(TipoParam.NN, lop[0]);
                         bytes.push(0xc3, ...codificarValor(lop[0].valor, 2, true, true));
                         break;
                     } catch {}
                     try {
-                        this.esTipo(TipoParam.HL, lop[1]);
+                        this.esTipo(TipoParam.HL, lop[0]);
                         if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xe9);
                         break;
                     } catch {}
                     try {
-                        this.esTipo(TipoParam.IX, lop[1]);
+                        this.esTipo(TipoParam.IX, lop[0]);
                         if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xdd, 0xe9);
                         break;
                     } catch {}
                     try {
-                        this.esTipo(TipoParam.IY, lop[1]);
+                        this.esTipo(TipoParam.IY, lop[0]);
                         if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xfd, 0xe9);
                         break;
@@ -1318,7 +1317,7 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     try {
                         this.esTipo(TipoParam.HL, lop[1]);
-                        if (lop[1][0].valor != 0) TipoParametrosIncorrectoError(ins);
+                        if (lop[0][0].valor != 0) DesplazamientoNoAdmitidoError();
                         return 1;
                     } catch { return 2; } // NN, IX, IY
                 }
@@ -1562,7 +1561,7 @@ class ProgramaAsm {
                 obj.mnemo = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
             }
             // Comprobar si hay argumentos después de mnemotécnico o directiva
-            if (l.length && !this.#r_com.test(l)) obj.ops = this.parseOps(l);
+            if (l.length && !this.#r_com.test(l)) obj.ops = this.analOps(l);
             // Por último, tratar directivas selectivamente
             switch (obj.mnemo){
                 case "CASE":
@@ -1641,7 +1640,7 @@ class ProgramaAsm {
      * @return {Array} Array de objetos que representan el tipo de dato y el valor
      * @memberof ProgramaAsm
      */
-    parseOps(exp){
+    analOps(exp){
         /* Análisis léxico/sintáctico */
         let sims = [];
         let res; // Resultado de la regex
@@ -2127,9 +2126,7 @@ class ProgramaAsm {
                 // Operandos
                 if (inst.ops){
                     for (let j = 0; j<inst.ops.length; j++){
-                        //console.warn(JSON.stringify(inst.ops[j]));
                         inst.ops[j] = this.reducirExpresion(inst.ops[j]);
-                        //console.warn(JSON.stringify(inst.ops[j]));
                         if (inst.ops[j].length > 1 || (
                                 inst.ops[j][0].tipo != TipoVal.NUMERO &&
                                 inst.ops[j][0].tipo != TipoVal.AMB_C &&

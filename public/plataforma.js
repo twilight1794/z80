@@ -1687,7 +1687,7 @@ class Plataforma {
                 dir1 = (cod-194)>>3;
                 op1 = this.comprobarCondicion(dir1);
                 op2 = this.leerPalabra(dir+1);
-                this.escribirRegistro("pc", (op1?op2:(dir+1)));
+                this.escribirRegistro("pc", (op1?op2:(dir+3)));
                 return ["JP", 10, 3, 3, [{
                     "tipo": TipoOpEns.BANDERA,
                     "texto": this.ValsCC[dir1]

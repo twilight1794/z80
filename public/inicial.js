@@ -89,7 +89,7 @@ window.funsConfig = {
     txtEdSalto: (v) => { cmi.setOption("lineSeparator", ((v == "crlf")?"\r":"")+"\n"); },
     selPlatMem: () => {
         iniMem();
-        document.getElementById("outMemTam").textContent = document.getElementById("selPlatMem").selectedOptions[0].textContent.split(" ").slice(0, -1).join(" ");
+        document.getElementById("outMemTam").textContent = (document.getElementById("selPlatMem").selectedOptions[0]?.textContent || "1 KiB").split(" ").slice(0, -1).join(" ");
     },
     txtIntTipo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--txtIntTipo", v); },
     selIntIdioma: (v) => {
@@ -111,7 +111,7 @@ window.funsConfig = {
                 for (let j = 0; j < ats.length; j++){
                     if (ats[j]){
                         idcad = ats[j].nodeValue.match(/\$([A-Za-z0-9\._]+)/)?.[1];
-                        if (idcad) ats[j].textContent = msgs[idcad];    
+                        if (idcad) ats[j].textContent = msgs[idcad];
                     }
                 }
             }
@@ -556,6 +556,18 @@ function onInputCMI(cm){
 /* Configuración */
 
 /**
+ * Si se ejecuta en Neutralino, guarda la configuración en un archivo externo
+ *
+ */
+async function salvarConfig(){
+    // Salvar configuración, si estoy en Neutralino
+    if (window.NL_VERSION){
+        try { await Neutralino.filesystem.writeFile("conf.json", JSON.stringify({ ...localStorage }));}
+        catch (e) { throw new Error("Ha ocurrido un error al almacenar en disco la configuración  \""+p+"\"."); }
+    }
+}
+
+/**
  * Establece y aplica un valor en la configuración.
  *
  * @param {String} p Propiedad a establecer.
@@ -578,7 +590,8 @@ function estConfig(p, v){
         else cfg.value = val;
         let f = funsConfig[p];
         if (f) f(val);
-    } catch { throw new Error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
+    } catch (e) { throw new Error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
+    salvarConfig();
 }
 
 function estConfigIni(d){
@@ -705,7 +718,8 @@ function mostrarDialogo(id, params, fun, evs){
     dlg.showModal();
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+
     /* Localización */
     window.idisp = Array.from(document.querySelectorAll("#selIntIdioma option")).map((e) => e.value).filter((e) => e != "qaa");
     // Cargar cadenas
@@ -726,6 +740,23 @@ window.addEventListener("DOMContentLoaded", () => {
         };
         xhr.send();
     });
+
+    /* Adecuaciones a interfaz nativa */
+    if (window.NL_VERSION){
+        Neutralino.init();
+        try {
+            let datosdisco = await Neutralino.filesystem.readFile("./conf.json");
+            datosdisco = JSON.parse(datosdisco);
+            for (let k in Object.entries(datosdisco)) localStorage.setItem(k[0], k[1]);
+        } catch {}
+        let btnSalir = document.createElement("li");
+        btnSalir.innerHTML = "<button id=\"btnSalir\" role=\"menuitem\"><span>"+_("btn_salir")+"</span></button>";
+        document.querySelector("#menuBarra>ul>li>ul").appendChild(btnSalir);
+        btnSalir.addEventListener("click", async () => {
+            await salvarConfig();
+            Neutralino.app.exit();
+        });
+    }
 
     /* CodeMirror */
     window.cmi = CodeMirror(document.getElementById("codemirror"), {
@@ -859,15 +890,6 @@ window.addEventListener("DOMContentLoaded", () => {
     Array.from(document.querySelectorAll("#r-f td, #v-iff1, #v-iff2")).forEach((e) => {
         e.addEventListener("dblclick", (c) => plat.toggleBandera(c.target.id.slice(2)) );
      });
-
-    /* Adecuaciones a interfaz nativa */
-    if (window.NL_VERSION){
-        Neutralino.init();
-        let btnSalir = document.createElement("li");
-        btnSalir.innerHTML = "<button id=\"btnSalir\" role=\"menuitem\"><span>"+_("btn_salir")+"</span></button>";
-        document.querySelector("[aria-label=Principal]>li>ul").appendChild(btnSalir);
-        btnSalir.addEventListener("click", () => Neutralino.app.exit() );
-    }
 
     /* Combinaciones de teclas */
     document.addEventListener("keydown", (e) => {

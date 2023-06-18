@@ -1,21 +1,21 @@
 "use strict"
 
 function cargarArchivoEditor(e) {
-    if (!("aria-selected" in e.target.parentNode.getAttributeNames())){
+    if (!("aria-selected" in e.parentNode.getAttributeNames())){
         cambioCMI = true;
-        Array.from(e.target.parentNode.parentNode.children).forEach((e2) => {
+        Array.from(e.parentNode.parentNode.children).forEach((e2) => {
             if (e2.getAttribute("aria-selected") == "true"){
                 sessionStorage.setItem("archivo_"+e2.textContent, cmi.getValue());
                 e2.removeAttribute("aria-selected");
             }
         });
-        e.target.parentNode.setAttribute("aria-selected", "true");
-        let tmp = sessionStorage.getItem("archivo_"+e.target.textContent);
+        e.parentNode.setAttribute("aria-selected", "true");
+        let tmp = sessionStorage.getItem("archivo_"+e.textContent);
         if (tmp) cmi.setValue(tmp);
-        else cmi.setValue(localStorage.getItem("archivo_"+e.target.textContent));
+        else cmi.setValue(localStorage.getItem("archivo_"+e.textContent));
         cambioCMI = false;
         if (document.getElementById("chkIntTitulo").checked){
-            document.title = e.target.textContent + " | Emulador Z80";
+            document.title = e.textContent + " | Emulador Z80";
         }
     }
 }
@@ -30,7 +30,7 @@ function manejarCasillasToolbar() {
         btn[2].disabled = false;
         btn[3].disabled = (c>1);
         btn[4].disabled = (c>1);
-        btn[5].disabled = (cas.length == 1);
+        btn[5].disabled = !cas.length;
         btn[6].disabled = (c>1);
         btn[7].disabled = (c>1);
     } else btn.forEach((e) => { if (e.id != "btnAccionesNuevo") e.disabled = true; });
@@ -51,7 +51,7 @@ class Proyecto {
         chk.addEventListener("change", manejarCasillasToolbar);
         let btn = document.createElement("button");
         btn.textContent = n;
-        btn.addEventListener("click", cargarArchivoEditor);
+        btn.addEventListener("click", e => cargarArchivoEditor(e.target));
         li.append(chk, btn);
         li.id = "archivo_"+n;
         arcs.appendChild(li);
@@ -112,6 +112,9 @@ class Proyecto {
         localStorage.removeItem("archivo_"+nom);
         localStorage.setItem("archivos", localStorage.getItem("archivos").split("/").filter((e) => e != nom).join("/"));
         if (document.getElementById("archivos").childElementCount == 0) this.crearArchivo("programa");
+        else {
+            cargarArchivoEditor(document.querySelector("#archivos li:last-child button"));
+        }
         manejarCasillasToolbar();
         if (!localStorage.getItem("entrada")) this.entralizarArchivo(localStorage.getItem("archivos").split("/")[0]);
     }

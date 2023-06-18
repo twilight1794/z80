@@ -188,20 +188,18 @@ class ProgramaAsm {
     bytes = [];
 
     /**
-     * Contador de localidades
+     * Valor inicial del contador de localidades
      *
-     * @default 0
      * @memberof ProgramaAsm
      */
-    cl = 0;
+    carga;
 
     /**
-     * Dirección de inicio de ejecución
+     * Contador de localidades
      *
-     * @default 0
      * @memberof ProgramaAsm
      */
-    inicio = 0;
+    cl;
 
     /**
      * Bandera que define si ignorar o no la capitalización de las directivas, mnemotécnicos y etiquetas
@@ -412,7 +410,7 @@ class ProgramaAsm {
             case "dfs":
                 if (lop>1) throw new MultiplesParametrosError("dfs");
                 if (lop[0] >= -2147483648 && lop[0] <= 2147483647)
-                    bytes.push(...codificarValor(e, 4, true, false));
+                for (let i = 0; i<lop[0]; i++) bytes.push(0);
                 else throw new ValorTamanoError(4);
                 break;
             case "dwl":
@@ -422,6 +420,20 @@ class ProgramaAsm {
                     else if (e < 0 && e > -32768)  bytes.push(...codificarValor(e, 1, (ins=="dwl"), true));
                     else throw new ValorTamanoError(2);
                 });
+                break;
+            case "end":
+                if (lop[0]){
+                    try {
+                        this.esTipo(TipoParam.NN, lop[0]);
+                        plat.escribirRegistro("pc", lop[0].valor);
+                    } catch {}
+                }
+                break;
+            case "org":
+                try {
+                    this.esTipo(TipoParam.NN, lop[0]);
+                    this.carga = lop[0].valor;
+                } catch {}
                 break;
             /* Mnemotécnicos reales */
             case "adc":
@@ -1139,9 +1151,8 @@ class ProgramaAsm {
      * @memberof ProgramaAsm
      */
     #obtCodigoTam(ins, lop){
-        console.log(ins);
-        console.log(lop);
         switch (ins.toLowerCase()){
+            /* Directivas */
             case "dfb":
                 return lop.length;
             case "dfl":
@@ -1152,6 +1163,10 @@ class ProgramaAsm {
             case "dwl":
             case "dwm":
                 return lop.length*2;
+            case "end":
+            case "org":
+                return 0;
+            /* Mnemotécnicos reales */
             case "adc":
                 if (lop.length == 1) return this.#obtCodigoTam("add", lop);
                 else if (lop.length == 2) return 2; // RHL, SS
@@ -2117,7 +2132,7 @@ class ProgramaAsm {
         let inst, tam;
         while (!finalizado){
             finalizado = true;
-            this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
+            this.cl = this.carga;
             if (Date.now() > fin) throw new BucleInfinitoError();
             for (let i = 0; i<this.simbolos.length; i++){
                 inst = this.simbolos[i];
@@ -2153,11 +2168,15 @@ class ProgramaAsm {
                 this.bytes.push(...this.#obtCodigoOp(inst.mnemo, inst.ops || []));
             }
         }
+        // Y cargarlo en memoria
+        console.log(this.carga);
+        console.log(this.bytes);
+        plat.cargarBytes(this.carga, this.bytes);
     }
 
     constructor(nom){
         try {
-            this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
+            this.carga = parseInt(localStorage.getItem("txtEnsOrg"));
             this.lineas = plat.cargarArchivoEnsamblador(nom);
             this.#analLexicoSintactico();
             /* Esto es para evitar bucles infinitos por referencias recursivas */

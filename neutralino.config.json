@@ -16,6 +16,8 @@
   "nativeAllowList": [
     "app.*",
     "os.*",
+    "filesystem.*",
+    "storage.*",
     "debug.log"
   ],
   "modes": {
@@ -28,7 +30,7 @@
       "fullScreen": false,
       "alwaysOnTop": false,
       "icon": "/public/icon.png",
-      "enableInspector": false,
+      "enableInspector": true,
       "borderless": false,
       "maximize": true,
       "hidden": false,
@@ -37,13 +39,11 @@
     },
     "browser": {
       "nativeBlockList": [
-        "filesystem.*"
       ]
     },
     "cloud": {
       "url": "/public/#cloud",
       "nativeAllowList": [
-        "app.*"
       ]
     },
     "chrome": {
@@ -51,8 +51,6 @@
       "height": 700,
       "args": "--user-agent=\"Neutralinojs chrome mode\"",
       "nativeBlockList": [
-        "filesystem.*",
-        "os.*"
       ]
     }
   },

@@ -2733,11 +2733,21 @@ class Plataforma {
     ejecutar(todo, fin){
         let inst, li;
         let ol = document.getElementById("hist_inst");
-        let instIni = document.getElementById("outNumInst");
-        if (instIni.textContent == "—") instIni.textContent = "0";
+        let eTamInst = document.getElementById("outTamInst");
+        let eTiempo2MHz = document.getElementById("outTiempo2MHz");
+        let eTiempoT = document.getElementById("outTiempoT");
+        let eTiempoM = document.getElementById("outTiempoM");
+        let eNumInst = document.getElementById("outNumInst");
+        let eTiempo2MHzT = document.getElementById("outTiempo2MHzT");
+        let eTiempoTT = document.getElementById("outTiempoTT");
+        let eTiempoMT = document.getElementById("outTiempoMT");
+        if (eNumInst.textContent == "—") eNumInst.textContent = "0";
+        if (eTiempo2MHzT.textContent == "—") eTiempo2MHzT.textContent = "0";
+        if (eTiempoTT.textContent == "—") eTiempoTT.textContent = "0";
+        if (eTiempoMT.textContent == "—") eTiempoMT.textContent = "0";
         while (true){
             try {
-                if (Date.now() > fin) throw new BucleInfinitoError();
+                if (fin && Date.now() > fin) throw new BucleInfinitoError();
                 inst = this.ejecutarInstruccion();
             } catch (e){
                 plat.escribirLog(TipoLog.ERROR, e.message);
@@ -2803,18 +2813,14 @@ class Plataforma {
             li.innerHTML = e.parentNode.children[0].textContent + " " + e.innerHTML;
             ol.appendChild(li);
             /* Datos de tabla */
-            document.getElementById("outTamInst").textContent = inst[3];
-            document.getElementById("outTiempo2MHz").textContent = inst[1]/2.5;
-            document.getElementById("outTiempoT").textContent = inst[1];
-            document.getElementById("outTiempoM").textContent = inst[2];
-            let c1 = document.getElementById("outNumInst");
-            c1.textContent = parseInt(c1.textContent) + 1;
-            let c2 = document.getElementById("outTiempo2MHzT");
-            c2.textContent = parseInt(c2.textContent) + inst[1]/2.5;
-            let c3 = document.getElementById("outTiempoTT");
-            c3.textContent = parseInt(c3.textContent) + inst[1];
-            let c4 = document.getElementById("outTiempoMT");
-            c4.textContent = parseInt(c4.textContent) + inst[2];
+            eTamInst.textContent = inst[3];
+            eTiempo2MHz.textContent = inst[1]/2.5;
+            eTiempoT.textContent = inst[1];
+            eTiempoM.textContent = inst[2];
+            eNumInst.textContent = parseInt(eNumInst.textContent) + 1;
+            eTiempo2MHzT.textContent = parseInt(eTiempo2MHzT.textContent) + inst[1]/2.5;
+            eTiempoTT.textContent = parseInt(eTiempoTT.textContent) + inst[1];
+            eTiempoMT.textContent = parseInt(eTiempoMT.textContent) + inst[2];
             if (!todo || inst[0] == "HALT"){
                 plat.escribirLog(TipoLog.INFO, _("msg_ejecucion_finalizada"));
                 break;

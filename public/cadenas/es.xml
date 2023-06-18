@@ -182,6 +182,8 @@
     <string name="sel_platmem_a2">¡No escojas un tamaño de memoria demasiado alto si no es necesario! Valores mayores de 8 KB pueden ocupar cientos de megabytes de memora RAM, lo que podría alentar tu equipo.</string>
     <string name="txt_plattmejec">Tiempo máximo de ejecución</string>
     <string name="txt_plattmejec_d">Define el tiempo que el sistema permitirá que la ejecución del programa se prolongue, en segundos.</string>
+    <string name="txt_platend">Dirección de inicio predeterminada</string>
+    <string name="txt_platend_d">Dirección de memoria predeterminada desde la cual se empezará a ejecutar el programa ensamblado. Se usará este valor, a menos de que se especifique otro en el código fuente, mediante la directiva END.</string>
     <string name="r_cfg_interfaz">Interfaz</string>
     <string name="txt_inttipo">Tipografía</string>
     <string name="txt_inttipo_d">Define la tipografía a usar dentro del programa.</string>

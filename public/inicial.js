@@ -296,7 +296,8 @@ function btnEnsamblar(){
 function btnEjecutar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
-    plat.ejecutar(true);
+    const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"))*1000;
+    plat.ejecutar(true, fin);
 }
 function btnAvanzar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
@@ -603,11 +604,22 @@ function iniMem(){
         var tof = document.createElement("th");
         tof.textContent = (i*16).toString(16).toUpperCase().padStart(4, "0");
         nFila.appendChild(tof);
-        for (let j=0; j<16; j++) nFila.insertCell().textContent = "00";
+        for (let j=0; j<16; j++){
+            let c = nFila.insertCell();
+            c.textContent = "00";
+            c.addEventListener("dblclick", iniValidarEdicion);
+            c.addEventListener("change", memoriaValidarEdicion);
+            c.addEventListener("blur", memoriaValidarEdicion);
+            c.addEventListener("input", memoriaInputEdicion);
+        }
         for (let j=0; j<16; j++){
             let c = nFila.insertCell();
             c.textContent = "␀";
             c.classList.add("ascii");
+            c.addEventListener("dblclick", iniValidarEdicion);
+            c.addEventListener("change", memoriaValidarEdicion);
+            c.addEventListener("blur", memoriaValidarEdicion);
+            c.addEventListener("input", memoriaInputEdicion);
         }
     }
 }
@@ -827,15 +839,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("chkAccionesMostrarError").addEventListener("change", chkAccionesMostrarError);
 
     /* Asignación de eventos a valores de interfaz */
-    /** Eventos de Memoria **/
-    Array.from(document.querySelectorAll("#r-mem td")).forEach((e) => {
-        e.addEventListener("dblclick", iniValidarEdicion );
-        e.addEventListener("change", memoriaValidarEdicion );
-        e.addEventListener("blur", memoriaValidarEdicion );
-        e.addEventListener("input", memoriaInputEdicion );
-    });
-    /** Eventos de Pila **/
-    /** Eventos de Registros **/
+    /** Eventos de Pila y Registros **/
     Array.from(document.querySelectorAll(":is(#r-r, #r-rx, #r-e) td:not(:empty, #v-iff1, #v-iff2)")).forEach((e) => {
         e.addEventListener("dblclick", iniValidarEdicion);
         e.addEventListener("change", (c) => rValidarEdicion(c, 8) );

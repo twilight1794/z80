@@ -219,9 +219,10 @@ class ProgramaAsm {
     #r_num = /^((?:0x(?:(?:[0-9A-F]|[0-9a-f])+))|(?:0b[01]+)|(?:(?:[0-9A-F]|[0-9a-f])+[Hh])|(?:[01]+[Bb])|(?:[0-7]+[Oo])|(?:0[0-7]+)|(?:[0-9]+))\s*/;
     #r_op = /^(~|INV|\*|\/|%|\+|\-|<<|>>|<=|<|>=|>|==|!=|!|&|\^|&&|\|\||\|)\s*/;
     #r_cad = /^(?:"([^"]*)")\s*/;
-    #r_reg = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)\s*/i;
+    #r_reg = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)[^A-Za-z_\.\?0-9]\s*/i;
+    #r_reg_e = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)\s*/i;
     #r_band = /^(NZ|NC|PO|PE|Z|P|M)\s*/i;
-    #r_amb = /^(c)[^A-Za-z_\.\?]\s*/i;
+    #r_amb = /^(c)[^A-Za-z_\.\?0-9]\s*/i;
     #r_amb_e = /^(c)\s*/i;
     #r_sep = /^,\s*/;
     #r_par_l = /^\{\s*/;
@@ -252,6 +253,8 @@ class ProgramaAsm {
      * @throws NoEsTipoExcepcion
      * @memberof ProgramaAsm
      * @see TipoParam
+     * @see esTipoTam
+     * @see obtCodigoOp
      */
     esTipo(t, v){
         switch (t){
@@ -380,31 +383,46 @@ class ProgramaAsm {
     }
 
     /**
-     *
      * Devuelve el código de operación correspondiente a una instrucción de ensamblador
      *
      * @param {String} ins Mnemotécnico, en minúsculas, a procesar
-     * @param {Array} lop Array que contiene los parámetros pasados al mnemotécnico
-     * @return {Array} Array con los bytes que representan la instrucción en código máquina
+     * @param {Array<Object>} lop Array que contiene los parámetros pasados al mnemotécnico
+     * @return {Array<Number>} Array con los bytes que representan la instrucción en código máquina
      * @memberof ProgramaAsm
      */
     #obtCodigoOp(ins, lop){
         let bytes = [];
-        switch (ins){
+        console.log(lop);
+        switch (ins.toLowerCase()){
             /* Las directivas que generan bytes en memoria serán tratadas como mnemotécnicos */
-            case "DB":
+            case "dfb":
+                lop.forEach((e) => {
+                    if (e > -1 && e < 256) bytes.push(...codificarValor(e, 1, true, false));
+                    else if (e < 0 && e > -129)  bytes.push(...codificarValor(e, 1, true, true));
+                    else throw new ValorTamanoError(1);
+                });
                 break;
-            case "DFB":
+            case "dfl":
+            case "dll":
+                lop.forEach((e) => {
+                    if (e >= -2147483648 && e <= 2147483647)
+                        bytes.push(...codificarValor(e, 4, (ins=="dll"), true));
+                    else throw new ValorTamanoError(4);
+                });
                 break;
-            case "DFL":
+            case "dfs":
+                if (lop>1) throw new MultiplesParametrosError("dfs");
+                if (lop[0] >= -2147483648 && lop[0] <= 2147483647)
+                    bytes.push(...codificarValor(e, 4, true, false));
+                else throw new ValorTamanoError(4);
                 break;
-            case "DFS":
-                break;
-            case "DLL":
-                break;
-            case "DWL":
-                break;
-            case "DWM":
+            case "dwl":
+            case "dwm":
+                lop.forEach((e) => {
+                    if (e > -1 && e < 65536) bytes.push(...codificarValor(e, 2, (ins=="dwl"), false));
+                    else if (e < 0 && e > -32768)  bytes.push(...codificarValor(e, 1, (ins=="dwl"), true));
+                    else throw new ValorTamanoError(2);
+                });
                 break;
             /* Mnemotécnicos reales */
             case "adc":
@@ -1113,379 +1131,390 @@ class ProgramaAsm {
         return bytes;
     }
 
-/**
- *
- * Devuelve el tamaño en bytes que ocupa una instrucción ya ensamblada
- *
- * @param {String} ins Mnemotécnico, en minúsculas, a procesar
- * @param {Array} lop Array que contiene los parámetros pasados al mnemotécnico
- * @return {Number} Tamaño en bytes de la instrucción
- * @memberof ProgramaAsm
- */
-#obtCodigoTam(ins, lop){
-    switch (ins){
-        case "adc":
-            if (lop.length == 1) return this.#obtCodigoTam("add", lop);
-            else if (lop.length == 2) return 2; // RHL, SS
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "add":
-            if (lop.length == 1){
-                try {
-                    this.esTipo(TipoParam.R, lop[0]);
-                    return 1;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.N, lop[0]);
-                    return 2;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.IX, lop[0]);
-                    return 3;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.IY, lop[0]);
-                    return 3;
-                } catch {}
-                // A, HL -> 1
-                throw new BaseError();
-            } else if (lop.length == 2){
-                try {
-                    this.esTipo(TipoParam.RHL, lop[0]);
-                    this.esTipo(TipoParam.SS, lop[1]);
-                    return 1;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.RIX, lop[0]);
-                    this.esTipo(TipoParam.PP, lop[1]);
-                    return 2;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.RIY, lop[0]);
-                    this.esTipo(TipoParam.RR, lop[1]);
-                    return 2;
-                } catch {}
-                throw new BaseError();
-            }
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "and":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return this.#obtCodigoTam("add", lop);
-        case "bit":
-            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-            this.esTipo(TipoParam.B, lop[0]);
-            try {
-                this.esTipo(TipoParam.R, lop[1]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IX, lop[1]);
-                return 4;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IY, lop[1]);
-                return 4;
-            } catch {} // b, (HL) -> 2
-            throw new BaseError();
-        case "call":
-            if (lop.length == 1 || lop.length == 2) return 3;
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "ccf": return 1;
-        case "cp":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return this.#obtCodigoTam("add", lop);
-        case "cpd": return 2;
-        case "cpdr": return 2;
-        case "cpi": return 2;
-        case "cpir": return 2;
-        case "cpl": return 1;
-        case "daa": return 1;
-        case "dec":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            try { // (HL) -> 1
-                this.esTipo(TipoParam.R, lop[0]);
-                return 1;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IX, lop[0]);
-                return 3;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IY, lop[0]);
-                return 3;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIX, lop[0]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIY, lop[0]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.SS, lop[0]);
-                return 1;
-            } catch {}
-            throw new BaseError();
-        case "di": return 1;
-        case "djnz":
-            if (lop.length == 1) return 2;
-            else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-        case "ei": return 1;
-        case "ex":
-            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-            try {
-                this.esTipo(TipoParam.RAF, lop[0]);
-                return 1;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RDE, lop[0]);
-                return 1;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.SP, lop[0]);
-                try {
-                    this.esTipo(TipoParam.RHL, lop[1]);
-                    return 1;
-                } catch { return 2; } // SP, RIX; SP, RIY
-            } catch {}
-            break;
-        case "exx": return 1;
-        case "halt": return 1;
-        case "im":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return 2;
-        case "inc":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            try { // inc (hl) -> 1
-                this.esTipo(TipoParam.R, lop[0]);
-                return 1;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IX, lop[0]);
-                return 3;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IY, lop[0]);
-                return 3;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIX, lop[0]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIY, lop[0]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.SS, lop[0]);
-                return 1;
-            } catch {}
-            throw new BaseError();
-        case "ind": return 2;
-        case "indr": return 2;
-        case "ini": return 2;
-        case "inir": return 2;
-        case "jp":
-            if (lop.length == 1){
-                try {
-                    this.esTipo(TipoParam.HL, lop[1]);
-                    if (lop[1].valor != 0) throw new BaseError();
-                    return 1;
-                } catch { return 2; } // NN, IX, IY
-            }
-            else if (lop.length == 2) return 3;
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "jr":
-            if (lop.length == 1 || lop.length == 2) return 2;
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "ld":
-            if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
-            try {
-                this.esTipo(TipoParam.IX, lop[0]);
-                try {
-                    this.esTipo(TipoParam.R, lop[1]);
-                    return 3;
-                } catch { return 4; } // IX, N; IX, NN
-            } catch {}
-            try {
-                this.esTipo(TipoParam.IY, lop[0]);
-                try {
-                    this.esTipo(TipoParam.R, lop[1]);
-                    return 3;
-                } catch { return 4; } // IY, N; IY, NN
-            } catch {}
-            try {
-                this.esTipo(TipoParam.R, lop[0]);
-                try { // R, (HL) -> 1, (HL), R -> 1, (HL), n -> 2, HL, (nn) -> 3
-                    this.esTipo(TipoParam.IX, lop[1]);
-                    return 3;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.IY, lop[1]);
-                    return 3;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.N, lop[1]);
-                    return 2;
-                } catch {}
-                try {
-                    this.esTipo(TipoParam.R, lop[1]);
-                    return 1;
-                } catch {}
-                if (lop[0].valor == "a"){
+    /**
+     * Devuelve el tamaño en bytes que ocupa una instrucción ya ensamblada
+     *
+     * @param {String} ins Mnemotécnico, en minúsculas, a procesar
+     * @param {Array<Object>} lop Array que contiene los parámetros pasados al mnemotécnico
+     * @return {Number} Tamaño en bytes de la instrucción
+     * @memberof ProgramaAsm
+     */
+    #obtCodigoTam(ins, lop){
+        console.log(ins);
+        console.log(lop);
+        switch (ins.toLowerCase()){
+            case "dfb":
+                return lop.length;
+            case "dfl":
+            case "dll":
+                return lop.length*4;
+            case "dfs":
+                return lop[0][0];
+            case "dwl":
+            case "dwm":
+                return lop.length*2;
+            case "adc":
+                if (lop.length == 1) return this.#obtCodigoTam("add", lop);
+                else if (lop.length == 2) return 2; // RHL, SS
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "add":
+                if (lop.length == 1){
                     try {
-                        this.esTipo(TipoParam.RI, lop[1]);
-                        return 2;
-                    } catch {}
-                    try {
-                        this.esTipo(TipoParam.RR, lop[1]);
-                        return 2;
-                    } catch {}
-                    try {
-                        this.esTipo(TipoParam.DBC, lop[1]);
+                        this.esTipo(TipoParam.R, lop[0][0]);
                         return 1;
                     } catch {}
                     try {
-                        this.esTipo(TipoParam.DDE, lop[1]);
-                        return 1;
+                        this.esTipo(TipoParam.N, lop[0][0]);
+                        return 2;
                     } catch {}
                     try {
-                        this.esTipo(TipoParam.DIRECCION, lop[1]);
+                        this.esTipo(TipoParam.IX, lop[0][0]);
                         return 3;
                     } catch {}
+                    try {
+                        this.esTipo(TipoParam.IY, lop[0][0]);
+                        return 3;
+                    } catch {}
+                    // A, HL -> 1
+                    throw new TipoParametrosIncorrectoError(ins);
+                } else if (lop.length == 2){
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[0][0]);
+                        this.esTipo(TipoParam.SS, lop[1][0]);
+                        return 1;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.RIX, lop[0][0]);
+                        this.esTipo(TipoParam.PP, lop[1][0]);
+                        return 2;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.RIY, lop[0][0]);
+                        this.esTipo(TipoParam.RR, lop[1][0]);
+                        return 2;
+                    } catch {}
+                    throw new TipoParametrosIncorrectoError(ins);
                 }
-                throw new BaseError();
-            } catch {}
-            try {
-                this.esTipo(TipoParam.SP, lop[0]);
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "and":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                return this.#obtCodigoTam("add", lop);
+            case "bit":
+                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+                this.esTipo(TipoParam.B, lop[0][0]);
                 try {
-                    this.esTipo(TipoParam.RHL, lop[1]);
-                    return 1;
-                } catch { return 2; } // SP, RIX; SP, RIY
-            } catch {}
-            try {
-                this.esTipo(TipoParam.SS, lop[0]);
-                try {
-                    this.esTipo(TipoParam.NN, lop[1]);
-                    return 3;
+                    this.esTipo(TipoParam.R, lop[1][0]);
+                    return 2;
                 } catch {}
                 try {
-                    this.esTipo(TipoParam.DIRECCION, lop[1]);
+                    this.esTipo(TipoParam.IX, lop[1][0]);
                     return 4;
                 } catch {}
-                throw new BaseError();
-            } catch {}
-            try {
-                this.esTipo(TipoParam.DIRECCION, lop[0]);
                 try {
-                    this.esTipo(TipoParam.RA, lop[1]);
+                    this.esTipo(TipoParam.IY, lop[1][0]);
+                    return 4;
+                } catch {} // b, (HL) -> 2
+                throw new TipoParametrosIncorrectoError(ins);
+            case "call":
+                if (lop.length == 1 || lop.length == 2) return 3;
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "ccf": return 1;
+            case "cp":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                return this.#obtCodigoTam("add", lop);
+            case "cpd": return 2;
+            case "cpdr": return 2;
+            case "cpi": return 2;
+            case "cpir": return 2;
+            case "cpl": return 1;
+            case "daa": return 1;
+            case "dec":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try { // (HL) -> 1
+                    this.esTipo(TipoParam.R, lop[0][0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0][0]);
                     return 3;
                 } catch {}
                 try {
-                    this.esTipo(TipoParam.RHL, lop[1]);
+                    this.esTipo(TipoParam.IY, lop[0][0]);
                     return 3;
-                } catch { return 4; } // DIRECCION, SS; DIRECCION, RIX; DIRECCION, RIY
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIX, lop[0]);
-                return 4; // RIX, NN; RIX, DIRECCION
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RIY, lop[0]);
-                return 4; // RIY, NN; RIY, DIRECCION
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RI, lop[0]);
-                this.esTipo(TipoParam.RA, lop[0]);
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.SS, lop[0][0]);
+                    return 1;
+                } catch {}
+                throw new TipoParametrosIncorrectoError(ins);
+            case "di": return 1;
+            case "djnz":
+                if (lop.length == 1) return 2;
+                else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            case "ei": return 1;
+            case "ex":
+                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+                try {
+                    this.esTipo(TipoParam.RAF, lop[0][0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RDE, lop[0][0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.SP, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1][0]);
+                        return 1;
+                    } catch { return 2; } // SP, RIX; SP, RIY
+                } catch {}
+                break;
+            case "exx": return 1;
+            case "halt": return 1;
+            case "im":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.RR, lop[0]);
-                this.esTipo(TipoParam.RA, lop[0]);
-                return 2;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.DBC, lop[0]);
-                this.esTipo(TipoParam.RA, lop[0]);
-                return 1;
-            } catch {}
-            try {
-                this.esTipo(TipoParam.DDE, lop[0]);
-                this.esTipo(TipoParam.RA, lop[0]);
-                return 1;
-            } catch {}
-            throw new BaseError();
-        case "ldd": return 2;
-        case "lddr": return 2;
-        case "ldi": return 2;
-        case "ldir": return 2;
-        case "neg": return 2;
-        case "nop": return 1;
-        case "or":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return this.#obtCodigoTam("add", lop);
-        case "otdr": return 2;
-        case "otir": return 2;
-        case "outd": return 2;
-        case "outi": return 2;
-        case "pop":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            try {
-                this.esTipo(TipoParam.QQ, lop[0]);
-                return 1;
-            } catch { return 2; } // RIX, RIY
-        case "push":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            try {
-                this.esTipo(TipoParam.QQ, lop[0]);
-                return 1;
-            } catch { return 2; } // RIX, RIY
-        case "res":
-            return this.#obtCodigoTam("set", lop);
-        case "ret":
-            if (lop.length == 0) return 1;
-            else if (lop.length == 1) return 2; // CC
-            else throw new NumeroParametrosIncorrectoError(ins, [0, 1], lop.length);
-        case "reti": return 2;
-        case "retn": return 2;
-        case "rl": return this.#obtCodigoTam("rlc", lop);
-        case "rla": return 1;
-        case "rlc": // FIX: Corregir rlc: 1 parámetro siempre
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            try {
-                this.esTipo(TipoParam.R, lop[0]);
-                return 2;
-            } catch { return 4; } //IX, IY
-        case "rlca": return 1;
-        case "rld": return 2;
-        case "rr": return this.#obtCodigoTam("rlc", lop);
-        case "rra": return 1;
-        case "rrc": return this.#obtCodigoTam("rlc", lop);
-        case "rrca": return 1;
-        case "rrd": return 1;
-        case "rst":
-            if (lop.length == 1) return 1; // RST
-            else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-        case "sbc":
-            if (lop.length == 1) return this.#obtCodigoTam("add", lop);
-            else if (lop.length == 2) return 2; // RHL, SS
-            else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
-        case "scf": return 1;
-        case "set":
-            return this.#obtCodigoTam("set", lop);
-        case "sla": return this.#obtCodigoTam("rlc", lop);
-        case "sra": return this.#obtCodigoTam("rlc", lop);
-        case "srl": return this.#obtCodigoTam("rlc", lop);
-        case "sub":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return this.#obtCodigoTam("add", lop);
-        case "xor":
-            if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-            return this.#obtCodigoTam("add", lop);
-        default:
-            throw new NoImplementadoError(ins);
+            case "inc":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try { // inc (hl) -> 1
+                    this.esTipo(TipoParam.R, lop[0][0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0][0]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0][0]);
+                    return 3;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.SS, lop[0][0]);
+                    return 1;
+                } catch {}
+                throw new TipoParametrosIncorrectoError(ins);
+            case "ind": return 2;
+            case "indr": return 2;
+            case "ini": return 2;
+            case "inir": return 2;
+            case "jp":
+                if (lop.length == 1){
+                    try {
+                        this.esTipo(TipoParam.HL, lop[1]);
+                        if (lop[1][0].valor != 0) TipoParametrosIncorrectoError(ins);
+                        return 1;
+                    } catch { return 2; } // NN, IX, IY
+                }
+                else if (lop.length == 2) return 3;
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "jr":
+                if (lop.length == 1 || lop.length == 2) return 2;
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "ld":
+                if (lop.length != 2) throw new NumeroParametrosIncorrectoError(ins, 2, lop.length);
+                try {
+                    this.esTipo(TipoParam.IX, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.R, lop[1][0]);
+                        return 3;
+                    } catch { return 4; } // IX, N; IX, NN
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.R, lop[1][0]);
+                        return 3;
+                    } catch { return 4; } // IY, N; IY, NN
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.R, lop[0][0]);
+                    try { // R, (HL) -> 1, (HL), R -> 1, (HL), n -> 2, HL, (nn) -> 3
+                        this.esTipo(TipoParam.IX, lop[1][0]);
+                        return 3;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.IY, lop[1][0]);
+                        return 3;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1][0]);
+                        return 2;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.R, lop[1][0]);
+                        return 1;
+                    } catch {}
+                    if (lop[0][0].valor == "a"){
+                        try {
+                            this.esTipo(TipoParam.RI, lop[1][0]);
+                            return 2;
+                        } catch {}
+                        try {
+                            this.esTipo(TipoParam.RR, lop[1][0]);
+                            return 2;
+                        } catch {}
+                        try {
+                            this.esTipo(TipoParam.DBC, lop[1][0]);
+                            return 1;
+                        } catch {}
+                        try {
+                            this.esTipo(TipoParam.DDE, lop[1][0]);
+                            return 1;
+                        } catch {}
+                        try {
+                            this.esTipo(TipoParam.DIRECCION, lop[1][0]);
+                            return 3;
+                        } catch {}
+                    }
+                    throw new TipoParametrosIncorrectoError(ins);
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.SP, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1][0]);
+                        return 1;
+                    } catch { return 2; } // SP, RIX; SP, RIY
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.SS, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.NN, lop[1][0]);
+                        return 3;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.DIRECCION, lop[1][0]);
+                        return 4;
+                    } catch {}
+                    throw new TipoParametrosIncorrectoError(ins);
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.DIRECCION, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.RA, lop[1][0]);
+                        return 3;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.RHL, lop[1][0]);
+                        return 3;
+                    } catch { return 4; } // DIRECCION, SS; DIRECCION, RIX; DIRECCION, RIY
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIX, lop[0][0]);
+                    return 4; // RIX, NN; RIX, DIRECCION
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RIY, lop[0][0]);
+                    return 4; // RIY, NN; RIY, DIRECCION
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RI, lop[0][0]);
+                    this.esTipo(TipoParam.RA, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.RR, lop[0][0]);
+                    this.esTipo(TipoParam.RA, lop[0][0]);
+                    return 2;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.DBC, lop[0][0]);
+                    this.esTipo(TipoParam.RA, lop[0][0]);
+                    return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.DDE, lop[0][0]);
+                    this.esTipo(TipoParam.RA, lop[0][0]);
+                    return 1;
+                } catch {}
+                throw new TipoParametrosIncorrectoError(ins);
+            case "ldd": return 2;
+            case "lddr": return 2;
+            case "ldi": return 2;
+            case "ldir": return 2;
+            case "neg": return 2;
+            case "nop": return 1;
+            case "or":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                return this.#obtCodigoTam("add", lop);
+            case "otdr": return 2;
+            case "otir": return 2;
+            case "outd": return 2;
+            case "outi": return 2;
+            case "pop":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.QQ, lop[0][0]);
+                    return 1;
+                } catch { return 2; } // RIX, RIY
+            case "push":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.QQ, lop[0][0]);
+                    return 1;
+                } catch { return 2; } // RIX, RIY
+            case "res":
+                return this.#obtCodigoTam("set", lop);
+            case "ret":
+                if (lop.length == 0) return 1;
+                else if (lop.length == 1) return 2; // CC
+                else throw new NumeroParametrosIncorrectoError(ins, [0, 1], lop.length);
+            case "reti": return 2;
+            case "retn": return 2;
+            case "rl": return this.#obtCodigoTam("rlc", lop);
+            case "rla": return 1;
+            case "rlc":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.R, lop[0][0]);
+                    return 2;
+                } catch { return 4; } //IX, IY
+            case "rlca": return 1;
+            case "rld": return 2;
+            case "rr": return this.#obtCodigoTam("rlc", lop);
+            case "rra": return 1;
+            case "rrc": return this.#obtCodigoTam("rlc", lop);
+            case "rrca": return 1;
+            case "rrd": return 1;
+            case "rst":
+                if (lop.length == 1) return 1; // RST
+                else throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+            case "sbc":
+                if (lop.length == 1) return this.#obtCodigoTam("add", lop);
+                else if (lop.length == 2) return 2; // RHL, SS
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+            case "scf": return 1;
+            case "set":
+                return this.#obtCodigoTam("set", lop);
+            case "sla": return this.#obtCodigoTam("rlc", lop);
+            case "sra": return this.#obtCodigoTam("rlc", lop);
+            case "srl": return this.#obtCodigoTam("rlc", lop);
+            case "sub":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                return this.#obtCodigoTam("add", lop);
+            case "xor":
+                if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                return this.#obtCodigoTam("add", lop);
+            default:
+                throw new NoImplementadoError(ins);
+        }
     }
-}
 
     /**
      * Función auxiliar de analLexico que almacena un símbolo en el ámbito correcto
@@ -1501,7 +1530,6 @@ class ProgramaAsm {
     }
 
     /**
-     *
      * Analiza léxica y sintácticamente una línea de ensamblador
      *
      * @memberof ProgramaAsm
@@ -1636,7 +1664,7 @@ class ProgramaAsm {
                     else return parseInt(res[1]);
                 })();
             } else if (this.#r_reg.test(cexp)){
-                res = this.#r_reg.exec(cexp);
+                res = this.#r_reg_e.exec(cexp);
                 cexp = cexp.substring(res[0].length);
                 if (!(ult.tipo == null || ult.tipo == TipoVal.DESPLAZAMIENTO_AP || ult.tipo == TipoVal.SEPARADOR)) throw new ExpresionInvalidaError(TipoVal.REGISTRO);
                 obj.tipo = TipoVal.REGISTRO;
@@ -1853,8 +1881,6 @@ class ProgramaAsm {
         let sim;
         let op1, op2;
         while (simsw.length){
-            console.log(JSON.stringify(simsp));
-            console.warn(JSON.stringify(simsw));
             sim = simsw.shift();
             if (sim.tipo == TipoVal.OP){
                 switch (sim.valor){
@@ -2071,10 +2097,9 @@ class ProgramaAsm {
                 op1 = plat.obtenerEtiqueta(sim.nombre);
                 if (op1[0] == undefined) throw new EtiquetaIndefinidaError(sim.nombre);
                 else if (isNaN(op1[0])){
-                    simsp.push(sim);
+                    simsw.unshift(sim);
                     return [...simsp, ...simsw];
-                }
-                else simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
+                } else simsp.push({ "tipo": TipoVal.NUMERO, "valor": op1[0] });
             } else simsp.push(sim);
         }
         return simsp;
@@ -2090,7 +2115,7 @@ class ProgramaAsm {
      */
     #analSemantico(fin){
         let finalizado = false;
-        let op1, inst, eti;
+        let inst, tam;
         while (!finalizado){
             finalizado = true;
             this.cl = parseInt(localStorage.getItem("txtEnsOrg"));
@@ -2098,22 +2123,37 @@ class ProgramaAsm {
             for (let i = 0; i<this.simbolos.length; i++){
                 inst = this.simbolos[i];
                 // Etiqueta
-                if (inst.eti){
-                    eti = plat.obtenerEtiqueta(inst.eti);
-                    plat.modificarEtiqueta(inst.eti, this.cl); // Quité "if (!eti[0])", siempre es verdadero
-                }
+                if (inst.eti) plat.modificarEtiqueta(inst.eti, this.cl);
                 // Operandos
                 if (inst.ops){
                     for (let j = 0; j<inst.ops.length; j++){
+                        //console.warn(JSON.stringify(inst.ops[j]));
                         inst.ops[j] = this.reducirExpresion(inst.ops[j]);
-                        if (inst.ops[j].length > 1){
+                        //console.warn(JSON.stringify(inst.ops[j]));
+                        if (inst.ops[j].length > 1 || (
+                                inst.ops[j][0].tipo != TipoVal.NUMERO &&
+                                inst.ops[j][0].tipo != TipoVal.AMB_C &&
+                                inst.ops[j][0].tipo != TipoVal.BANDERA &&
+                                inst.ops[j][0].tipo != TipoVal.DESPLAZAMIENTO &&
+                                inst.ops[j][0].tipo != TipoVal.DIRECCION &&
+                                inst.ops[j][0].tipo != TipoVal.REGISTRO
+                        )){
                             finalizado = false;
                             continue;
                         }
                     }
                 }
-                //tam = this.#obtCodigoTam(inst.mnemo);
-                //this.cl += tam;
+                // Actualizar CL
+                if (inst.mneno) this.cl += this.#obtCodigoTam(inst.mnemo, inst.ops);
+            }
+        }
+        // Deshacernos del array que envuelve a los parámetros, y...
+        // Ya, ¡generar código!
+        for (let i = 0; i<this.simbolos.length; i++){
+            inst = this.simbolos[i];
+            if (inst.mnemo){
+                if (inst.ops) inst.ops = inst.ops.map(e => e[0]);
+                this.bytes.push(...this.#obtCodigoOp(inst.mnemo, inst.ops || []));
             }
         }
     }
@@ -2124,7 +2164,7 @@ class ProgramaAsm {
             this.lineas = plat.cargarArchivoEnsamblador(nom);
             this.#analLexicoSintactico();
             /* Esto es para evitar bucles infinitos por referencias recursivas */
-            const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"));
+            const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"))*1000;
             this.#analSemantico(fin);
         } catch (e){
             plat.escribirLog(TipoLog.ERROR, e.message);
@@ -2132,25 +2172,4 @@ class ProgramaAsm {
             throw e;
         }
     }
-      
-        /*for (let l of lineas){
-            try {
-                /
-                Esto puede devolver un valor de tipo:
-                  - Array: la instrucción se resolvió correctamente
-                  - Object: faltan etiquetas a resolver
-                  - undefined: la línea está vacía
-                *
-                let bytes = this.analLexSint(l);
-                this.bytes.push(...bytes);
-                this.cl += bytes.length;
-            } catch (e){
-                console.log(e);
-                break;
-            }
-        }
-        while (true){
-            
-        }
-    }*/
 }

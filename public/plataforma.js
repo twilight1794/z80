@@ -2727,20 +2727,22 @@ class Plataforma {
      * Ejecuta el programa, y modifica la interfaz en consecuencia
      *
      * @param {Boolean} todo Si es verdadero, ejecuta el programa hasta encontrar un HALT, de lo contrario, solo ejecuta una instrucción
+     * @param {Number} fin
      * @memberof Plataforma
      */
-    ejecutar(todo){
+    ejecutar(todo, fin){
         let inst, li;
         let ol = document.getElementById("hist_inst");
         let instIni = document.getElementById("outNumInst");
         if (instIni.textContent == "—") instIni.textContent = "0";
         while (true){
             try {
+                if (Date.now() > fin) throw new BucleInfinitoError();
                 inst = this.ejecutarInstruccion();
             } catch (e){
                 plat.escribirLog(TipoLog.ERROR, e.message);
                 console.error(e);
-                break;
+                return;
             }
             /* Datos principales */
             document.getElementById("outUltInstMnemo").textContent = inst[0];

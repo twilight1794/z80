@@ -139,7 +139,6 @@ class Plataforma {
 
     /* Funciones para operaciones */
 
-    /* Operaciones comunes */
     static obtAnd(op1, op2){
         let res = "";
         let a1 = op1.toString(2).padStart(8, "0");
@@ -172,6 +171,49 @@ class Plataforma {
             else res += "1";
         }
         return res;
+    }
+
+    static obtRLC(op){
+        let c = (op&128);
+        let v = (op<<1)|((c==128)?1:0);
+        return [v, c];
+    }
+
+    static obtRL(op, c){
+        let b = (op&128);
+        let v = (op<<1)|(c?1:0);
+        return [v, b];
+    }
+
+    static obtRRC(op){
+        let c = (op&1);
+        let v = (op>>1)|((c==1)?128:0);
+        return [v, c];
+    }
+
+    static obtRR(op, c){
+        let b = (op&1);
+        let v = (op>>1)|(c?128:0);
+        return [v, b];
+    }
+
+    static obtSLA(op){
+        let c = (op&128);
+        let v = (op<<1)|254;
+        return [v, c];
+    }
+
+    static obtSRA(op){
+        let c = (op&1);
+        let b = (op&128);
+        let v = (op>>1)+b;
+        return [v, c];
+    }
+
+    static obtSRL(op){
+        let c = (op&1);
+        let v = (op>>1)|127;
+        return [v, c];
     }
 
     /**
@@ -850,7 +892,10 @@ class Plataforma {
                 }]];
             case 7:
                 this.escribirRegistro("pc", dir+1);
-                // TODO: Regresar
+                op1 = this.leerRegistro("a");
+                auxv1 = Plataforma.obtRLC(op1);
+                this.escribirRegistro("a", auxv1[0]);
+                this.estBanderasOp("RLCA", auxv1);
                 return ["RLCA", 4, 1, 1, []];
             case 8:
                 this.escribirRegistro("pc", dir+1);
@@ -883,7 +928,11 @@ class Plataforma {
                 }]];
             case 0xf:
                 this.escribirRegistro("pc", dir+1);
-                // TODO: Regresar
+                
+                op1 = this.leerRegistro("a");
+                auxv1 = Plataforma.obtRRC(op1);
+                this.escribirRegistro("a", auxv1[0]);
+                this.estBanderasOp("RRCA", auxv1);
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
                 op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
@@ -915,7 +964,10 @@ class Plataforma {
                 }]];
             case 0x17:
                 this.escribirRegistro("pc", dir+1);
-                // TODO: Regresar
+                op1 = this.leerRegistro("a");
+                auxv1 = Plataforma.obtRL(op1);
+                this.escribirRegistro("a", auxv1[0]);
+                this.estBanderasOp("RLA", auxv1);
                 return ["RLA", 4, 1, 1, []];
             case 0x18:
                 op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
@@ -938,7 +990,10 @@ class Plataforma {
                 }]];
             case 0x1f:
                 this.escribirRegistro("pc", dir+1);
-                // TODO: Regresar
+                op1 = this.leerRegistro("a");
+                auxv1 = Plataforma.obtRR(op1);
+                this.escribirRegistro("a", auxv1[0]);
+                this.estBanderasOp(auxv1);
                 return ["RRA", 4, 1, 1, []];
             case 0x20:
             case 0x28:
@@ -1756,49 +1811,77 @@ class Plataforma {
                 switch (cod){
                     case 0x06:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtRLC(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("RLC", auxv1);
                         return ["RLC", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x0E:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtRRC(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("RRC", auxv1);
                         return ["RRC", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x16:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtRL(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("RL", auxv1);
                         return ["RL", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x1E:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtRR(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("RR", auxv1);
                         return ["RR", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x26:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtSLA(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("SLA", auxv1);
                         return ["SLA", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x2E:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtSRA(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("SRA", auxv1);
                         return ["SRA", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
                         }]];
                     case 0x3E:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = this.leerRegistro("hl");
+                        op1 = this.leerMemoria(dir1);
+                        auxv1 = Plataforma.obtSRL(op1);
+                        this.escribirMemoria(dir1, auxv1[0]);
+                        this.estBanderasOp("SRL", auxv1);
                         return ["SRL", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1806,15 +1889,22 @@ class Plataforma {
                     /* 00000rrr */
                     case 0: case 1: case 2: case 3: case 4: case 5: case 7:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        op1 = this.leerRegistro(this.ValsR[cod]);
+                        auxv1 = Plataforma.obtRLC(op1);
+                        this.escribirRegistro(this.ValsR[cod], auxv1[0]);
+                        this.estBanderasOp("RLC", auxv1);
                         return ["RLC", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
-                            "texto": this.ValsR[dir1]
+                            "texto": this.ValsR[cod]
                         }]];
                     /* 00001rrr */
                     case 8: case 9: case 10: case 11: case 12: case 13: case 15:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-8);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtRRC(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("RRC", auxv1);
                         return ["RRC", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1822,7 +1912,11 @@ class Plataforma {
                     /* 00010rrr */
                     case 16: case 17: case 18: case 19: case 20: case 21: case 23:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-16);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtRL(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("RL", auxv1);
                         return ["RL", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1830,7 +1924,11 @@ class Plataforma {
                     /* 00011rrr */
                     case 24: case 25: case 26: case 27: case 28: case 29: case 31:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-24);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtRR(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("RR", auxv1);
                         return ["RR", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1838,7 +1936,11 @@ class Plataforma {
                     /* 00100rrr */
                     case 32: case 33: case 34: case 35: case 36: case 37: case 39:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-32);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtSLA(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("SLA", auxv1);
                         return ["SLA", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1846,7 +1948,11 @@ class Plataforma {
                     /* 00101rrr */
                     case 40: case 41: case 42: case 43: case 44: case 45: case 47:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-40);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtSRA(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("SRA", auxv1);
                         return ["SRA", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1854,7 +1960,11 @@ class Plataforma {
                     /* 00111rrr */
                     case 56: case 57: case 58: case 59: case 60: case 61: case 63:
                         this.escribirRegistro("pc", dir+1);
-                        // FIX: Regresar
+                        dir1 = (cod-56);
+                        op1 = this.leerRegistro(this.ValsR[dir1]);
+                        auxv1 = Plataforma.obtSRL(op1);
+                        this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
+                        this.estBanderasOp("SRL", auxv1);
                         return ["SRL", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -2051,12 +2161,22 @@ class Plataforma {
                         }]];
                     case 0x67:
                         this.escribirRegistro("pc", dir+1);
-                        // TODO: Regresar
+                        op1 = this.leerRegistro("a");
+                        dir2 = this.leerRegistro("hl");
+                        op2 = this.leerMemoria(dir2);
+                        auxv1 = op1&15;
+                        this.escribirRegistro("a", (op1&240)+(op2&15));
+                        this.escribirMemoria(dir2, (auxv1<<4)+(op2>>4));
                         this.estBanderasOp("RRD", []);
                         return ["RRD", 18, 5, 2, []];
                     case 0x6F:
                         this.escribirRegistro("pc", dir+1);
-                        // TODO: Regresar
+                        op1 = this.leerRegistro("a");
+                        dir2 = this.leerRegistro("hl");
+                        op2 = this.leerMemoria(dir2);
+                        auxv1 = op1&15;
+                        this.escribirRegistro("a", (op1&240)+((op2&240)>>4));
+                        this.escribirMemoria(dir2, ((op2&15)<<4)+auxv1);
                         this.estBanderasOp("RLD", []);
                         return ["RLD", 18, 5, 2, []];
                     case 0xA0:
@@ -2514,43 +2634,57 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1+auxd1);
                         switch (cod){
                             case 6:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtRLC(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("RLC", auxv2);
                                 return ["RLC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x0E:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtRRC(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("RRC", auxv2);
                                 return ["RRC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x16:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtRL(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("RL", auxv2);
                                 return ["RL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x1E:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtRR(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("RR", auxv2);
                                 return ["RR", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x26:
-                                // Regresar
+                                auxv2 = Plataforma.obtSLA(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("SLA", auxv2);
                                 return ["SLA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x2E:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtSRA(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("SRA", auxv2);
                                 return ["SRA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
                                 }]];
                             case 0x3E:
-                                // TODO: Regresar
+                                auxv2 = Plataforma.obtSRL(op1);
+                                this.escribirMemoria(dir1+auxv1, auxv2[0]);
+                                this.estBanderasOp("SRL", auxv2);
                                 return ["SRL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"

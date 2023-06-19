@@ -7,15 +7,15 @@
  * @extends {Error}
  */
 class BaseError extends Error {
-    mostrar(lnum){
-        if (this instanceof LexicoError){
-            this.lnum = lnum;
-            this.message = "Línea %l: ".replace("%l", lnum) + this.message;
-        }
-        plat.escribirLog(TipoLog.ERROR, this.message);
+    mostrar(){
+        let msg;
+        if (!(this instanceof EjecucionError)) msg = _("mensaje_err", {"l": this.obj.lnum, "m": this.message});
+        else msg = this.message;
+        plat.escribirLog(TipoLog.ERROR, msg);
     }
     constructor(msg, args){
         super();
+        console.log("Creando Excepción: "+msg);
         if (this.constructor == BaseError) throw new Error("BaseError es una clase abstracta.");
         this.message = _(msg, args);
     }
@@ -30,19 +30,19 @@ class LexicoError extends BaseError {
 }
 /// Errores ocurridos durante la simbolización de una línea
 class ValorCASEInvalidoError extends LexicoError {
-    constructor(v){ super("err_valorcaseinvalido", {"v": v}); }
+    constructor(o, v){ super("err_valorcaseinvalido", {"v": v}); this.obj = o; }
 }
 class ParametroInexistenteError extends LexicoError {
-    constructor(m){ super("err_parametroinexistente", {"m": m}); }
+    constructor(o){ super("err_parametroinexistente", {"m": o.mnemo}); this.obj = o; }
 }
 class MultiplesParametrosError extends LexicoError {
-    constructor(m){ super("err_multiplesparametros", {"m": m}); }
+    constructor(o){ super("err_multiplesparametros", {"m": o.mnemo}); this.obj = o; }
 }
 class EtiquetaInexistenteError extends LexicoError {
-    constructor(m){ super("err_etiquetainexistente", {"m": m}); }
+    constructor(o){ super("err_etiquetainexistente", {"m": o.mnemo}); this.obj = o; }
 }
 class DirectivaENDIError extends LexicoError {
-    constructor(){ super("err_directivaendi"); }
+    constructor(o){ super("err_directivaendi"); this.obj = o; }
 }
 /// Errores ocurridos durante la simbolización de parámetros
 class ExpresionInvalidaError extends LexicoError {
@@ -55,7 +55,7 @@ class ExpresionInvalidaError extends LexicoError {
     }
 }
 
-// Errores ocurridos durante la fase del análisis sintáctico y semántico
+// Errores ocurridos durante la fase del análisis sintáctico
 class SintacticoError extends BaseError {
     constructor(){
         if (arguments) super(...arguments);
@@ -78,7 +78,7 @@ class NumeroParametrosIncorrectoError extends SintacticoError {
     }
 }
 class DesplazamientoNoAdmitidoError extends SintacticoError {
-    constructor(){ super("err_desplazamientonoadmitido"); }
+    constructor(o){ super("err_desplazamientonoadmitido"); this.obj = o; }
 }
 
 // Errores ocurridos durante la reducción de símbolos de parámetros: errores semánticos
@@ -88,13 +88,13 @@ class SemanticoError extends BaseError {
         else super("err_semantico");
     }
 }
-class DivisionCeroError extends SintacticoError {
+class DivisionCeroError extends SemanticoError {
     constructor(){ super("err_division_cero"); }
 }
-class EtiquetaIndefinidaError extends SintacticoError {
+class EtiquetaIndefinidaError extends SemanticoError {
     constructor(i){ super("err_etiquetaindefinida", {"i": i}); }
 }
-class BucleInfinitoError extends SintacticoError {
+class BucleInfinitoError extends SemanticoError {
     constructor(){ super("err_bucleinfinito"); }
 }
 

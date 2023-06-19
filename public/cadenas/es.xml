@@ -249,6 +249,7 @@
     <string name="tipo_direccion_r">dirección en registro</string>
     <string name="tipo_desplazamiento">desplazamiento</string>
     <string name="tipo_bit">bit</string>
+    <string name="mensaje_err">Línea %l: %m</string>
     <!-- Mensajes de error -->
     <string name="err_lexico">Error desconocido durante el análisis léxico.</string>
     <string name="err_valorcaseinvalido">Valor para directiva CASE inválido: %v.</string>
@@ -276,6 +277,9 @@
     <string name="err_codigoilegal">La secuencia de bytes %b no corresponde a ninguna instrucción.</string>
     <string name="err_archivo_asm">Hubo un error al cargar el archivo en ensamblador.</string>
     <string name="err_archivo_hex">Hubo un error al cargar el archivo hexadecimal.</string>
+    <string name="err_cerrarprojabierto">No se puede cerrar un proyecto en ejecución.</string>
+    <string name="err_archivo_existente">Ya existe un archivo con ese nombre. Prueba con otro nombre.</string>
+    <string name="err_neu_configuracion">Ha ocurrido un error al almacenar en disco la configuración \"%c\".</string>
     <!-- Mensajes de eventos informativos -->
     <string name="msg_ensamblado_finalizado">Ensamblado finalizado correctamente.</string>
     <string name="msg_ejecucion_finalizada">Ejecución finalizada correctamente.</string>

@@ -4,11 +4,12 @@
     <head>
         <title>$nombre_app</title>
         <meta name="versionNumero" content="1.0.0.0" />
-        <meta name="versionFecha" content="dom 18 jun 2023 20:42:54 UTC" />
+        <meta name="versionFecha" content="lun 19 jun 2023 13:43:27 UTC" />
         <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
         <link rel="stylesheet" type="text/css" href="codemirror.min.css" />
+        <link rel="stylesheet" type="text/css" href="notyf.min.css" />
         <link rel="icon" type="image/png" href="icon.png" />
         <link rel="manifest" href="manifest.json" />
         <script src="neutralino.js"></script>
@@ -19,7 +20,9 @@
         <script src="plataforma.js"></script>
         <script src="programa_hex16.js"></script>
         <script src="programa_asm.js"></script>
-        <script src="cadenas.js"></script>
+        <script src="ayuda.js"></script>
+        <script src="notyf.min.js"></script>
+        <script src="macro.js"></script>
         <script src="inicial.js" defer="defer"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </head>
@@ -55,8 +58,8 @@
                         <li><button role="menuitem" id="btnCortar">$btn_cortar <kbd>C-x</kbd></button></li>
                         <li><button role="menuitem" id="btnCopiar">$btn_copiar <kbd>C-c</kbd></button></li>
                         <li><button role="menuitem" id="btnPegar">$btn_pegar <kbd>C-v</kbd></button></li>
-                        <li role="separator"></li>
-                        <li><button role="menuitem" id="btnBuscar">$btn_buscar <kbd>C-b</kbd></button></li>
+                        <li style="display: none;" role="separator"></li>
+                        <li style="display: none;"><button role="menuitem" id="btnBuscar">$btn_buscar <kbd>C-b</kbd></button></li>
                         <li role="separator"></li>
                         <li><button role="menuitem" id="btnInsEti">$btn_inseti</button></li>
                         <li><span>$menubar_principal_editar_insdir</span>
@@ -70,9 +73,9 @@
                                 <li><button role="menuitem">DWM</button></li>
                                 <li><button role="menuitem">END</button></li>
                                 <li><button role="menuitem">EQU</button></li>
-                                <li><button role="menuitem">IF</button></li>
-                                <li><button role="menuitem">ELSE</button></li>
-                                <li><button role="menuitem">ENDI</button></li>
+                                <li style="display: none;"><button role="menuitem">IF</button></li>
+                                <li style="display: none;"><button role="menuitem">ELSE</button></li>
+                                <li style="display: none;"><button role="menuitem">ENDI</button></li>
                                 <li><button role="menuitem">INCL</button></li>
                                 <li><button role="menuitem">ORG</button></li>
                             </ul>
@@ -200,7 +203,7 @@
                         <li><button role="menuitem" id="btnRestablecer">$btn_restablecer <kbd>M-e r</kbd></button></li>
                     </ul>
                 </li>
-                <li aria-selected="false"><span>$menubar_principal_macros</span>
+                <li style="display: none;" aria-selected="false"><span>$menubar_principal_macros</span>
                     <ul>
                         <li><button role="menuitem" id="btnAnadMacro_001">WHILE</button></li>
                         <li><button role="menuitem" id="btnAnadMacro_002">DO .. WHILE</button></li>
@@ -230,7 +233,7 @@
                     <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion"><span>$btn_menuejecucion</span></button>
                     <button role="tab" aria-controls="r-msg" id="btnMenuMensajes"><span>$btn_menumensajes</span></button>
                     <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas"><span>$btn_menuetiquetas</span></button>
-                    <button role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>$btn_menumacros</span></button>
+                    <button style="display: none;" role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>$btn_menumacros</span></button>
                     <button role="tab" aria-controls="r-man" id="btnMenuManual"><span>$btn_menumanual</span></button>
                     <button role="tab" aria-controls="r-cfg" id="btnMenuConfig"><span>$btn_menuconfig</span></button>
                 </nav>

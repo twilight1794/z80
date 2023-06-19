@@ -249,7 +249,8 @@
     <string name="tipo_direccion_r">address in register</string>
     <string name="tipo_desplazamiento">offset</string>
     <string name="tipo_bit">bit</string>
-    <!-- Error messages -->
+    <string name="mensaje_err">Line %l: %m</string>
+s    <!-- Error messages -->
     <string name="err_lexico">Unknown error during lexical analysis.</string>
     <string name="err_valorcaseinvalido">Invalid value for CASE directive: %v.</string>
     <string name="err_parametroinexistente">You must provide parameters to the mnemonic or directive %m.</string>
@@ -276,6 +277,9 @@
     <string name="err_codigoilegal">The byte sequence %b does not correspond to any instruction.</string>
     <string name="err_archivo_asm">There was an error while loading assembly file.</string>
     <string name="err_archivo_hex">There was an error while loading hexadecimal file.</string>
+    <string name="err_cerrarprojabierto">It's not possible to close a project that is executing a program.</string>
+    <string name="err_archivo_existente">There is already a file with that name. Try another name instead.</string>
+    <string name="err_neu_configuracion">There was an error while saving configuration on disk \"%c\".</string>
     <!-- Informational event messages -->
     <string name="msg_ensamblado_finalizado">Assembly completed successfully.</string>
     <string name="msg_ejecucion_finalizada">Execution completed successfully.</string>

@@ -190,7 +190,7 @@ function archivoAsm(e){
             proy.nuevoArchivo(n, e2.target.result);
             proy.anadirArchivo(n);
         }
-        reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_asm")); }
+        reader.onerror = () => { noti.error(_("err_archivo_asm")); }
     }
 }
 function archivoHex(e){
@@ -210,7 +210,7 @@ function archivoHex(e){
             proy.anadirArchivo(n);
             plat.cargarBytes(parseInt(localStorage.getItem("txtEnsOrg")), progHex.listaBytes.map((e) => parseInt(e, 16)) );
         }
-        reader.onerror = function(){ plat.escribirLog(TipoLog.ERROR, _("err_archivo_hex")); }
+        reader.onerror = () => { noti.error(_("err_archivo_hex")); }
     }
 }
 
@@ -258,7 +258,10 @@ function btnEntralizar(){
 }
 function btnCerrarProj(){
     let guardar = Array.from(document.querySelectorAll("#archivos .guardar"));
-    if (plat.estado != Estado.LISTO) return;
+    if (plat.estado != Estado.LISTO){
+        noti.error(_("err_cerrarprojabierto"));
+        return;
+    }
     if (guardar.length > 0) mostrarDialogo("dlgCerrarNoGuardadoConfirmacion", { "nom": nom }, (o) => {
         switch (o["@"]){
             case "s":
@@ -291,7 +294,10 @@ function btnEnsamblar(){
     try {
         window.prog = new ProgramaAsm(a.textContent);
         plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
-    } catch {}
+    } catch (e) {
+        //console.error(e);
+        e.mostrar();
+    }
 }
 function btnEjecutar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
@@ -318,6 +324,33 @@ function btnDetener(){
 function btnRestablecer(){
     if (plat.estado == Estado.LISTO || plat.estado == Estado.ESPERA) btnDetener();
     document.querySelector("#r-eti .lvars").textContent = "";
+    document.getElementById("hist_inst").textContent = "";
+    document.getElementById("outUltInstMnemo").textContent = "—";
+    document.getElementById("outUltInstParams").textContent = "";
+    plat.escribirRegistro("a", 0);
+    plat.escribirRegistro("b", 0);
+    plat.escribirRegistro("c", 0);
+    plat.escribirRegistro("d", 0);
+    plat.escribirRegistro("e", 0);
+    plat.escribirRegistro("h", 0);
+    plat.escribirRegistro("l", 0);
+    plat.escribirRegistro("ax", 0);
+    plat.escribirRegistro("bx", 0);
+    plat.escribirRegistro("cx", 0);
+    plat.escribirRegistro("dx", 0);
+    plat.escribirRegistro("ex", 0);
+    plat.escribirRegistro("hx", 0);
+    plat.escribirRegistro("lx", 0);
+    plat.escribirRegistro("ix", 0);
+    plat.escribirRegistro("iy", 0);
+    plat.escribirRegistro("pc", parseInt(localStorage.getItem("txtEnsOrg")));
+    plat.escribirRegistro("i", 0);
+    plat.escribirRegistro("r", 0);
+    plat.escribirRegistro("f", 0);
+    plat.escribirRegistro("fx", 0);
+    try {
+        while (true) plat.retirarPila();
+    } catch {};
     window.prog = undefined;
 }
 function btnManual(){
@@ -544,7 +577,7 @@ function onChangeCMI(cm){
         e.classList.add("guardar");
         sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
         if (document.getElementById("chkIntTitulo").checked && document.title.indexOf("★") == -1)
-            document.title = "★ " + document.title;
+            document.title = "(★ " + document.title;
     }
 }
 function onInputCMI(cm){
@@ -563,7 +596,7 @@ async function salvarConfig(){
     // Salvar configuración, si estoy en Neutralino
     if (window.NL_VERSION){
         try { await Neutralino.filesystem.writeFile("conf.json", JSON.stringify({ ...localStorage }));}
-        catch (e) { throw new Error("Ha ocurrido un error al almacenar en disco la configuración  \""+p+"\"."); }
+        catch (e) { noti.error( _("err_neu_configuracion", {"p": p})); }
     }
 }
 
@@ -590,7 +623,7 @@ function estConfig(p, v){
         else cfg.value = val;
         let f = funsConfig[p];
         if (f) f(val);
-    } catch (e) { throw new Error("Ha ocurrido un error al almacenar la configuración \""+p+"\"."); }
+    } catch (e) {}
     salvarConfig();
 }
 
@@ -665,9 +698,9 @@ function btnMenuActividades(e){
  */
 function mostrarDialogo(id, params, fun, evs){
     let dlgO = document.getElementById(id);
-    if (!dlgO) throw Error("AL");
+    if (!dlgO) throw Error();
     let btn = dlgO.dataset?.botones;
-    if (!btn) throw Error("AL");
+    if (!btn) throw Error();
     let dlg = document.createElement("dialog");
     let html = dlgO.innerHTML;
     if (params)
@@ -719,6 +752,8 @@ function mostrarDialogo(id, params, fun, evs){
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+    /* Notificaciones */
+    window.noti = new Notyf({"position": {x: "right", y: "top"}, "duration": 5000});
 
     /* Localización */
     window.idisp = Array.from(document.querySelectorAll("#selIntIdioma option")).map((e) => e.value).filter((e) => e != "qaa");
@@ -813,7 +848,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnEjecutar").addEventListener("click", btnEjecutar);
     document.getElementById("btnAvanzar").addEventListener("click", btnAvanzar);
     document.getElementById("btnDetener").addEventListener("click", btnDetener);
-    document.getElementById("btnRestablecer").addEventListener("click", btnDetener);
+    document.getElementById("btnRestablecer").addEventListener("click", btnRestablecer);
     Array.from(document.querySelectorAll(":is(#f_dir, #f_mnemo) button")).forEach((e) => {
         e.addEventListener("click", (e2) => { btnInsX(e2.target); });
     });

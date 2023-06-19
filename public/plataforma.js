@@ -51,19 +51,15 @@ class Estado {
  * @see decodificarValor
  */
 function codificarValor(x, t, e, s){
-    let n, end;
     let rango = Math.pow(256, t);
-    let max = rango/(s?2:1);
-    let min = s?((-rango)/2+1):0;
+    let max = rango/(s?2:1)-1;
+    let min = s?((-rango)/2):0;
     /* Validación */
     if (x>max || x<min) throw new ValorTamanoError(t);
-
     /* Signo */
-    if (x> -1) n = x.toString(16).padStart(t*2, "0").match(/.{2}/g);
-    else n = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0").match(/.{2}/g);
-
+    let n = ((x> -1)?x:Plataforma.obtComplemento(x, t, 2)).toString(16).padStart(t*2, "0").match(/.{2}/g);
     /* Endianness */
-    return (e?n.reverse():n).map((p) => parseInt(p, 16));
+    return (e?([...n].reverse()):n).map((p) => parseInt(p, 16));
 }
 
 /**
@@ -78,14 +74,13 @@ function codificarValor(x, t, e, s){
  */
 function decodificarValor(x, t, e, s){
     /* Endianness */
-    let n, val;
-    if (e) n = x.reverse().reduce((a, b) => a + b.toString(16));
-    else n = x.reduce((a, b) => a + b.toString(16));
+    let n = ((e?([...x].reverse()):x).reduce((a, b) => a + b.toString(16), ""));
 
     /* Signo */
-    if (!s || (s && x>-1)) val = n;
-    else val = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0")*-1;
-    return parseInt(val, 16);
+    let val = parseInt(n, 16);
+    let rango = Math.pow(256, t);
+    let max = rango/(s?2:1)-1;
+    return (val>max)?(Plataforma.obtComplemento(val, t, 2)*-1):val;
 }
 
 /**
@@ -232,7 +227,7 @@ class Plataforma {
      */
     cargarArchivoEnsamblador(nom){
         let t = localStorage.getItem("archivo_"+nom) || "";
-        //t = this.preprocesar();
+        t = buscarMacros(t);
         return t.split("\n");
     }
 
@@ -718,7 +713,7 @@ class Plataforma {
      */
     anadirEtiqueta(i, t, v){
         let ev = document.getElementById("eti-"+i);
-        if (ev) throw new EtiquetaExistenteError(i); // NOTE: Ver si esto se queda
+        //if (ev) throw new EtiquetaExistenteError(i); // NOTE: Ver si esto se queda
         /* ID */
         let ei = document.createElement("dt");
         ei.textContent = i;
@@ -787,7 +782,7 @@ class Plataforma {
         let ev = document.getElementById("eti-"+i);
         if (!ev) throw new EtiquetaIndefinidaError(i);
         let ei = ev.previousElementSibling;
-        switch (t.toLowerCase()){
+        switch (t.toLowerCase()){ // FIX: Deberíamos usar tipos enumerados
             case "dfb":
                 ei.dataset.tipo = "Byte"; break;
             case "dfl":
@@ -911,8 +906,8 @@ class Plataforma {
             case 0xa:
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("bc");
-                val1 = this.leerMemoria(dir1);
-                this.escribirRegistro("a", val1);
+                auxv1 = this.leerMemoria(dir1);
+                this.escribirRegistro("a", auxv1);
                 return ["LD", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": "A"
@@ -929,7 +924,8 @@ class Plataforma {
                 this.estBanderasOp("RRCA", auxv1);
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
-                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                //op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                op1 = this.leerMemoria(dir+1);
                 auxv1 = this.leerRegistro("b");
                 if (auxv1>0){
                     this.escribirRegistro("b", auxv1-1);
@@ -965,10 +961,11 @@ class Plataforma {
                 return ["RLA", 4, 1, 1, []];
             case 0x18:
                 op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
+                //op1 = this.leerMemoria(dir+1);
                 this.escribirRegistro("pc", dir + op1 + 2);
                 return ["JR", 12, 3, 2, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1 + 2)
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1)
                 }]];
             case 0x1a:
                 this.escribirRegistro("pc", dir+1);
@@ -1004,10 +1001,10 @@ class Plataforma {
                 }
                 return ["JR", tt, tm, 2, [{
                     "tipo": TipoOpEns.BANDERA,
-                    "texto": ((cod == 20)?"N":"")+"Z"
+                    "texto": ((cod == 0x20)?"N":"")+"Z"
                 }, {
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1 + 2)
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1)
                 }]];
             case 0x22:
                 this.escribirRegistro("pc", dir+3);
@@ -1057,10 +1054,10 @@ class Plataforma {
                 }
                 return ["JR", tt, tm, 2, [{
                     "tipo": TipoOpEns.BANDERA,
-                    "texto": ((cod == 30)?"N":"")+"C"
+                    "texto": ((cod == 0x30)?"N":"")+"C"
                 }, {
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1+2)
+                    "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1)
                 }]];
             case 0x32:
                 this.escribirRegistro("pc", dir+3);
@@ -1260,7 +1257,7 @@ class Plataforma {
             case 0xC9:
                 auxv1 = this.leerPila();
                 this.retirarPila();
-                this.escribirRegistro("pc", auxv1);
+                this.escribirRegistro("pc", auxv1+3);
                 return ["RET", 10, 3, 1, []];
             case 0xCD:
                 auxv1 = this.leerRegistro("pc");
@@ -1269,7 +1266,7 @@ class Plataforma {
                 this.escribirRegistro("pc", op1);
                 return ["CALL", 17, 5, 3, [{
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op1)
                 }]];
             case 0xCE:
                 this.escribirRegistro("pc", dir+2);
@@ -1391,7 +1388,6 @@ class Plataforma {
                     "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             case 0xE9:
-                // NOTE: hacer notar a Danjiro de la discrepancia en la sintaxis (HL) y HL
                 this.escribirRegistro("pc", dir+1);
                 op1 = this.leerRegistro("hl");
                 this.escribirRegistro("pc", op1);
@@ -1704,7 +1700,7 @@ class Plataforma {
             case 184: case 185: case 186: case 187: case 188: case 189: case 183:
                 this.escribirRegistro("pc", dir+1);
                 dir2 = cod-184;
-                op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
+                op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op2-op1;
                 this.estBanderasOp("CP", [res, op1, op2]);
@@ -2844,7 +2840,15 @@ class Plataforma {
                 break;
         }
         let time = document.createElement("time");
-        time.textContent = (new Date()).toISOString();
+        time.textContent = new Intl.DateTimeFormat("es-MX", {
+            hour12: true,
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }).format(Date.now());
         let txt = document.createElement("span");
         txt.textContent = mensaje;
         li.append(time, txt);
@@ -2878,9 +2882,8 @@ class Plataforma {
                 if (fin && Date.now() > fin) throw new BucleInfinitoError();
                 inst = this.ejecutarInstruccion();
             } catch (e){
-                plat.escribirLog(TipoLog.ERROR, e.message);
-                console.error(e);
-                return;
+                e.mostrar();
+                throw e;
             }
             /* Datos principales */
             document.getElementById("outUltInstMnemo").textContent = inst[0];

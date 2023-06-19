@@ -422,7 +422,7 @@ class ProgramaAsm {
                 });
                 break;
             case "dfs":
-                if (lop>1) throw new MultiplesParametrosError("dfs");
+                if (lop>1) throw new MultiplesParametrosError(obj);
                 if (lop[0].valor >= -2147483648 && lop[0].valor <= 2147483647){
                     for (let i = 0; i<lop[0].valor; i++) bytes.push(0);
                 } else throw new ValorTamanoError(4);
@@ -447,7 +447,7 @@ class ProgramaAsm {
                 if (lop.length > 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {
                     this.esTipo(TipoParam.NN, lop[0]);
-                    plat.modificarEtiqueta(eti, lop[0].valor);
+                    tplat.modificarEtiqueta(eti, lop[0].valor);
                 } catch {}
                 break;
             case "org":
@@ -550,14 +550,14 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     bytes.push(0xcd);
                     this.esTipo(TipoParam.NN, lop[0]);
-                    bytes.push(...codificarValor(lop[1].valor, 2, true, true));
+                    bytes.push(...codificarValor(lop[0].valor, 2, true, true));
                 }
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.NN, lop[1]);
                     bytes.push(196+(lop[0].valor<<3), ...codificarValor(lop[1].valor, 2, true, true));
                 }
-                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
+                else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop?.length);
                 break;
             case "ccf":
                 bytes.push(0x3f);
@@ -1557,7 +1557,7 @@ class ProgramaAsm {
             case "res":
                 return this.#obtCodigoTam("set", lop);
             case "ret":
-                if (lop.length == 0) return 1;
+                if (!lop) return 1;
                 else if (lop.length == 1) return 2; // CC
                 else throw new NumeroParametrosIncorrectoError(ins, [0, 1], lop.length);
             case "reti": return 2;
@@ -1624,7 +1624,8 @@ class ProgramaAsm {
         for (let i = 0; i < this.lineas.length; i++){
             l = this.lineas[i].trim();
             if (!l.length) continue;
-            obj = {};
+            // Añadir el número de línea
+            obj = { "lnum": i+1 };
             // Comprobar si hay etiquetas
             if (this.#r_defeti.test(l)){
                 res = this.#r_defeti.exec(l);
@@ -1632,8 +1633,6 @@ class ProgramaAsm {
                 obj.eti = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
                 // Añadimos la etiqueta a la lista
                 plat.anadirEtiqueta(obj.eti, "loc", NaN);
-                // FIX: Iterar sobre los símbolos en busca
-                //if (obj.eti in this.#etisIndef) this.#etisIndef = this.#etisIndef.filter((e) => e != obj.eti);
             }
             // Comprobar si hay comentario o nada después de etiqueta
             if (!l.length || this.#r_com.test(l)){
@@ -1647,17 +1646,23 @@ class ProgramaAsm {
                 obj.mnemo = ((this.caseRelevante)?res[1]:res[1].toUpperCase());
             }
             // Comprobar si hay argumentos después de mnemotécnico o directiva
-            if (l.length && !this.#r_com.test(l)) obj.ops = this.analOps(l);
+            try {
+                if (l.length && !this.#r_com.test(l)) obj.ops = this.analOps(l);
+            } catch (e) {
+                e.obj = obj;
+                throw e;
+            }
+
             // Por último, tratar directivas selectivamente
             switch (obj.mnemo){
                 case "CASE":
                     if (obj.ops && obj.ops.length == 2 && ((obj.ops[0] == 111 && obj.pos[1] == 110) || (obj.ops[0] == 79 && obj.ops[1] == 78))) this.caseRelevante = true;
                     else if (obj.ops && obj.ops.length == 3 && ((obj.ops[0] == 111 && obj.pos[1] == 102 && obj.pos[2] == 102) || (obj.ops[0] == 79 && obj.ops[1] == 70 && obj.ops[2] == 70))) this.caseRelevante = false;
-                    else throw new ValorCASEInvalidoError(l);
+                    else throw new ValorCASEInvalidoError(obj, l);
                     break;
                 case "DFS":
-                    if (!obj.ops) throw new ParametroInexistenteError("DFS");
-                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new MultiplesParametrosError("DFS");
+                    if (!obj.ops) throw new ParametroInexistenteError(obj);
+                    if (obj.ops.some((v) => v.tipo == TipoVal.SEPARADOR )) throw new MultiplesParametrosError(obj);
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1666,7 +1671,7 @@ class ProgramaAsm {
                 case "DLL":
                 case "DWL":
                 case "DWM":
-                    if (!obj.ops) throw new ParametroInexistenteError(obj.mnemo);
+                    if (!obj.ops) throw new ParametroInexistenteError(obj);
                     if (obj.eti) plat.modificarTipoEtiqueta(obj.eti, obj.mnemo.toLowerCase());
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
@@ -1676,8 +1681,8 @@ class ProgramaAsm {
                     this.#guardarEnAmbito(obj);
                     return;
                 case "EQU":
-                    if (!obj.ops) throw new ParametroInexistenteError("EQU");
-                    if (!obj.eti) throw new EtiquetaInexistenteError("EQU");
+                    if (!obj.ops) throw new ParametroInexistenteError(obj);
+                    if (!obj.eti) throw new EtiquetaInexistenteError(obj);
                     plat.modificarTipoEtiqueta(obj.eti, "equ");
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
@@ -1694,20 +1699,20 @@ class ProgramaAsm {
                     this.estadoIPC[this.estadoIPC.length - 1] = 1;
                     break;
                 case "ENDI":
-                    if (this.estadoIPC.length == 0) throw new DirectivaENDIError();
+                    if (this.estadoIPC.length == 0) throw new DirectivaENDIError(obj);
                     this.estadoIPC.pop();
                     this.ambitos.pop();
                     break;
                 case "INCL":
-                    if (!obj.ops) throw new ParametroInexistenteError("INCL");
+                    if (!obj.ops) throw new ParametroInexistenteError(obj);
                     if (this.#r_cad.test(l)){
                         let arr = plat.cargarArchivoEnsamblador(this.#r_cad.exec(l)[1]);
                         for (let j = 0; j<arr.length; j++) this.lineas.splice(i+j, 1, arr[j]);
                     } else throw new TipoParametrosIncorrectoError("INCL");
                     break;
                 case "ORG":
-                    if (!obj.ops) throw new ParametroInexistenteError("ORG");
-                    obj.tipo = TipoSimbolo.ORG;
+                    if (!obj.ops) throw new ParametroInexistenteError(obj);
+                    obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
                 case "CPU":
@@ -2210,28 +2215,33 @@ class ProgramaAsm {
             this.cl = this.carga;
             if (Date.now() > fin) throw new BucleInfinitoError();
             for (let i = 0; i<this.simbolos.length; i++){
-                inst = this.simbolos[i];
-                // Etiqueta
-                if (inst.eti) plat.modificarEtiqueta(inst.eti, this.cl);
-                // Operandos
-                if (inst.ops){
-                    for (let j = 0; j<inst.ops.length; j++){
-                        inst.ops[j] = this.reducirExpresion(inst.ops[j]);
-                        if (inst.ops[j].length > 1 || (
-                                inst.ops[j][0].tipo != TipoVal.NUMERO &&
-                                inst.ops[j][0].tipo != TipoVal.AMB_C &&
-                                inst.ops[j][0].tipo != TipoVal.BANDERA &&
-                                inst.ops[j][0].tipo != TipoVal.DESPLAZAMIENTO &&
-                                inst.ops[j][0].tipo != TipoVal.DIRECCION &&
-                                inst.ops[j][0].tipo != TipoVal.REGISTRO
-                        )){
-                            finalizado = false;
-                            continue;
+                try {
+                    inst = this.simbolos[i];
+                    // Etiqueta
+                    if (inst.eti) plat.modificarEtiqueta(inst.eti, this.cl);
+                    // Operandos
+                    if (inst.ops){
+                        for (let j = 0; j<inst.ops.length; j++){
+                            inst.ops[j] = this.reducirExpresion(inst.ops[j]);
+                            if (inst.ops[j].length > 1 || (
+                                    inst.ops[j][0].tipo != TipoVal.NUMERO &&
+                                    inst.ops[j][0].tipo != TipoVal.AMB_C &&
+                                    inst.ops[j][0].tipo != TipoVal.BANDERA &&
+                                    inst.ops[j][0].tipo != TipoVal.DESPLAZAMIENTO &&
+                                    inst.ops[j][0].tipo != TipoVal.DIRECCION &&
+                                    inst.ops[j][0].tipo != TipoVal.REGISTRO
+                            )){
+                                finalizado = false;
+                                continue;
+                            }
                         }
                     }
+                    // Actualizar CL
+                    if (inst.mnemo) this.cl += this.#obtCodigoTam(inst.mnemo, inst.ops);
+                } catch (e){
+                    e.obj = inst;
+                    throw e;
                 }
-                // Actualizar CL
-                if (inst.mnemo) this.cl += this.#obtCodigoTam(inst.mnemo, inst.ops);
             }
         }
         // Deshacernos del array que envuelve a los parámetros, y...
@@ -2241,9 +2251,14 @@ class ProgramaAsm {
             inst = this.simbolos[i];
             if (inst.mnemo){
                 if (inst.ops) inst.ops = inst.ops.map(e => e[0]);
-                let esc = this.#obtCodigoOp(inst.mnemo, inst.ops || [], inst.eti);
-                this.bytes.push(...esc);
-                this.cl += esc.length;
+                try {
+                    let esc = this.#obtCodigoOp(inst.mnemo, inst.ops || [], inst.eti);
+                    this.bytes.push(...esc);
+                    this.cl += esc.length;
+                } catch (e) {
+                    e.obj = inst;
+                    throw e;
+                }
             }
         }
         // Y cargarlo en memoria
@@ -2251,17 +2266,11 @@ class ProgramaAsm {
     }
 
     constructor(nom){
-        try {
-            this.carga = parseInt(localStorage.getItem("txtEnsOrg"));
-            this.lineas = plat.cargarArchivoEnsamblador(nom);
-            this.#analLexicoSintactico();
-            /* Esto es para evitar bucles infinitos por referencias recursivas */
-            const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"))*1000;
-            this.#analSemantico(fin);
-        } catch (e){
-            plat.escribirLog(TipoLog.ERROR, e.message);
-            console.error(e);
-            throw e;
-        }
+        this.carga = parseInt(localStorage.getItem("txtEnsOrg"));
+        this.lineas = plat.cargarArchivoEnsamblador(nom);
+        this.#analLexicoSintactico();
+        /* Esto es para evitar bucles infinitos por referencias recursivas */
+        const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEns"))*1000;
+        this.#analSemantico(fin);
     }
 }

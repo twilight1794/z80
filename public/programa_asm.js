@@ -118,11 +118,12 @@ class TipoParam {
     static M = new TipoParam("m");
     /* Especiales */
     static RST = new TipoParam("rst");
+    static RHL = new TipoParam("rhl");
     static RIX = new TipoParam("rix");
     static RIY = new TipoParam("riy");
     static RA = new TipoParam("ra");
     static RI = new TipoParam("ri");
-    static RR = new TipoParam("rr");
+    static RRR = new TipoParam("rrr");
     static DBC = new TipoParam("dbc");
     static DDE = new TipoParam("dde");
     static RSP = new TipoParam("rsp");
@@ -220,7 +221,8 @@ class ProgramaAsm {
     #r_cad = /^(?:"([^"]*)")\s*/;
     #r_reg = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)(?:\s+|,|\+|\-|\)|$)/i;
     #r_reg_e = /^(BC|DE|HL|SP|AF|IX|IY|A|B|D|E|H|L|I|R)\s*/i;
-    #r_band = /^(NZ|NC|PO|PE|Z|P|M)\s*/i;
+    #r_band = /^(NZ|NC|PO|PE|Z|P|M)(?:\s+|,|$)/i;
+    #r_band_e = /^(NZ|NC|PO|PE|Z|P|M)\s*/i;
     #r_amb = /^(c)(?:\s+|,|\+|\-|\)|$)/i;
     #r_amb_e = /^(c)\s*/i;
     #r_sep = /^,\s*/;
@@ -303,7 +305,7 @@ class ProgramaAsm {
                 break;
             case TipoParam.QQ:
                 if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
-                if (Object.keys(this.ValsSS).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
+                if (Object.keys(this.ValsQQ).indexOf(v.valor) == -1) throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.SS:
                 if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
@@ -359,7 +361,7 @@ class ProgramaAsm {
                 if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
                 if (v.valor != "i") throw new NoEsTipoExcepcion();
                 break;
-            case TipoParam.RR:
+            case TipoParam.RRR:
                 if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
                 if (v.valor != "r") throw new NoEsTipoExcepcion();
                 break;
@@ -393,43 +395,42 @@ class ProgramaAsm {
      * Devuelve el código de operación correspondiente a una instrucción de ensamblador
      *
      * @param {String} ins Mnemotécnico, en minúsculas, a procesar
-     * @param {Array<Object>} lop Array que contiene los parámetros pasados al mnemotécnico
+     * @param {Array<Object>} lop Array que contiene los parámetros pasados a la instrucción
+     * @param {String} eti Etiqueta asociada a la instrucción, cuando se requiera
      * @return {Array<Number>} Array con los bytes que representan la instrucción en código máquina
      * @memberof ProgramaAsm
      */
-    #obtCodigoOp(ins, lop){
+    #obtCodigoOp(ins, lop, eti){
         let bytes = [];
         let bm = 0;
-        console.warn(ins);
-        console.log(lop);
         switch (ins.toLowerCase()){
             /* Las directivas que generan bytes en memoria serán tratadas como mnemotécnicos */
             case "dfb":
                 lop.forEach((e) => {
-                    if (e > -1 && e < 256) bytes.push(...codificarValor(e, 1, true, false));
-                    else if (e < 0 && e > -129)  bytes.push(...codificarValor(e, 1, true, true));
+                    if (e.valor > -1 && e.valor < 256) bytes.push(...codificarValor(e.valor, 1, true, false));
+                    else if (e.valor < 0 && e.valor > -129)  bytes.push(...codificarValor(e.valor, 1, true, true));
                     else throw new ValorTamanoError(1);
                 });
                 break;
             case "dfl":
             case "dll":
                 lop.forEach((e) => {
-                    if (e >= -2147483648 && e <= 2147483647)
-                        bytes.push(...codificarValor(e, 4, (ins=="dll"), true));
+                    if (e.valor >= -2147483648 && e.valor <= 2147483647)
+                        bytes.push(...codificarValor(e.valor, 4, (ins.toLowerCase()=="dll"), true));
                     else throw new ValorTamanoError(4);
                 });
                 break;
             case "dfs":
                 if (lop>1) throw new MultiplesParametrosError("dfs");
-                if (lop[0] >= -2147483648 && lop[0] <= 2147483647)
-                for (let i = 0; i<lop[0]; i++) bytes.push(0);
-                else throw new ValorTamanoError(4);
+                if (lop[0].valor >= -2147483648 && lop[0].valor <= 2147483647){
+                    for (let i = 0; i<lop[0].valor; i++) bytes.push(0);
+                } else throw new ValorTamanoError(4);
                 break;
             case "dwl":
             case "dwm":
                 lop.forEach((e) => {
-                    if (e > -1 && e < 65536) bytes.push(...codificarValor(e, 2, (ins=="dwl"), false));
-                    else if (e < 0 && e > -32768)  bytes.push(...codificarValor(e, 1, (ins=="dwl"), true));
+                    if (e.valor > -1 && e.valor < 65536) bytes.push(...codificarValor(e.valor, 2, (ins.toLowerCase()=="dwl"), false));
+                    else if (e.valor < 0 && e.valor > -32768)  bytes.push(...codificarValor(e.valor, 1, (ins.toLowerCase()=="dwl"), true));
                     else throw new ValorTamanoError(2);
                 });
                 break;
@@ -440,6 +441,13 @@ class ProgramaAsm {
                         plat.escribirRegistro("pc", lop[0].valor);
                     } catch {}
                 }
+                break;
+            case "equ":
+                if (lop.length > 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
+                try {
+                    this.esTipo(TipoParam.NN, lop[0]);
+                    plat.modificarEtiqueta(eti, lop[0]);
+                } catch {}
                 break;
             case "org":
                 try {
@@ -1034,7 +1042,7 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.QQ, lop[0]);
-                    bytes.push(193+(ValsQQ[lop[0].valor]<<4));
+                    bytes.push(193+(this.ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
@@ -1052,7 +1060,7 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.QQ, lop[0]);
-                    bytes.push(197+(ValsQQ[lop[0].valor]<<4));
+                    bytes.push(197+(this.ValsQQ[lop[0].valor]<<4));
                     break;
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
@@ -1204,11 +1212,12 @@ class ProgramaAsm {
             case "dll":
                 return lop.length*4;
             case "dfs":
-                return lop[0][0];
+                return lop[0][0].valor;
             case "dwl":
             case "dwm":
                 return lop.length*2;
             case "end":
+            case "equ":
             case "org":
                 return 0;
             /* Mnemotécnicos reales */
@@ -1636,9 +1645,12 @@ class ProgramaAsm {
                     this.#guardarEnAmbito(obj);
                     break;
                 case "DFB":
+                case "DFL":
+                case "DLL":
                 case "DWL":
                 case "DWM":
                     if (!obj.ops) throw new ParametroInexistenteError(obj.mnemo);
+                    if (obj.eti) plat.modificarTipoEtiqueta(obj.eti, obj.mnemo.toLowerCase());
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1649,6 +1661,7 @@ class ProgramaAsm {
                 case "EQU":
                     if (!obj.ops) throw new ParametroInexistenteError("EQU");
                     if (!obj.eti) throw new EtiquetaInexistenteError("EQU");
+                    plat.modificarTipoEtiqueta(obj.eti, "equ");
                     obj.tipo = TipoSimbolo.DIRECTIVA;
                     this.#guardarEnAmbito(obj);
                     break;
@@ -1729,7 +1742,7 @@ class ProgramaAsm {
                 obj.tipo = TipoVal.REGISTRO;
                 obj.valor = res[1].toLowerCase();
             } else if (this.#r_band.test(cexp)){
-                res = this.#r_band.exec(cexp);
+                res = this.#r_band_e.exec(cexp);
                 cexp = cexp.substring(res[0].length);
                 if (ult.tipo != null) throw new ExpresionInvalidaError(TipoVal.BANDERA);
                 obj.tipo = TipoVal.BANDERA;
@@ -2201,7 +2214,7 @@ class ProgramaAsm {
                     }
                 }
                 // Actualizar CL
-                if (inst.mneno) this.cl += this.#obtCodigoTam(inst.mnemo, inst.ops);
+                if (inst.mnemo) this.cl += this.#obtCodigoTam(inst.mnemo, inst.ops);
             }
         }
         // Deshacernos del array que envuelve a los parámetros, y...
@@ -2211,7 +2224,6 @@ class ProgramaAsm {
             if (inst.mnemo){
                 if (inst.ops) inst.ops = inst.ops.map(e => e[0]);
                 let esc = this.#obtCodigoOp(inst.mnemo, inst.ops || []);
-                console.log(esc);
                 this.bytes.push(...esc);
             }
         }

@@ -59,13 +59,11 @@ function codificarValor(x, t, e, s){
     if (x>max || x<min) throw new ValorTamanoError(t);
 
     /* Signo */
-    if (x> -1) n = x.toString(16).padStart(t*2, "0");
-    else n = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0");
+    if (x> -1) n = x.toString(16).padStart(t*2, "0").match(/.{2}/g);
+    else n = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0").match(/.{2}/g);
 
     /* Endianness */
-    if (e) end = n.match(/.{2}/g).reverse();
-    else end = n.match(/.{2}/g);
-    return end.map((p) => parseInt(p, 16));
+    return (e?n.reverse():n).map((p) => parseInt(p, 16));
 }
 
 /**
@@ -88,13 +86,6 @@ function decodificarValor(x, t, e, s){
     if (!s || (s && x>-1)) val = n;
     else val = Plataforma.obtComplemento(x, t, 2).toString(16).padStart(t*2, "0")*-1;
     return parseInt(val, 16);
-
-/*
-    if (t == 2) return x; // Al no manejar palabras signadas, el valor obtenido ya es el correcto
-    else if (!s) return x; // Lo mismo con bytes no signados
-    // En este punto, el número debe ser de 1 byte, y signado
-    else if (x < 128) return x;
-    else return Plataforma.obtComplemento(x, 1, 2)*-1; // FIX: Corr*/
 }
 
 /**
@@ -394,7 +385,7 @@ class Plataforma {
             case "hx":
             case "lx":
                 if (val > 255) throw new ValorTamanoError(val, 1);
-                document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase();
+                document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase().padStart(2, "0");
                 break;
             case "ix":
             case "iy":
@@ -757,7 +748,7 @@ class Plataforma {
             ev.textContent = "No definido";
         } else { // Definido
             ev.className = "v-def";
-            ev.textContent = v.toString(16).padStart(4, "0");
+            ev.textContent = v.toString(16).padStart(4, "0").toUpperCase();
         }
         document.querySelector("#r-eti .lvars").append(ei, ev);
     }
@@ -780,7 +771,7 @@ class Plataforma {
             ev.textContent = "No definido";
         } else {
             ev.className = "v-def";
-            ev.textContent = v.toString(16).padStart(4, "0");
+            ev.textContent = v.toString(16).padStart(4, "0").toUpperCase();
         }
     }
 
@@ -795,12 +786,16 @@ class Plataforma {
     modificarTipoEtiqueta(i, t){
         let ev = document.getElementById("eti-"+i);
         if (!ev) throw new EtiquetaIndefinidaError(i);
-        let ei = ev.previousElementSibling();
+        let ei = ev.previousElementSibling;
         switch (t.toLowerCase()){
             case "dfb":
                 ei.dataset.tipo = "Byte"; break;
+            case "dfl":
+                ei.dataset.tipo = "Palabra doble, little-endian"; break;
             case "dfs":
                 ei.dataset.tipo = "Espacio"; break;
+            case "dll":
+                ei.dataset.tipo = "Palabra doble, big-endian"; break;
             case "dwl":
                 ei.dataset.tipo = "Palabra, little-endian"; break;
             case "dwm":
@@ -873,7 +868,6 @@ class Plataforma {
         let cod = this.leerMemoria(dir);
         let codl = [cod];
         let op1, op2, dir1, dir2, auxv1, auxd1, auxv2, auxd2, res, tt, tm;
-        console.log(cod);
         switch (cod){
             case 0:
                 this.escribirRegistro("pc", dir+1);

@@ -40,8 +40,8 @@ A continuación se muestran los formatos de memoria comunes utilizados con el Z8
 Estos son solo algunos ejemplos de los formatos de memoria utilizados en el lenguaje ensamblador del Z80.
 
 
-=== Programa que lee macros
-nUa macro es una construcción que permite definir un conjunto de instrucciones o bloques de código que se pueden reutilizar en múltiples lugares dentro de un programa. Una macro se define una vez y luego se puede invocar en diferentes partes del código fuente. Esto facilita la escritura de código y lo hace más legible y mantenible.
+=== Macros
+Una macro es una construcción que permite definir un conjunto de instrucciones o bloques de código que se pueden reutilizar en múltiples lugares dentro de un programa. Una macro se define una vez y luego se puede invocar en diferentes partes del código fuente. Esto facilita la escritura de código y lo hace más legible y mantenible.
 - Los nombre tienen que ser diferentes, y que el uno esté incluido en el otro
 - Solo se puede leer una macro por código
 - Tienen que tener el formato:

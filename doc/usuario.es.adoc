@@ -27,8 +27,49 @@ El Emulador de Ensamblador en Web se ejecuta en un navegador web compatible. Ase
 
 == Instalación
 
-??
+A continuación se muestran los formatos de memoria comunes utilizados con el Z80:
 
+    Dirección absoluta: Se especifica la dirección de memoria directamente. Por ejemplo, "LD A, (1234h)" carga el contenido del byte ubicado en la dirección de memoria 1234h en el registro A.
+
+    Dirección indirecta: Se utiliza un registro para acceder a una dirección de memoria. Por ejemplo, "LD A, (BC)" carga el contenido del byte ubicado en la dirección almacenada en los registros BC en el registro A.
+
+    Desplazamiento: Se agrega un desplazamiento a una dirección base para acceder a una ubicación de memoria específica. Por ejemplo, "LD A, (HL+2)" carga el contenido del byte ubicado en la dirección de memoria apuntada por el registro HL más un desplazamiento de 2 en el registro A.
+
+    Indexación: Se utiliza un registro de índice (IX o IY) junto con un desplazamiento para acceder a una ubicación de memoria. Por ejemplo, "LD A, (IX+10)" carga el contenido del byte ubicado en la dirección de memoria apuntada por el registro IX más un desplazamiento de 10 en el registro A.
+
+Estos son solo algunos ejemplos de los formatos de memoria utilizados en el lenguaje ensamblador del Z80.
+
+
+=== Programa que lee macros
+nUa macro es una construcción que permite definir un conjunto de instrucciones o bloques de código que se pueden reutilizar en múltiples lugares dentro de un programa. Una macro se define una vez y luego se puede invocar en diferentes partes del código fuente. Esto facilita la escritura de código y lo hace más legible y mantenible.
+- Los nombre tienen que ser diferentes, y que el uno esté incluido en el otro
+- Solo se puede leer una macro por código
+- Tienen que tener el formato:
+    + De declaradción: Prueba: MACRO #tres, #cuatro,
+    LD A, cuatro
+    LD B,tres
+    LD A, cuatro
+    LD C, tres
+    +De llamado: Prueba valor1, valor2
+Aquí hay un ejemplo sencillo de una macro en ensamblador para el usuario que realiza una tarea común, como calcular el cuadrado de un número:
+[source, ensbamblador]
+----
+CALCULAR_CUADRADO MACRO numero
+    ; Código para calcular el cuadrado del número
+    MOV A, numero
+    MUL A
+    ENDM
+----
+En este ejemplo, se define una macro llamada "CALCULAR_CUADRADO" que acepta un parámetro llamado "numero". El código dentro de la macro realiza el cálculo del cuadrado del número utilizando las instrucciones específicas del ensamblador Z80.
+
+Una vez que se ha definido la macro, se puede invocar en diferentes partes del código fuente de la siguiente manera:
+[source, ensbamblador]
+----
+MAIN:
+    CALCULAR_CUADRADO 5   ; Invocar la macro para calcular el cuadrado de 5
+    ; Resto del código...
+----
+La invocación de la macro "CALCULAR_CUADRADO" con el valor 5 generará automáticamente el código correspondiente para calcular el cuadrado de ese número en el lugar donde se invocó la macro.
 === Uso básico
 
 A continuación se describen los pasos básicos para utilizar el Emulador de Ensamblador en Web:
@@ -75,9 +116,9 @@ image::docs/BarraEditar.png[]
     Copiar: Guarda el elemento de texto seleccionado
     Pegar: Coloca el elemento de texto guardado
     Buscar y reemplazar: Encuentra coincidencias con el elemento de texto requerido y en caso de requerirlo, sustituirlo
-    Insertar etiqueta: ...........................
-    Insertar directiva: .........................
-    Insertar mnemotécnico: .......................
+    Insertar etiqueta: Se puede insertar una etiqueta ya definida
+    Insertar directiva: Innserta la ubicación de la directiva
+    Insertar mnemotécnico: Si no se sabe el formato, se específica 
 
 
 Ejecutar::

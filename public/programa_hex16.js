@@ -50,6 +50,7 @@ class programHex {
     // Se guardará la traducción de hexadecimal a mnemónicos
     constructor(PC) {
         this.bytes = [];
+        this.hexFile = [];
         this.listaBytes = [];
         this.asmCode = [];
         this.hexCode = [];
@@ -1132,5 +1133,76 @@ class programHex {
         for (let i = 0; i < n; i++) {
             bytes.shift();
         }
+    }
+
+    generarArchivoHex(bytes,org = "0000") {
+        // Convertimos los valores decimales a hexadecimales
+        let bytesTexto = bytes.map(byte => {
+            if (byte.toString(16).toUpperCase().length === 1) {
+                // Agregamos padding
+                return "0" + byte.toString(16).toUpperCase();
+            } else {
+                return byte.toString(16).toUpperCase()
+            }
+        });
+        let lineasBytes = [];
+        lineasBytes.push([]);
+        let contador = 0;
+        while (bytesTexto.length > 0) {
+            contador++;
+            lineasBytes[lineasBytes.length - 1].push(bytesTexto.shift());
+            if (contador === 16) {
+                contador = 0;
+                lineasBytes.push([]);
+            }
+        }
+        // Obtenemos la colección de bytes que irá en cada uno de los renglones del archivo
+        // Generamos la sintaxis de cada uno de los elementos
+        let cc = 0;
+        let lineasArchivo = [];
+        let direccion = org;
+        for (let i = 0; i < lineasBytes.length; i++) {
+            lineasArchivo.push(":");
+            lineasArchivo[lineasArchivo.length - 1] += this.decimalToHex(lineasBytes[i].length,2).toUpperCase();
+            cc += lineasBytes[i].length;
+            // Obtenemos la dirección con padding
+            direccion = this.decimalToHex(parseInt(direccion,16),4);
+            lineasArchivo[lineasArchivo.length - 1] += direccion;
+            cc += parseInt(direccion,16);
+            // Obtenemos la siguiente dirección
+            direccion = parseInt(direccion,16) + lineasBytes[i].length;
+            direccion = direccion.toString(16);
+            lineasArchivo[lineasArchivo.length - 1] += "00";
+            // Obtenemos los bytes
+            while (lineasBytes[i].length !== 0) {
+                cc += parseInt(lineasBytes[i][0],16);
+                lineasArchivo[lineasArchivo.length - 1] += lineasBytes[i].shift();
+            }
+            cc = this.complementarA2(cc.toString(2).split(""));
+            cc = parseInt(cc,2).toString(16).toUpperCase();
+            if (cc.length >= 3) {
+                cc = cc[1] + cc[2];
+            }
+            lineasArchivo[lineasArchivo.length - 1] += cc.toString(16);
+            this.hexFile.push(lineasArchivo[lineasArchivo.length - 1]);
+            cc = 0;
+        }
+        // Generamos la última línea
+        this.hexFile.push(":00000001FF");
+    }
+
+    complementarA2(numero) {
+        numero = numero.reverse();
+        let bandera = false;
+        for(let i = 0; i < numero.length; i++) {
+            if (bandera === false && numero[i] === "1") { 
+                bandera = true; 
+            } else if (bandera === true && numero[i] === "0") {
+                numero[i] = "1";
+            } else if (bandera === true && numero[i] === "1") {
+                numero[i] = "0";
+            }
+        }
+        return numero.reverse().toString().replace(/,/g,"");
     }
 }

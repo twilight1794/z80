@@ -133,8 +133,8 @@ window.combTeclas = {
     "M-f j": btnBorrar,
     "M-f k": btnRenombrar,
     "M-f l": btnEntralizar,
-    "M-f d": null,
-    "M-f e": null,
+    "M-f d": btnDescargarAsm,
+    "M-f e": btnDescargarHex,
     "M-f f": null,
     "M-f x": btnCerrarProj,
     "M-f y": null,
@@ -255,6 +255,14 @@ function btnRenombrar(){
 function btnEntralizar(){
     let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
     proy.entralizarArchivo(nom);
+}
+function btnDescargarAsm(){
+    let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
+    proy.descargarArchivo(nom, TipoDescarga.Asm);
+}
+function btnDescargarHex(){
+    let nom = document.querySelector("#archivos [aria-selected=true] button").textContent;
+    proy.descargarArchivo(nom, TipoDescarga.Hex);
 }
 function btnCerrarProj(){
     let guardar = Array.from(document.querySelectorAll("#archivos .guardar"));
@@ -866,6 +874,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnBorrar").addEventListener("click", btnBorrar);
     document.getElementById("btnRenombrar").addEventListener("click", btnRenombrar);
     document.getElementById("btnEntralizar").addEventListener("click", btnEntralizar);
+    document.getElementById("btnDescargarAsm").addEventListener("click", btnDescargarAsm);
+    document.getElementById("btnDescargarHex").addEventListener("click", btnDescargarHex);
     document.getElementById("btnCerrarProj").addEventListener("click", btnCerrarProj);
     document.getElementById("btnBuscar").addEventListener("click", btnBuscar);
     document.getElementById("btnEnsamblar").addEventListener("click", btnEnsamblar);

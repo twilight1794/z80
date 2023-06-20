@@ -1790,7 +1790,6 @@ class ProgramaAsm {
                 }
                 obj.tipo = TipoVal.OP;
                 obj.valor = TipoOp.obtTipo(disamb+res[1]);
-                console.log(obj);
                 if (ult.tipo == TipoVal.CADENA ||
                 (obj.valor.aridad == 1 && !(
                     ult.tipo == TipoVal.PARENTESIS_AP ||

@@ -88,11 +88,23 @@ class Proyecto {
         document.getElementById("archivo_"+nom).classList.remove("guardar");
         document.title = document.title.replace("★ ", "");
     }
-    descargarArchivo(nom){
-        // FIX: manejar los dos tipos de archivos ya implementados
+    descargarArchivo(nom, t){
+        let d, o, n;
+        switch (t){
+            case TipoDescarga.Asm:
+                d = encodeURIComponent(localStorage.getItem("archivo_"+nom));
+                n = nom + localStorage.getItem("txtExtAsm");
+                break;
+            case TipoDescarga.Hex:
+                o = new programHex();
+                o.generarArchivoHex(prog.bytes, prog.carga) ;
+                d = o.hexFile.join("\n"); // FIX: Honrar configuración
+                n = nom + ".hex";
+                break;
+        }
         let a = document.createElement("a");
-        a.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(localStorage.getItem("archivo_"+nom)));
-        a.setAttribute("download", "ddd");
+        a.setAttribute("href", "data:text/plain;charset=utf-8," + d);
+        a.setAttribute("download", n);
         a.style.display = "none";
         document.body.appendChild(a);
         a.click();

@@ -212,7 +212,7 @@ main {
     grid-template-areas: "act cod cod cod pila reg" "act mem mem ay ay reg";
     flex-grow: 1;
     grid-template-columns: auto auto auto 1fr auto auto;
-    grid-template-rows: 1fr minmax(auto, 16rem);
+    grid-template-rows: 1fr minmax(auto, 20rem);
     overflow: hidden;
 }
 main>section:not(#r-act) {
@@ -233,13 +233,30 @@ main>section>div {
     background: var(--f-m);
     color: var(--c-m);
 }
-:is(#r-mem, #r-pila, #r-reg) > div { overflow-y: scroll; }
+:is(#r-pila, #r-reg) > div { overflow-y: scroll; }
 #r-act {
     grid-area: act;
     display: flex;
 }
 #r-cod { grid-area: cod; }
 #r-mem { grid-area: mem; }
+#r-mem [role=toolbar] {
+    display: flex;
+    gap: .5rem;
+    padding: .5rem;
+}
+#r-mem > div > div:nth-child(2){
+    overflow-y: scroll;
+    height: calc(100% - 2.5rem);
+}
+#txtMemIrA {
+    border: lightgray 1px solid; /* FIX: pasar a config */
+    padding-inline: .25rem;
+}
+#txtMemIrA.error {
+    border: red 2px solid;
+    outline: none;
+}
 #r-mem td, #r-mem tbody th { border: 0; }
 #r-mem td:nth-child(17) { border-right: 1px solid var(--f-a); }
 #r-mem td:nth-child(n+18) { padding: 0; }

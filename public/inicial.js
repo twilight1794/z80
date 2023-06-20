@@ -566,6 +566,30 @@ function rInputEdicion(c, t){
         sel.addRange(range);
     }
 }
+function txtMemIrA(e){
+    e.target.classList.remove("error");
+    let regex = /^((?:0x(?:(?:[0-9A-F]|[0-9a-f])+))|(?:0b[01]+)|(?:(?:[0-9A-F]|[0-9a-f])+[Hh])|(?:[01]+[Bb])|(?:[0-7]+[Oo])|(?:0[0-7]+)|(?:[0-9]+))\s*/;
+    let res = regex.exec(e.target.value);
+    if (!e.target.value || !e.data) return;
+    if (res){
+        let dir = (() => {
+            if (res[1].startsWith("0x")) return parseInt(res[1].slice(2), 16);
+            else if (res[1].startsWith("0b")) return parseInt(res[1].slice(2), 2);
+            else if (res[1].endsWith("H") || res[1].endsWith("h")) return parseInt(res[1].slice(0, res[1].length - 1), 16);
+            else if (res[1].endsWith("B") || res[1].endsWith("b")) return parseInt(res[1].slice(0, res[1].length - 1), 2);
+            else if (res[1].endsWith("O") || res[1].endsWith("o")) return parseInt(res[1].slice(0, res[1].length - 1), 8);
+            else if (res[1].startsWith("0")) return parseInt(res[1], 8);
+            else return parseInt(res[1]);
+        })();
+        let t = parseInt(localStorage.getItem("selPlatMem"));
+        if (dir < 0 || t < dir) e.target.classList.add("error");
+        else {
+            let s = Math.trunc(dir/16);
+            let d = dir%16;
+            document.querySelector("#r-mem table").tBodies[0].rows[s].scrollIntoView({ "behavior": "smooth", "block": "start", "inline": "nearest" });
+        }
+    } else e.target.classList.add("error");
+}
 
 /* Eventos de CodeMirror */
 function onChangeCMI(cm){
@@ -577,7 +601,7 @@ function onChangeCMI(cm){
         e.classList.add("guardar");
         sessionStorage.setItem("archivo_"+e.children[1].textContent, cm.getValue());
         if (document.getElementById("chkIntTitulo").checked && document.title.indexOf("★") == -1)
-            document.title = "(★ " + document.title;
+            document.title = " ★ " + document.title;
     }
 }
 function onInputCMI(cm){
@@ -904,6 +928,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("chkAccionesMostrarInfo").addEventListener("change", chkAccionesMostrarInfo);
     document.getElementById("chkAccionesMostrarAviso").addEventListener("change", chkAccionesMostrarAviso);
     document.getElementById("chkAccionesMostrarError").addEventListener("change", chkAccionesMostrarError);
+
+    /* Asignación de eventos a Memoria */
+    document.getElementById("txtMemIrA").addEventListener("input", txtMemIrA);
 
     /* Asignación de eventos a valores de interfaz */
     /** Eventos de Pila y Registros **/

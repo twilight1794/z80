@@ -14,7 +14,7 @@
         <link rel="manifest" href="manifest.json" />
         <script src="neutralino.js"></script>
         <script src="codemirror.min.js"></script>
-        <script src="search.min.js"></script>
+        <!--<script src="search.min.js"></script>-->
         <script src="errores.js"></script>
         <script src="archivos.js"></script>
         <script src="plataforma.js"></script>
@@ -542,12 +542,17 @@
             </section>
             <section id="r-mem" spellcheck="false">
                 <h2>$r_mem</h2>
-                <div><table>
-                    <thead>
-                        <tr><th rowspan="2">$r_mem_dir</th><th colspan="16">$r_mem_bytes</th><th colspan="16">$r_mem_ascii</th></tr>
-                        <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>
-                        <tbody></tbody>
-                </table></div>
+                <div>
+                    <div role="toolbar" aria-label="$tlb_memoriaacciones" id="menuMemoriaAcciones">
+                        <label for="txtMemIrA">Ir a: </label><input type="text" placeholder="0xFFFF" pattern="[0-9A-Fa-f]" id="txtMemIrA" />
+                    </div>
+                    <div><table>
+                        <thead>
+                            <tr><th rowspan="2">$r_mem_dir</th><th colspan="16">$r_mem_bytes</th><th colspan="16">$r_mem_ascii</th></tr>
+                            <tr><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead>
+                            <tbody></tbody>
+                    </table></div>
+                </div>
             </section>
             <section id="r-ay">
                 <h2>$r_ay</h2>

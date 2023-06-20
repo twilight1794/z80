@@ -50,12 +50,12 @@ class Estado {
  * @return {Array<Number>} Array con los bytes a escribir
  * @see decodificarValor
  */
-function codificarValor(x, t, e, s){
+function codificarValor(x, t, e){
     let rango = Math.pow(256, t);
-    let max = rango/(s?2:1)-1;
-    let min = s?((-rango)/2):0;
-    /* Validación */
-    if (x>max || x<min) throw new ValorTamanoError(t);
+    let max = rango-1;
+    let min = (-rango)/2;
+    x %= rango;
+
     /* Signo */
     let n = ((x> -1)?x:Plataforma.obtComplemento(x, t, 2)).toString(16).padStart(t*2, "0").match(/.{2}/g);
     /* Endianness */
@@ -1075,7 +1075,7 @@ class Plataforma {
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
                 op1 = decodificarValor([this.leerMemoria(dir1)], 1, true, true) + 1;
-                this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
+                this.escribirMemoria(dir1, codificarValor(op1, 1, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 11, 3, 1, [{
                     "tipo": TipoOpEns.DIRECCION_R,
@@ -1085,7 +1085,7 @@ class Plataforma {
                 this.escribirRegistro("pc", dir+1);
                 dir1 = this.leerRegistro("hl");
                 op1 = decodificarValor([this.leerMemoria(dir1)], 1, true, true) - 1;
-                this.escribirMemoria(dir1, codificarValor(op1, 1, true, true));
+                this.escribirMemoria(dir1, codificarValor(op1, 1, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 11, 3, 1, [{
                     "tipo": TipoOpEns.DIRECCION_R,
@@ -1146,7 +1146,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1161,7 +1161,7 @@ class Plataforma {
                 op2 = decodificarValor([this.leerMemoria(dir2)], 1, true, true);
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1177,7 +1177,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 7, 2, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1274,7 +1274,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1295,7 +1295,7 @@ class Plataforma {
                 op2 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1348,7 +1348,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 7, 2, 2, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1483,7 +1483,7 @@ class Plataforma {
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-4)>>3;
                 op1 = decodificarValor([this.leerRegistro(this.ValsR[dir1])], 1, true, true) + 1;
-                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
+                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true));
                 this.estBanderasOp("INC", [op1]);
                 return ["INC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1494,7 +1494,7 @@ class Plataforma {
                 this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-5)>>3;
                 op1 = decodificarValor([this.leerRegistro(this.ValsR[dir1])], 1, true, true) - 1;
-                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true, true));
+                this.escribirRegistro(this.ValsR[dir1], codificarValor(op1, 1, true));
                 this.estBanderasOp("DEC", [op1]);
                 return ["DEC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1598,7 +1598,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res =  op1+op2;
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1615,7 +1615,7 @@ class Plataforma {
                 op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1+op2+(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("ADC", [res, op1, op2]);
                 return ["ADC", 4, 4, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1631,7 +1631,7 @@ class Plataforma {
                 op1 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                 op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 res = op1-op2;
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SUB", [res, op1, op2]);
                 return ["SUB", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -1648,7 +1648,7 @@ class Plataforma {
                 op2 = decodificarValor([this.leerRegistro(this.ValsR[dir2])], 1, true, true);
                 auxv1 = this.leerBandera("cf");
                 res = op1-op2-(auxv1?1:0);
-                this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                this.escribirRegistro("a", codificarValor(res, 1, true));
                 this.estBanderasOp("SBC", [res, op1, op2]);
                 return ["SBC", 4, 1, 1, [{
                     "tipo": TipoOpEns.REGISTRO,
@@ -2505,7 +2505,7 @@ class Plataforma {
                         op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true);
                         op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         res = op1+op2;
-                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                        this.escribirRegistro("a", codificarValor(res, 1, true));
                         this.estBanderasOp("ADD", [res, op1, op2]);
                         return ["ADD", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2522,7 +2522,7 @@ class Plataforma {
                         op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1+op2+(auxv1?1:0);
-                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                        this.escribirRegistro("a", codificarValor(res, 1, true));
                         this.estBanderasOp("ADC", [res, op1, op2]);
                         return ["ADC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2538,7 +2538,7 @@ class Plataforma {
                         op1 = decodificarValor([this.leerMemoria(dir1+auxd1)], 1, true, true);
                         op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         res = op1-op2;
-                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                        this.escribirRegistro("a", codificarValor(res, 1, true));
                         this.estBanderasOp("SUB", [res, op1, op2]);
                         return ["ADC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,
@@ -2555,7 +2555,7 @@ class Plataforma {
                         op2 = decodificarValor([this.leerRegistro("a")], 1, true, true);
                         auxv1 = this.leerBandera("cf");
                         res = op1-op2-(auxv1?1:0);
-                        this.escribirRegistro("a", codificarValor(res, 1, true, true));
+                        this.escribirRegistro("a", codificarValor(res, 1, true));
                         this.estBanderasOp("SBC", [res, op1, op2]);
                         return ["SBC", 19, 5, 3, [{
                             "tipo": TipoOpEns.REGISTRO,

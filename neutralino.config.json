@@ -15,9 +15,7 @@
   },
   "nativeAllowList": [
     "app.*",
-    "os.*",
     "filesystem.*",
-    "storage.*",
     "debug.log"
   ],
   "modes": {
@@ -30,7 +28,7 @@
       "fullScreen": false,
       "alwaysOnTop": false,
       "icon": "/public/icon.png",
-      "enableInspector": true,
+      "enableInspector": false,
       "borderless": false,
       "maximize": true,
       "hidden": false,

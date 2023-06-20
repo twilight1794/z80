@@ -195,6 +195,7 @@
     <string name="btn_restconfig">Restore defaults</string>
     <string name="r_cod">Code</string>
     <string name="r_mem">Memory</string>
+    <string name="tlb_memoriaacciones">Memory actions</string>
     <string name="r_mem_dir">Dir</string>
     <string name="r_mem_bytes">Bytes</string>
     <string name="r_mem_ascii">ASCII</string>

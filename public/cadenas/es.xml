@@ -195,6 +195,7 @@
     <string name="btn_restconfig">Restablecer valores</string>
     <string name="r_cod">Código</string>
     <string name="r_mem">Memoria</string>
+    <string name="tlb_memoriaacciones">Acciones sobre la memoria</string>
     <string name="r_mem_dir">Dir</string>
     <string name="r_mem_bytes">Bytes</string>
     <string name="r_mem_ascii">ASCII</string>

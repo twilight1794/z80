@@ -2,10 +2,10 @@
 
 [¡Ejecutar la aplicación web!](https://twilight1794.github.io/z80)
 
-- Emulador del microprocesador Zilog Z80
-- Creado para la clase de Estructura y Programación de Computadoras, del profesor [Alberto Templos Carbajal](https://www.fi-b.unam.mx/info-pa.php?depto=computacion&nombre=AlbertoTemplos)
-- Programa web, y también nativo, para ejecutarse sin conexión (para Windows y Linux)
-- Software libre, bajo la licencia GNU GPLv3 *([¿qué es esto de «libre»?](https://www.danielclemente.com/libera/sl.html))*
+- Emulador del microprocesador Zilog Z80.
+- Creado para la clase de Estructura y Programación de Computadoras, del profesor [Alberto Templos Carbajal](https://www.fi-b.unam.mx/info-pa.php?depto=computacion&nombre=AlbertoTemplos).
+- Programa web, y también nativo, para ejecutarse sin conexión (para Windows y Linux).
+- Software libre, bajo la licencia GNU GPLv3 *([¿qué es esto de «libre»?](https://www.danielclemente.com/libera/sl.html))*.
 
 ## Características
 
@@ -45,19 +45,22 @@ Para hacerlo desde un sistema Windows, el proceso debería ser similar, o tambi�
   - Santiago Rodríguez
   - Carlos Villaseñor
 - **Logotipo**:
-  - Creado por Santiago Rodríguez
-  - Tiene licencia GPLv3
+  - Creado por Santiago Rodríguez.
+  - Tiene licencia GPLv3.
 - **NeutralinoJS**:
-  - Usamos NeutralinoJS para generar los binarios para Windows y Linux
-  - Tiene licencia MIT
+  - Usamos NeutralinoJS para generar los binarios para Windows y Linux.
+  - Tiene licencia MIT.
 - **NSIS**:
-  - Usamos NSIS para generar los instaladores para Windows
-  - Tiene licencia zlib
+  - Usamos NSIS para generar los instaladores para Windows.
+  - Tiene licencia zlib.
+- Bibliotecas:
+  - **Notyf**: para enviar notificaciones y alertas al usuario. Tiene licencia MIT.
+  - **Hint.css**: para los tooltips en botones. Tiene licencia MIT.
 - **Tipografías**:
   - Predeterminadamente, usamos dos tipografías:
-  - *Carlito*: reemplazo libre de Calibri, para el texto base
-  - *Fira Code*: tipo monoespaciado con algunas ligaduras, para el código
-  - Ambas tipografías están bajo la licencia Open Font License
+  - *Carlito*: reemplazo libre de Calibri, para el texto base.
+  - *Fira Code*: tipo monoespaciado con algunas ligaduras, para el código.
+  - Ambas tipografías están bajo la licencia Open Font License.
 
 ## Recursos y otras peripecias
 

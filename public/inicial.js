@@ -303,7 +303,6 @@ function btnEnsamblar(){
         window.prog = new ProgramaAsm(a.textContent);
         plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
     } catch (e) {
-        //console.error(e);
         e.mostrar();
     }
 }
@@ -311,12 +310,12 @@ function btnEjecutar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
     const fin = Date.now() + parseFloat(localStorage.getItem("txtPlatTMEjec"))*1000;
-    plat.ejecutar(true, fin);
+    plat.ejecutar(fin);
 }
 function btnAvanzar(){
     if (!document.querySelector("#r-act [aria-current=page]")) 
         document.getElementById("btnMenuEjecucion").children[0].click();
-    plat.ejecutar(false);
+    plat.ejecutar();
 }
 function btnDetener(){
     plat.estEstado(Estado.LISTO);

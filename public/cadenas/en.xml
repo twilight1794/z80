@@ -172,7 +172,7 @@
     <string name="txt_extproj_d">Defines the extension to use when creating a new project file.</string>
     <string name="r_cfg_assembly">Assembly</string>
     <string name="txt_ensorg">Default load address</string>
-    <string name="txt_ensorg_d">Default memory address from which the assembled program will start loading. This value will be used unless specified otherwise in the source code using the ORG directive.</string>
+    <string name="txt_ensorg_d">Default memory address where the assembled program will start loading. This value will be used unless specified otherwise in the source code using the ORG directive.</string>
     <string name="txt_plattmens">Maximum assembly time</string>
     <string name="txt_plattmens_d">Defines the maximum time the system let run the assembly phase, in seconds.</string>
     <string name="r_cfg_platform">Platform</string>
@@ -185,8 +185,12 @@
     <string name="txt_platend">Default start address</string>
     <string name="txt_platend_d">Default memory address from which the assembled program will start executing. This value will be used unless specified otherwise in the source code using the END directive.</string>
     <string name="r_cfg_interface">Interface</string>
-    <string name="txt_inttipo">Typography</string>
-    <string name="txt_inttipo_d">Defines the typography to use within the program.</string>
+    <string name="sel_intdisp">Interface layout</string>
+    <string name="sel_intdisp_d">Defines the way the panels will be draw in the screen.</string>
+    <string name="sel_intdisp_normal">Normal</string>
+    <string name="sel_intdisp_amplio">Wide</string>
+    <string name="txt_inttipo">Font</string>
+    <string name="txt_inttipo_d">Defines the font to use within the program.</string>
     <string name="sel_intidioma">Language</string>
     <string name="sel_intidioma_d">Sets the program language.</string>
     <string name="sel_intidioma_s">System</string>

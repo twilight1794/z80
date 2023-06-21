@@ -1,5 +1,10 @@
 "use strict"
 
+/**
+ * Carga un archivo en el editor
+ *
+ * @param {*} e
+ */
 function cargarArchivoEditor(e) {
     if (!("aria-selected" in e.parentNode.getAttributeNames())){
         cambioCMI = true;
@@ -15,7 +20,7 @@ function cargarArchivoEditor(e) {
         else cmi.setValue(localStorage.getItem("archivo_"+e.textContent));
         cambioCMI = false;
         if (document.getElementById("chkIntTitulo").checked){
-            document.title = e.textContent + " | Emulador Z80";
+            document.title = e.textContent + " | "+_("nombre_app");
         }
     }
 }
@@ -70,8 +75,10 @@ class Proyecto {
         if (la) {
             localStorage.setItem("archivos", la + "/" + n);
             if (la.split("/").find((e) => e == n)) noti.error(_("err_archivo_existente"));
-        } else localStorage.setItem("archivos", n);
-        localStorage.setItem("archivo_"+n, c);
+        } else {
+            localStorage.setItem("archivos", n);
+            localStorage.setItem("archivo_"+n, c);
+        }
     }
     crearArchivo(nom){
         this.nuevoArchivo(nom, "");
@@ -113,7 +120,6 @@ class Proyecto {
     duplicarArchivo(nom, nom2){
         this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));
         this.anadirArchivo(nom2);
-        document.querySelector("#archivo_"+nom2+" button").click();
      }
     borrarArchivo(nom){
         let nodo = document.querySelector("#archivo_"+nom);
@@ -138,11 +144,17 @@ class Proyecto {
         localStorage.setItem("entrada", nom);
     }
     renombrarArchivo(nom, nom2){
-        let e = localStorage.getItem("entrada");
-        if (e == nom) localStorage.setItem("entrada", nom2);
-        this.nuevoArchivo(nom2, localStorage.getItem("archivo_"+nom));
-        this.anadirArchivo(nom2);
-        this.borrarArchivo(nom);
+        let l = localStorage.getItem("archivos");
+        if (l.split("/").find(e => e == nom2)) noti.error(_("err_archivo_existente"));
+        else {
+            localStorage.setItem("archivos", l.replace(nom, nom2));
+            let n = document.querySelector("#archivo_"+nom+" button");
+            n.textContent = nom2;
+            let e = localStorage.getItem("entrada");
+            if (e == nom) localStorage.setItem("entrada", nom2);
+            localStorage.setItem("archivo_"+nom2, localStorage.getItem("archivo_"+nom));
+            localStorage.removeItem("archivo_"+nom);
+        }
      }
 
     salvar(){}

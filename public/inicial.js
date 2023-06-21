@@ -91,6 +91,7 @@ window.funsConfig = {
         iniMem();
         document.getElementById("outMemTam").textContent = (document.getElementById("selPlatMem").selectedOptions[0]?.textContent || "1 KiB").split(" ").slice(0, -1).join(" ");
     },
+    selIntDisp: (v) => { document.body.dataset.disp = v; },
     txtIntTipo: (v) => { document.styleSheets[1].cssRules[1].style.setProperty("--txtIntTipo", v); },
     selIntIdioma: (v) => {
         if (v == "qaa") v = navigator.language.match(/[a-z]+/)[0]; // qaa -> Código para 'Sistema'

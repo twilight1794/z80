@@ -185,6 +185,10 @@
     <string name="txt_platend">Dirección de inicio predeterminada</string>
     <string name="txt_platend_d">Dirección de memoria predeterminada desde la cual se empezará a ejecutar el programa ensamblado. Se usará este valor, a menos de que se especifique otro en el código fuente, mediante la directiva END.</string>
     <string name="r_cfg_interfaz">Interfaz</string>
+    <string name="sel_intdisp">Disposición de interfaz</string>
+    <string name="sel_intdisp_d">Establece la forma en la que se acomodarán los paneles de la interfaz.</string>
+    <string name="sel_intdisp_normal">Normal</string>
+    <string name="sel_intdisp_amplio">Amplio</string>
     <string name="txt_inttipo">Tipografía</string>
     <string name="txt_inttipo_d">Define la tipografía a usar dentro del programa.</string>
     <string name="sel_intidioma">Idioma</string>

@@ -209,11 +209,15 @@ body {
 }
 main {
     display: grid;
-    grid-template-areas: "act cod cod cod pila reg" "act mem mem ay ay reg";
     flex-grow: 1;
-    grid-template-columns: auto auto auto 1fr auto auto;
+    grid-template-areas: "act cod mem pila reg" "act cod ay ay reg";
+    grid-template-columns: auto 1fr auto auto auto;
     grid-template-rows: 1fr minmax(auto, 20rem);
     overflow: hidden;
+}
+body[data-disp=dispAmplio] main {
+    grid-template-areas: "act cod cod pila reg" "act mem ay ay reg";
+    grid-template-columns: auto auto 1fr auto auto;
 }
 main>section:not(#r-act) {
     overflow: hidden;

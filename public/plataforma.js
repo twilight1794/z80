@@ -631,7 +631,7 @@ class Plataforma {
             case "RRA": // [l=bit7 r=bit0]
                 this.escribirBandera("hf", false);
                 this.escribirBandera("nf", false);
-                this.escribirBandera("cf", ops[0]);
+                this.escribirBandera("cf", ops[1]);
                 break;
             case "RLC":
             case "RL":
@@ -878,7 +878,7 @@ class Plataforma {
                 op1 = this.leerRegistro("a");
                 auxv1 = Plataforma.obtRLC(op1);
                 this.escribirRegistro("a", auxv1[0]);
-                this.estBanderasOp("RLCA", [auxv1]);
+                this.estBanderasOp("RLCA", auxv1);
                 return ["RLCA", 4, 1, 1, []];
             case 8:
                 this.escribirRegistro("pc", dir+1);
@@ -915,7 +915,7 @@ class Plataforma {
                 op1 = this.leerRegistro("a");
                 auxv1 = Plataforma.obtRRC(op1);
                 this.escribirRegistro("a", auxv1[0]);
-                this.estBanderasOp("RRCA", [auxv1]);
+                this.estBanderasOp("RRCA", auxv1);
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
                 //op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
@@ -951,7 +951,7 @@ class Plataforma {
                 op1 = this.leerRegistro("a");
                 auxv1 = Plataforma.obtRL(op1);
                 this.escribirRegistro("a", auxv1[0]);
-                this.estBanderasOp("RLA", [auxv1]);
+                this.estBanderasOp("RLA", auxv1);
                 return ["RLA", 4, 1, 1, []];
             case 0x18:
                 op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
@@ -977,7 +977,7 @@ class Plataforma {
                 op1 = this.leerRegistro("a");
                 auxv1 = Plataforma.obtRR(op1);
                 this.escribirRegistro("a", auxv1[0]);
-                this.estBanderasOp("RRA", [auxv1]);
+                this.estBanderasOp("RRA", auxv1);
                 return ["RRA", 4, 1, 1, []];
             case 0x20:
             case 0x28:
@@ -1838,7 +1838,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtRLC(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("RLC", [auxv1]);
+                        this.estBanderasOp("RLC", auxv1);
                         return ["RLC", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1849,7 +1849,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtRRC(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("RRC", [auxv1]);
+                        this.estBanderasOp("RRC", auxv1);
                         return ["RRC", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1860,7 +1860,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtRL(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("RL", [auxv1]);
+                        this.estBanderasOp("RL", auxv1);
                         return ["RL", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1871,7 +1871,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtRR(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("RR", [auxv1]);
+                        this.estBanderasOp("RR", auxv1);
                         return ["RR", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1882,7 +1882,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtSLA(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("SLA", [auxv1]);
+                        this.estBanderasOp("SLA", auxv1);
                         return ["SLA", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1893,7 +1893,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtSRA(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("SRA", [auxv1]);
+                        this.estBanderasOp("SRA", auxv1);
                         return ["SRA", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1904,7 +1904,7 @@ class Plataforma {
                         op1 = this.leerMemoria(dir1);
                         auxv1 = Plataforma.obtSRL(op1);
                         this.escribirMemoria(dir1, auxv1[0]);
-                        this.estBanderasOp("SRL", [auxv1]);
+                        this.estBanderasOp("SRL", auxv1);
                         return ["SRL", 15, 4, 2, [{
                             "tipo": TipoOpEns.DIRECCION_R,
                             "texto": "(HL)"
@@ -1915,7 +1915,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[cod]);
                         auxv1 = Plataforma.obtRLC(op1);
                         this.escribirRegistro(this.ValsR[cod], auxv1[0]);
-                        this.estBanderasOp("RLC", [auxv1]);
+                        this.estBanderasOp("RLC", auxv1);
                         return ["RLC", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[cod]
@@ -1927,7 +1927,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtRRC(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("RRC", [auxv1]);
+                        this.estBanderasOp("RRC", auxv1);
                         return ["RRC", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1939,7 +1939,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtRL(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("RL", [auxv1]);
+                        this.estBanderasOp("RL", auxv1);
                         return ["RL", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1951,7 +1951,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtRR(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("RR", [auxv1]);
+                        this.estBanderasOp("RR", auxv1);
                         return ["RR", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1963,7 +1963,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtSLA(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("SLA", [auxv1]);
+                        this.estBanderasOp("SLA", auxv1);
                         return ["SLA", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1975,7 +1975,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtSRA(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("SRA", [auxv1]);
+                        this.estBanderasOp("SRA", auxv1);
                         return ["SRA", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -1987,7 +1987,7 @@ class Plataforma {
                         op1 = this.leerRegistro(this.ValsR[dir1]);
                         auxv1 = Plataforma.obtSRL(op1);
                         this.escribirRegistro(this.ValsR[dir1], auxv1[0]);
-                        this.estBanderasOp("SRL", [auxv1]);
+                        this.estBanderasOp("SRL", auxv1);
                         return ["SRL", 8, 2, 2, [{
                             "tipo": TipoOpEns.REGISTRO,
                             "texto": this.ValsR[dir1]
@@ -2659,7 +2659,7 @@ class Plataforma {
                             case 6:
                                 auxv2 = Plataforma.obtRLC(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("RLC", [auxv2]);
+                                this.estBanderasOp("RLC", auxv2);
                                 return ["RLC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2667,7 +2667,7 @@ class Plataforma {
                             case 0x0E:
                                 auxv2 = Plataforma.obtRRC(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("RRC", [auxv2]);
+                                this.estBanderasOp("RRC", auxv2);
                                 return ["RRC", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2675,7 +2675,7 @@ class Plataforma {
                             case 0x16:
                                 auxv2 = Plataforma.obtRL(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("RL", [auxv2]);
+                                this.estBanderasOp("RL", auxv2);
                                 return ["RL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2683,7 +2683,7 @@ class Plataforma {
                             case 0x1E:
                                 auxv2 = Plataforma.obtRR(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("RR", [auxv2]);
+                                this.estBanderasOp("RR", auxv2);
                                 return ["RR", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2691,7 +2691,7 @@ class Plataforma {
                             case 0x26:
                                 auxv2 = Plataforma.obtSLA(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("SLA", [auxv2]);
+                                this.estBanderasOp("SLA", auxv2);
                                 return ["SLA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2699,7 +2699,7 @@ class Plataforma {
                             case 0x2E:
                                 auxv2 = Plataforma.obtSRA(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("SRA", [auxv2]);
+                                this.estBanderasOp("SRA", auxv2);
                                 return ["SRA", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"
@@ -2707,7 +2707,7 @@ class Plataforma {
                             case 0x3E:
                                 auxv2 = Plataforma.obtSRL(op1);
                                 this.escribirMemoria(dir1+auxv1, auxv2[0]);
-                                this.estBanderasOp("SRL", [auxv2]);
+                                this.estBanderasOp("SRL", auxv2);
                                 return ["SRL", 23, 6, 4, [{
                                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                                     "texto": "("+((codl[0] == 0xDD)?"IX":"IY")+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, auxd1)+")"

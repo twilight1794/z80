@@ -1,26 +1,11 @@
-/* 
-Requisitos para el programa que lee macros:
--Los  con nombres tienen que ser diferentes, y que el uno no esté incluido en el de otro.
--Solo se puede leer una macro por código.
--Tienen que tener el formato:
-  +De declaración: Prueba: MACRO #tres, #cuatro,
-                      LD A, cuatro
-                      LD B, tres
-                      LD A, cuatro
-                      LD C, tres
-                      MEND 
-  +De llamado: Prueba valor1, valor2,
-
-*/
-
 class Parametros{
     constructor(nombre, nombreSustituido){
         this.nombre;
         this.nombreSustituido;
     }
-}
+  }
   //macro.Parametro.nombre = tres
-class Macros{
+  class Macros{
     constructor(nombre, listaParametros, instrucciones){
         this.nombre;
         this.listaParametros = [];
@@ -28,10 +13,11 @@ class Macros{
   
     }
   }
-
+  
+  
   
   function buscarMacros(prueba){
-    //let regExMacro = /[a-zA-Z0-9]+[:][\s]*[MACRO][[\s#a-zA-Z0-9,.]+]*[MEND]/gm;
+    
     let regExMacro = /[a-zA-Z0-9]+[:][\s]*[MACRO]+[\s]*[(#)(\s#a-zA-Z0-9,.)]*[\n]*[[\s#a-zA-Z0-9,.]+]*[MEND]/gm;
     let m = [];
     let arregloMacros = [];
@@ -46,11 +32,6 @@ class Macros{
         }
         
         let bloqueMacros = new Macros();
-        //Lógica lista de objeto Parámetros dentro de un objeto Macro
-        /*let pruebaParam = new Parametros();
-        pruebaParam.nombre = "hola charlie";
-        pruebaParam.nombreSustituido = "hola kobeh";
-        bloqueMacros.listaParametros.push(pruebaParam);*/
         
     // The result can be accessed through the `m`-variable.
         m.forEach((match) => {bloqueMacros.instrucciones = match});
@@ -102,9 +83,7 @@ class Macros{
             param.nombre = param.nombre.replace("#", '');
             param.nombre = param.nombre.replace(",", '');
             arregloMacros[j].listaParametros.push(param);
-            /*console.log("#######");
-            console.log(paramTemp);
-            console.log("#######");*/
+            
             arregloMacros[j].instrucciones = arregloMacros[j].instrucciones.replace(paramTemp, '');
             
             
@@ -149,9 +128,7 @@ class Macros{
   
             pruebaParam = pruebaParam.replace(arregloMacros[k].nombre, '');
             pruebaParam.trim();
-            let macroPrueba = new Macros();
-            macroPrueba = arregloMacros[k];
-            
+            let macroPrueba = Object.assign({}, arregloMacros[k]);
             
             //Se asignan los parámetros llamados que se sustituirán en los parámetros de la macro
             for(let o = 0; o < arregloMacros[k].listaParametros.length; o++){
@@ -166,33 +143,18 @@ class Macros{
                 
                 pruebaParam = pruebaParam.slice(coma + 1);
                 macroPrueba.instrucciones = macroPrueba.instrucciones.replaceAll(macroPrueba.listaParametros[o].nombre, macroPrueba.listaParametros[o].nombreSustituido);
-                //prueba = prueba.replace(sustituyendoParams, macroPrueba.instrucciones);
-                //console.log(prueba);
+                
   
     
             }
             prueba = prueba.replace(sustituyendoParams, macroPrueba.instrucciones);
-            //console.log(prueba);
-           
-  
-            //Sustituir en la cadena principal la macro con parámetros actual
-            /*for(let c = 0; c < arregloMacros[k].listaParametros.length; c++){
-                //Para cada uno 
-            }*/
             
-           
         }
         
         
        
   
     }
-    //console.log(prueba);
-    /*let pruebaListaParam = new Parametros();
-        pruebaListaParam = arregloMacros[0].listaParametros;
-        for(w = 0; w < arregloMacros[0].listaParametros.length; w++){
-             console.log(arregloMacros[w].listaParametros);
-        }
-       */
+    
    return prueba; 
 }

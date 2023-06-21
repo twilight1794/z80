@@ -1647,7 +1647,7 @@ class ProgramaAsm {
             // Comprobar si hay argumentos después de mnemotécnico o directiva
             try {
                 if (l.length && !this.#r_com.test(l)) obj.ops = this.analOps(l);
-            } catch (e) {
+            } catch (e){
                 e.obj = obj;
                 throw e;
             }

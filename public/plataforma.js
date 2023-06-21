@@ -361,6 +361,7 @@ class Plataforma {
      * @memberof Plataforma
      */
     escribirRegistro(reg, val){
+        if (val instanceof Array) val = decodificarValor(val, val.length, true, false);
         reg = reg.toLowerCase();
         switch(reg){
             case "a":
@@ -500,7 +501,6 @@ class Plataforma {
      * @memberof Plataforma
      */
     estBanderasOp(mnemo, ops){
-        console.log(JSON.stringify(ops));
         let x1, x2;
         switch (mnemo){
             case "LD": // [I | R]
@@ -581,9 +581,6 @@ class Plataforma {
                 this.escribirBandera("hf", (ops[0] == 15));
                 this.escribirBandera("pf", (ops[0] == 0x7f));
                 this.escribirBandera("nf", true);
-                break;
-            case "DAA":
-                // TODO: Implementar
                 break;
             case "CPL":
                 this.escribirBandera("hf", true);
@@ -1016,7 +1013,45 @@ class Plataforma {
                     "texto": "HL"
                 }]];
             case 0x27:
-                // TODO: Regresar
+                this.escribirRegistro("pc", dir+1);
+                op1 = this.leerRegistro("a");
+                let d = [
+                    this.leerBandera("cf"),
+                    this.leerBandera("nf"),
+                    this.leerBandera("hf"),
+                ];
+                auxv1 = (op1&0xf0)>>4;
+                auxv2 = (op1&0x0f);
+
+                // Obtener dif
+                if (!d[0] && !d[2] && auxv1<10 && auxv2<10) res = 0;
+                else if (
+                    (!d[0] && d[2] && auxv1<10 && auxv2<10) ||
+                    (!d[0] && auxv1<9 && auxv2>9 && auxv2<0x10)
+                ) res = 6;
+                else if (
+                    (!d[0] && !d[2] && auxv1>9 && auxv1<0x10 && auxv1<10) ||
+                    (d[0] && !d[2] && auxv2<10)
+                ) res = 0x60;
+                else if (
+                    (d[0] && d[2]  && auxv2<10) ||
+                    (d[0] && auxv2>9 && auxv2<0x10) ||
+                    (!d[0] && auxv1>8 && auxv1<0x10 && auxv2>9 && auxv2<0x10) ||
+                    (!d[0] && d[2] && auxv1>9 && auxv1<0x10 && auxv2<10)
+                ) res = 0x66;
+                else res = 0;
+                // Modificar CF
+                if (d[0]){
+                    if (
+                        (auxv1>8 && auxv1<0x10 && auxv2>9 && auxv2<0x10) ||
+                        (auxv1>9 && auxv1<0x10 && auxv2<10)
+                    ) this.escribirBandera("cf", true);
+                }
+                // Modificar HF
+                if (!d[1] && auxv2<10) this.escribirBandera("hf", false);
+                else if (!d[1] && auxv2>9 && auxv2<0x10) this.escribirBandera("hf", true);
+                else if (d[1] && d[2]) this.escribirBandera("hf", (auxv2<6));
+                this.escribirRegistro("a", op1+res);
                 return ["DAA", 4, 1, 1, []];
             case 0x2a:
                 this.escribirRegistro("pc", dir+3);
@@ -2881,8 +2916,8 @@ class Plataforma {
                 if (fin && Date.now() > fin) throw new BucleInfinitoError();
                 inst = this.ejecutarInstruccion();
             } catch (e){
-                console.error(e);
-                e.mostrar();
+                if ("mostrar" in e) e.mostrar();
+                else console.error(e);
                 throw e;
             }
             /* Datos principales */

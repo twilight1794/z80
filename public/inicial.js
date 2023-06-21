@@ -303,7 +303,8 @@ function btnEnsamblar(){
         window.prog = new ProgramaAsm(a.textContent);
         plat.escribirLog(TipoLog.INFO, _("msg_ensamblado_finalizado"));
     } catch (e) {
-        e.mostrar();
+        if ("mostrar" in e) e.mostrar();
+        else console.error(e);
     }
 }
 function btnEjecutar(){

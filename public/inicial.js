@@ -657,7 +657,7 @@ function estConfig(p, v){
         let f = funsConfig[p];
         if (f) f(val);
     } catch (e) {}
-    salvarConfig();
+    //salvarConfig();
 }
 
 function estConfigIni(d){
@@ -821,7 +821,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         btnSalir.innerHTML = "<button id=\"btnSalir\" role=\"menuitem\"><span>"+_("btn_salir")+"</span></button>";
         document.querySelector("#menuBarra>ul>li>ul").appendChild(btnSalir);
         btnSalir.addEventListener("click", async () => {
-            await salvarConfig();
+            //await salvarConfig();
             Neutralino.app.exit();
         });
     }

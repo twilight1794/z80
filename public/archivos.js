@@ -73,8 +73,9 @@ class Proyecto {
     nuevoArchivo(n, c){
         let la = localStorage.getItem("archivos");
         if (la) {
-            localStorage.setItem("archivos", la + "/" + n);
             if (la.split("/").find((e) => e == n)) noti.error(_("err_archivo_existente"));
+            localStorage.setItem("archivos", la + "/" + n);
+            localStorage.setItem("archivo_"+n, c);
         } else {
             localStorage.setItem("archivos", n);
             localStorage.setItem("archivo_"+n, c);

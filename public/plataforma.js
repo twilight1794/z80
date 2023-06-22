@@ -227,7 +227,7 @@ class Plataforma {
      */
     cargarArchivoEnsamblador(nom){
         let t = localStorage.getItem("archivo_"+nom) || "";
-        t = buscarMacros(t);
+        //t = buscarMacros(t);
         return t.split("\n");
     }
 
@@ -361,7 +361,10 @@ class Plataforma {
      * @memberof Plataforma
      */
     escribirRegistro(reg, val){
-        if (val instanceof Array) val = decodificarValor(val, val.length, true, false);
+        if (val instanceof Array){
+            console.log("Array!")
+            val = decodificarValor(val, val.length, true, false);
+        }
         reg = reg.toLowerCase();
         switch(reg){
             case "a":
@@ -380,14 +383,14 @@ class Plataforma {
             case "ex":
             case "hx":
             case "lx":
-                if (val > 255) throw new ValorTamanoError(val, 1);
+                if (val > 255) throw new ValorTamanoError(2);
                 document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase().padStart(2, "0");
                 break;
             case "ix":
             case "iy":
             case "sp":
             case "pc":
-                if (val > 65535) throw new ValorTamanoError(val, 1);
+                if (val > 65535) throw new ValorTamanoError(2);
                 document.getElementById("v-"+reg).textContent = val.toString(16).toUpperCase().padStart(4,"0");
                 break;
             case "bc":
@@ -396,14 +399,15 @@ class Plataforma {
             case "bcx":
             case "dex":
             case "hlx":
-                if (val > 65535) throw new ValorTamanoError(val, 1);
+                if (val > 65535) throw new ValorTamanoError(2);
                 let va = val.toString(16).padStart(4,"0").substring(0,2);
                 let vb = val.toString(16).padStart(4,"0").substring(2,4);
-                document.getElementById("v-"+reg[0]+((reg.length == 3)?"x":"")).textContent = vb;
-                document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent = va;
+                document.getElementById("v-"+reg[0]+((reg.length == 3)?"x":"")).textContent = va;
+                document.getElementById("v-"+reg[1]+((reg.length == 3)?"x":"")).textContent = vb;
+                break;
             case "f":
             case "fx":
-                if (val > 255) throw new ValorTamanoError(val, 1);
+                if (val > 255) throw new ValorTamanoError(1);
                 Array.from(val.toString(2).padStart(8, "0")).forEach((e, i) => {
                     let it = document.querySelector("#r-f tr:nth-child("+(i+2)+") td:nth-child("+((reg=="f")?2:4)+")");
                     if (e=="1") it.classList.add("activo");
@@ -911,26 +915,25 @@ class Plataforma {
                 }]];
             case 0xf:
                 this.escribirRegistro("pc", dir+1);
-                
                 op1 = this.leerRegistro("a");
                 auxv1 = Plataforma.obtRRC(op1);
                 this.escribirRegistro("a", auxv1[0]);
                 this.estBanderasOp("RRCA", auxv1);
                 return ["RRCA", 4, 1, 1, []];
             case 0x10:
-                //op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
-                op1 = this.leerMemoria(dir+1);
+                op1 = decodificarValor([this.leerMemoria(dir+1)], 1, true, true);
                 auxv1 = this.leerRegistro("b");
-                if (auxv1>0){
-                    this.escribirRegistro("b", auxv1-1);
+                this.escribirRegistro("b", auxv1-1);
+                if (auxv1-1>0){
                     this.escribirRegistro("pc", dir + op1 + 2);
                     tt = 13;
                     tm = 3;
                 } else {
+                    this.escribirRegistro("pc", dir+2);
                     tt = 8;
                     tm = 2;
                 }
-                return ["DJNZ", tt, tm, [{
+                return ["DJNZ", tt, tm, 2, [{
                     "tipo": TipoOpEns.DESPLAZAMIENTO,
                     "texto": this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1+2)
                 }]];
@@ -1062,7 +1065,7 @@ class Plataforma {
                     "texto": "HL"
                 }, {
                     "tipo": TipoOpEns.DIRECCION,
-                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir1)
+                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, dir2)
                 }]];
             case 0x2f:
                 this.escribirRegistro("pc", dir+1);
@@ -1128,8 +1131,8 @@ class Plataforma {
                 dir2 = this.leerRegistro("hl");
                 op2 = this.escribirMemoria(dir2, op1);
                 return ["LD", 10, 3, 2, [{
-                    "tipo": TipoOpEns.DESPLAZAMIENTO,
-                    "texto": "(HL"+this.imprimirValor(TipoOpEns.DESPLAZAMIENTO, op1)+")"
+                    "tipo": TipoOpEns.DIRECCION_R,
+                    "texto": "(HL)"
                 }, {
                     "tipo": TipoOpEns.NUMERO,
                     "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
@@ -1501,6 +1504,7 @@ class Plataforma {
             /* Compuestos */
             /** 00dd0001 **/
             case 1: case 17: case 33: case 49:
+                this.escribirRegistro("pc", dir+3);
                 dir1 = (cod-1)>>4;
                 op2 = this.leerPalabra(dir+1);
                 this.escribirRegistro(this.ValsSS[dir1], op2);
@@ -1508,8 +1512,8 @@ class Plataforma {
                     "tipo": TipoOpEns.REGISTRO,
                     "texto": this.ValsSS[dir1]
                 }, {
-                    "tipo": TipoOpEns.DIRECCION,
-                    "texto": this.imprimirValor(TipoOpEns.DIRECCION, op2)
+                    "tipo": TipoOpEns.NUMERO,
+                    "texto": this.imprimirValor(TipoOpEns.NUMERO, op2)
                 }]];
             /** 00rrr100 **/
             case 4: case 12: case 20: case 28: case 36: case 44: case 60:
@@ -1558,12 +1562,12 @@ class Plataforma {
                 }]];
             /** 00ss1001 **/
             case 9: case 25: case 41: case 57:
-                this.escribirRegistro("pc", dir+2);
+                this.escribirRegistro("pc", dir+1);
                 dir2 = (cod-3)>>4;
                 op1 = this.leerRegistro("hl");
                 op2 = this.leerRegistro(this.ValsSS[dir2]);
-                res =  op1+op2;
-                this.escribirRegistro(this.ValsSS[dir2], res);
+                res = op1+op2;
+                this.escribirRegistro("hl", res);
                 this.estBanderasOp("ADD", [res, op1, op2]);
                 return ["ADD", 11, 3, 1, [{
                     "tipo": TipoOpEns.REGISTRO_PAR,
@@ -1798,6 +1802,7 @@ class Plataforma {
                 }]];
             /** 11qq0001 **/
             case 193: case 209: case 225: case 241:
+                this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-193)>>4;
                 op1 = this.leerPila();
                 this.retirarPila();
@@ -1808,6 +1813,7 @@ class Plataforma {
                 }]];
             /** 11qq0101 **/
             case 197: case 213: case 229: case 245:
+                this.escribirRegistro("pc", dir+1);
                 dir1 = (cod-197)>>4;
                 op1 = this.leerRegistro(this.ValsQQ[dir1]);
                 this.insertarPila(op1);

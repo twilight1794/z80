@@ -49,6 +49,7 @@
     <string name="btn_macros">Macros...</string>
     <string name="menubar_principal_ayuda">Ayuda</string>
     <string name="btn_manual">Manual de usuario</string>
+    <string name="lnk_manuallinea">Manual en línea...</string>
     <string name="lnk_incidencias">Informar sobre un problema</string>
     <string name="lnk_repositorio">Repositorio</string>
     <string name="btn_comprobaracts">Buscar actualizaciones...</string>

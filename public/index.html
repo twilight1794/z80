@@ -4,7 +4,7 @@
     <head>
         <title>$nombre_app</title>
         <meta name="versionNumero" content="1.0.0.0" />
-        <meta name="versionFecha" content="lun 19 jun 2023 13:43:27 UTC" />
+        <meta name="versionFecha" content="jue 22 jun 2023 18:09:41 UTC" />
         <link rel="stylesheet" type="text/css" href="iconos.css" />
         <link rel="stylesheet" type="text/css" href="estilos.css" />
         <link rel="stylesheet" type="text/css" href="hint.min.css" />
@@ -215,7 +215,8 @@
                 </li>
                 <li aria-selected="false"><span>$menubar_principal_ayuda</span>
                     <ul>
-                        <li><button role="menuitem" id="btnManual">$btn_manual <kbd>M-a a</kbd></button></li>
+                        <li style="display: none;"><button role="menuitem" id="btnManual">$btn_manual <kbd>M-a a</kbd></button></li>
+                        <li><a role="menuitem" target="_blank" id="lnk_manuallinea" href="https://github.com/twilight1794/z80/blob/main/doc/usuario.es.adoc">$lnk_manuallinea</a></li>
                         <li><a role="menuitem" target="_blank" id="lnk_incidencias" href="https://github.com/twilight1794/z80/issues">$lnk_incidencias <kbd>M-a p</kbd></a></li>
                         <li><a role="menuitem" target="_blank" id="lnk_repositorio" href="https://github.com/twilight1794/z80">$lnk_repositorio <kbd>M-a r</kbd></a></li>
                         <li><button role="menuitem" id="btnComprobarActs">$btn_comprobaracts <kbd>M-a m</kbd></button></li>
@@ -229,12 +230,12 @@
             <section id="r-act">
                 <nav id="menuActividades" role="tablist" aria-orientation="vertical" aria-label="Actividades">
                     <button role="tab" aria-controls="r-exp" id="btnMenuExplorador"><span>$btn_menuexplorador</span></button>
-                    <button role="tab" aria-controls="r-byr" id="btnMenuBuscar"><span>$btn_menubuscar</span></button>
+                    <button style="display: none;" role="tab" aria-controls="r-byr" id="btnMenuBuscar"><span>$btn_menubuscar</span></button>
                     <button role="tab" aria-controls="r-eje" id="btnMenuEjecucion"><span>$btn_menuejecucion</span></button>
                     <button role="tab" aria-controls="r-msg" id="btnMenuMensajes"><span>$btn_menumensajes</span></button>
                     <button role="tab" aria-controls="r-eti" id="btnMenuEtiquetas"><span>$btn_menuetiquetas</span></button>
                     <button style="display: none;" role="tab" aria-controls="r-mac" id="btnMenuMacros"><span>$btn_menumacros</span></button>
-                    <button role="tab" aria-controls="r-man" id="btnMenuManual"><span>$btn_menumanual</span></button>
+                    <button style="display: none;" role="tab" aria-controls="r-man" id="btnMenuManual"><span>$btn_menumanual</span></button>
                     <button role="tab" aria-controls="r-cfg" id="btnMenuConfig"><span>$btn_menuconfig</span></button>
                 </nav>
                 <section role="tabpanel" id="r-exp">

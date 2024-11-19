@@ -371,7 +371,7 @@ class ProgramaAsm {
                 if (v.registro != "bc") throw new NoEsTipoExcepcion();
                 break;
             case TipoParam.DDE:
-                if (v.tipo != TipoVal.REGISTRO) throw new NoEsTipoExcepcion();
+                if (v.tipo != TipoVal.DESPLAZAMIENTO) throw new NoEsTipoExcepcion();
                 if (v.valor != 0) throw new NoEsTipoExcepcion();
                 if (v.registro != "de") throw new NoEsTipoExcepcion();
                 break;
@@ -893,7 +893,7 @@ class ProgramaAsm {
                             break;
                         } catch {}
                         try {
-                            this.esTipo(TipoParam.RR, lop[1]);
+                            this.esTipo(TipoParam.RRR, lop[1]);
                             bytes.push(0xed, 0x5f);
                             break;
                         } catch {}
@@ -2171,7 +2171,7 @@ class ProgramaAsm {
                         });
                         else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                         break;
-                }
+                }/*z
             } else if (sim.tipo == TipoVal.DESPLAZAMIENTO_CI){
                 op1 = simsp.pop();
                 op2 = simsp.pop();
@@ -2180,6 +2180,19 @@ class ProgramaAsm {
                     else if (op2.tipo == TipoVal.DESPLAZAMIENTO) op2.valor = op1.valor*((op2.sentido)?1:-1);
                     else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
                     simsp.push(op2);
+                } else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix*/
+            } else if (sim.tipo == TipoVal.DESPLAZAMIENTO_CI){
+                op1 = simsp.pop();
+                if (op1.tipo == TipoVal.NUMERO){
+                    op2 = simsp.pop();
+                    if (op1 && op2){
+                        if (op2.tipo == TipoVal.DIRECCION) op2.valor = op1.valor;
+                        else if (op2.tipo == TipoVal.DESPLAZAMIENTO) op2.valor = op1.valor*((op2.sentido)?1:-1);
+                        else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
+                        simsp.push(op2);
+                    } else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
+                } else if (op1.tipo == TipoVal.DESPLAZAMIENTO){
+                    simsp.push(op1);
                 } else throw new TipoParametrosIncorrectoError("fix"); // FIX: fix
             } else if (sim.tipo == TipoVal.ETIQUETA){
                 op1 = plat.obtenerEtiqueta((this.caseRelevante)?sim.nombre:sim.nombre.toUpperCase());

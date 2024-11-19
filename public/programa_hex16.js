@@ -306,7 +306,7 @@ class programHex {
                         this.asmCode.push("IM 2");
                         this.removeNumBytes(1, bytes);
                         break;
-                        //LD A, I
+                    //LD A, I
                     case /^57$/.test(bytes[0]):
                         this.hexCode.push("ED57");
                         this.asmCode.push("LD A,I");
@@ -385,7 +385,7 @@ class programHex {
                         this.removeNumBytes(1,bytes);
                         break;
                     // ADC HL,ss
-                    case /^[4567]A$/.test(bytes[0]):                                         
+                    case /^[4567]A$/.test(bytes[0]):
                         this.hexCode.push(`${moreSignificant}${bytes[0]}`);
                         this.asmCode.push(`ADC HL,${this.getOperand(bytes[0],[2,4],this.ValSS)}`);
                         this.removeNumBytes(1,bytes);
@@ -519,14 +519,14 @@ class programHex {
                         this.hexCode.push(`${moreSignificant}${bytes[0]}`);
                         this.asmCode.push(`SET ${this.getOperand(bytes[0],[2,5],this.ValB)},${this.getOperand(bytes[0],[5,8],this.ValR)}`)
                         this.removeNumBytes(1, bytes);
-                        break;  
+                        break;
                     // BIT b,r
                     case (parseInt(bytes[0],16) >= 64 && parseInt(bytes[0],16) <= 127):
                         this.hexCode.push(`${moreSignificant}${bytes[0]}`);
                         this.asmCode.push(`BIT ${this.getOperand(bytes[0],[2,5],this.ValB)},${this.getOperand(bytes[0],[5,8],this.ValR)}`)
                         this.removeNumBytes(1,bytes);
                         break;
-                    //RL r               
+                    //RL r
                     case (parseInt(bytes[0],16)>= 16 && parseInt(bytes[0],16)<=23):
                         this.hexCode.push(`${moreSignificant}${bytes[0]}`);
                         this.asmCode.push(`RL ${this.getOperand(bytes[0],[5,8],this.ValR)}`)
@@ -571,7 +571,7 @@ class programHex {
                     default:
                         console.log("NO EXISTE LA INSTRUCCIÓN");
                         break;
-                }                
+                }
                 break;
             // CP r
             case /^B[89ABCDEF]$/.test(moreSignificant):

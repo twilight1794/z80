@@ -506,7 +506,7 @@ table {
 }
 th, td {
     padding: .25rem;
-    border: 1px solid var(--f-a);
+    border: 1px solid var(--h-a);
 }
 :is(tbody:first-child, thead) tr:first-child :is(th, td) { border-top: none; }
 tr>:first-child { border-left: none; }

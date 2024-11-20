@@ -481,6 +481,11 @@ class ProgramaAsm {
                         break;
                     } catch {}
                     try {
+                        this.esTipo(TipoParam.HL, lop[0]);
+                        bytes.push(0x86);
+                        break;
+                    } catch {}
+                    try {
                         this.esTipo(TipoParam.N, lop[0]);
                         bytes.push(198, ...codificarValor(lop[0].valor, 1, true));
                         break;
@@ -1236,6 +1241,10 @@ class ProgramaAsm {
                 if (lop.length == 1){
                     try {
                         this.esTipo(TipoParam.R, lop[0][0]);
+                        return 1;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.HL, lop[0][0]);
                         return 1;
                     } catch {}
                     try {

@@ -872,6 +872,11 @@ class ProgramaAsm {
                 try {
                     this.esTipo(TipoParam.R, lop[0]);
                     try {
+                        this.esTipo(TipoParam.HL, lop[1]);
+                        bytes.push(70+(this.ValsR[lop[0].valor]<<3));
+                        break;
+                    } catch {}
+                    try {
                         this.esTipo(TipoParam.IX, lop[1]);
                         bytes.push(0xdd, 70+(this.ValsR[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 1, true));
                         break;
@@ -1000,6 +1005,23 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.RA, lop[0]);
                     bytes.push(0x12);
                     break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    console.log("Lirio1");
+                    try {
+                        this.esTipo(TipoParam.R, lop[1]);
+                        console.log("Lirio2");
+                        bytes.push(112 + (this.ValsR[lop[1].valor]));
+                        break;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1]);
+                        console.log("Lirio3");
+                        bytes.push(0x36, ...codificarValor(lop[1].valor, 1, true));
+                        break;
+                    } catch {}
+                    throw new TipoParametrosIncorrectoerror(ins);
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
             case "ldd":
@@ -1457,6 +1479,10 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.R, lop[0][0]);
+                    try {
+                        this.esTipo(TipoParam.HL, lop[1][0]);
+                        return 1;
+                    } catch {};
                     try { // R, (HL) -> 1, (HL), R -> 1, (HL), n -> 2, HL, (nn) -> 3
                         this.esTipo(TipoParam.IX, lop[1][0]);
                         return 3;
@@ -1535,6 +1561,21 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.DDE, lop[0][0]);
                     this.esTipo(TipoParam.RA, lop[0][0]);
                     return 1;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0][0]);
+                    console.log("Azucen1");
+                    try {
+                        this.esTipo(TipoParam.R, lop[1][0]);
+                        console.log("Azucena2");
+                        return 1;
+                    } catch {}
+                    try {
+                        this.esTipo(TipoParam.N, lop[1][0]);
+                        console.log("Azucena3");
+                        return 2;
+                    } catch {}
+                    throw new TipoParametrosIncorrectoerror(ins);
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
             case "ldd": return 2;

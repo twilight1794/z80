@@ -1107,8 +1107,27 @@ class ProgramaAsm {
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
             case "res":
-                bytes = this.#obtCodigoOp("set", lop);
-                bytes[3] = bytes[3]+64;
+                bytes = this.#obtCodigoOp("bit", lop);
+                try {
+                    this.esTipo(TipoParam.HL, lop[1]);
+                    bytes[1] = bytes[1]+64;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.R, lop[1]);
+                    bytes[1] = bytes[1]+64;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[1]);
+                    bytes[3] = bytes[3]+64;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[1]);
+                    bytes[3] = bytes[3]+64;
+                    break;
+                } catch {}
                 break;
             case "ret":
                 if (lop.length == 0) bytes.push(0xc9);
@@ -1262,8 +1281,27 @@ class ProgramaAsm {
                 bytes.push(0x37);
                 break;
             case "set":
-                bytes = this.#obtCodigoOp("set", lop);
-                bytes[3] = bytes[3]+128;
+                bytes = this.#obtCodigoOp("bit", lop);
+                try {
+                    this.esTipo(TipoParam.HL, lop[1]);
+                    bytes[1] = bytes[1]+128;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.R, lop[1]);
+                    bytes[1] = bytes[1]+128;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[1]);
+                    bytes[3] = bytes[3]+128;
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[1]);
+                    bytes[3] = bytes[3]+128;
+                    break;
+                } catch {}
                 break;
             case "sla":
                 bytes = this.#obtCodigoOp("rlc", lop);
@@ -1736,7 +1774,7 @@ class ProgramaAsm {
                     return 1;
                 } catch { return 2; } // RIX, RIY
             case "res":
-                return this.#obtCodigoTam("set", lop);
+                return this.#obtCodigoTam("bit", lop);
             case "ret":
                 if (!lop) return 1;
                 else if (lop.length == 1) return 2; // CC
@@ -1771,7 +1809,7 @@ class ProgramaAsm {
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop.length);
             case "scf": return 1;
             case "set":
-                return this.#obtCodigoTam("set", lop);
+                return this.#obtCodigoTam("bit", lop);
             case "sla": return this.#obtCodigoTam("rlc", lop);
             case "sra": return this.#obtCodigoTam("rlc", lop);
             case "srl": return this.#obtCodigoTam("rlc", lop);

@@ -1126,7 +1126,26 @@ class ProgramaAsm {
                 break;
             case "rl":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(2<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(2<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(2<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(2<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(2<<3);
+                    break;
+                } catch {}
                 break;
             case "rla":
                 bytes.push(0x17);
@@ -1162,14 +1181,52 @@ class ProgramaAsm {
                 break;
             case "rr":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(3<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(3<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(3<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(3<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(3<<3);
+                    break;
+                } catch {}
                 break;
             case "rra":
                 bytes.push(0x1f);
                 break;
             case "rrc":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(1<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(1<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(1<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(1<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(1<<3);
+                    break;
+                } catch {}
                 break;
             case "rrca":
                 bytes.push(0x0f);
@@ -1210,15 +1267,72 @@ class ProgramaAsm {
                 break;
             case "sla":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(4<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(4<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(4<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(4<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(4<<3);
+                    break;
+                } catch {}
                 break;
             case "sra":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(5<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(5<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(5<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(5<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(5<<3);
+                    break;
+                } catch {}
                 break;
             case "srl":
                 bytes = this.#obtCodigoOp("rlc", lop);
-                bytes[3] = bytes[3]+(7<<3);
+                try {
+                    this.esTipo(TipoParam.R, lop[0]);
+                    bytes[1] = bytes[1]+(7<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.HL, lop[0]);
+                    bytes[1] = bytes[1]+(7<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IX, lop[0]);
+                    bytes[3] = bytes[3]+(7<<3);
+                    break;
+                } catch {}
+                try {
+                    this.esTipo(TipoParam.IY, lop[0]);
+                    bytes[3] = bytes[3]+(7<<3);
+                    break;
+                } catch {}
                 break;
             case "sub":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);

@@ -677,7 +677,7 @@ class ProgramaAsm {
             case "im":
                 bytes.push(0xed);
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                if (lop[0].tipo != TipoVal.Numero) throw new TipoParametrosIncorrectoError(ins,);
+                if (lop[0].tipo != TipoVal.Numero) throw new TipoParametrosIncorrectoError(ins);
                 switch (lop[0].valor){
                     case 0: bytes.push(0x46); break;
                     case 1: bytes.push(0x56); break;
@@ -984,44 +984,41 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RI, lop[0]);
-                    this.esTipo(TipoParam.RA, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[1]);
                     bytes.push(0xed, 0x47);
                     break;
                 } catch {}
                 try {
-                    this.esTipo(TipoParam.RR, lop[0]);
-                    this.esTipo(TipoParam.RA, lop[0]);
+                    this.esTipo(TipoParam.RRR, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[1]);
                     bytes.push(0xed, 0x4f);
                     break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.DBC, lop[0]);
-                    this.esTipo(TipoParam.RA, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[1]);
                     bytes.push(0x02);
                     break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.DDE, lop[0]);
-                    this.esTipo(TipoParam.RA, lop[0]);
+                    this.esTipo(TipoParam.RA, lop[1]);
                     bytes.push(0x12);
                     break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.HL, lop[0]);
-                    console.log("Lirio1");
                     try {
                         this.esTipo(TipoParam.R, lop[1]);
-                        console.log("Lirio2");
                         bytes.push(112 + (this.ValsR[lop[1].valor]));
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        console.log("Lirio3");
                         bytes.push(0x36, ...codificarValor(lop[1].valor, 1, true));
                         break;
                     } catch {}
-                    throw new TipoParametrosIncorrectoerror(ins);
+                    throw new TipoParametrosIncorrectoError(ins);
                 } catch {}
                 throw new TipoParametrosIncorrectoError(ins);
             case "ldd":
@@ -1505,7 +1502,7 @@ class ProgramaAsm {
                             return 2;
                         } catch {}
                         try {
-                            this.esTipo(TipoParam.RR, lop[1][0]);
+                            this.esTipo(TipoParam.RRR, lop[1][0]);
                             return 2;
                         } catch {}
                         try {
@@ -1548,7 +1545,7 @@ class ProgramaAsm {
                     return 2;
                 } catch {}
                 try {
-                    this.esTipo(TipoParam.RR, lop[0][0]);
+                    this.esTipo(TipoParam.RRR, lop[0][0]);
                     this.esTipo(TipoParam.RA, lop[1][0]);
                     return 2;
                 } catch {}
@@ -1559,20 +1556,17 @@ class ProgramaAsm {
                 } catch {}
                 try {
                     this.esTipo(TipoParam.DDE, lop[0][0]);
-                    this.esTipo(TipoParam.RA, lop[0][0]);
+                    this.esTipo(TipoParam.RA, lop[1][0]);
                     return 1;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.HL, lop[0][0]);
-                    console.log("Azucen1");
                     try {
                         this.esTipo(TipoParam.R, lop[1][0]);
-                        console.log("Azucena2");
                         return 1;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1][0]);
-                        console.log("Azucena3");
                         return 2;
                     } catch {}
                     throw new TipoParametrosIncorrectoerror(ins);

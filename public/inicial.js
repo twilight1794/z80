@@ -769,9 +769,11 @@ function mostrarDialogo(id, params, fun, evs){
         }
         pie.appendChild(btn);
     }
+    document.body.appendChild(dlg);
+    dlg.showModal();
     if (evs)
         for (let r of evs)
-            document.getElementById(r[0]).addEventListener(r[1], r[2]);
+            document.querySelector(`dialog[open] #${r[0]}`).addEventListener(r[1], r[2]);
     dlg.children[0].appendChild(pie);
     if (fun) dlg.addEventListener("close", () => {
         let ret = { "@": dlg.returnValue };
@@ -780,8 +782,6 @@ function mostrarDialogo(id, params, fun, evs){
         });
         fun(ret);
     });
-    document.body.appendChild(dlg);
-    dlg.showModal();
 }
 
 window.addEventListener("DOMContentLoaded", async () => {

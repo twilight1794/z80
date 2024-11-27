@@ -749,19 +749,19 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.HL, lop[0]);
-                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
+                        if (lop[0].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xe9);
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IX, lop[0]);
-                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
+                        if (lop[0].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xdd, 0xe9);
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.IY, lop[0]);
-                        if (lop[1].valor != 0) throw new DesplazamientoNoAdmitidoError();
+                        if (lop[0].valor != 0) throw new DesplazamientoNoAdmitidoError();
                         bytes.push(0xfd, 0xe9);
                         break;
                     } catch {}

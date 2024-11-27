@@ -677,13 +677,14 @@ class ProgramaAsm {
             case "im":
                 bytes.push(0xed);
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
-                if (lop[0].tipo != TipoVal.Numero) throw new TipoParametrosIncorrectoError(ins);
+                if (lop[0].tipo != TipoVal.NUMERO) throw new TipoParametrosIncorrectoError(ins);
                 switch (lop[0].valor){
                     case 0: bytes.push(0x46); break;
                     case 1: bytes.push(0x56); break;
                     case 2: bytes.push(0x5e); break;
                     default: throw new TipoParametrosIncorrectoError(ins);
                 }
+                break;
             case "inc":
                 if (lop.length != 1) throw new NumeroParametrosIncorrectoError(ins, 1, lop.length);
                 try {

@@ -812,7 +812,7 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        bytes.push(0xdd, 0x36, ...codificarValor(lop[1].valor, 1, true), ...codificarValor(lop[0].valor, 1, true));
+                        bytes.push(0xdd, 0x36, ...codificarValor(lop[0].valor, 1, true), ...codificarValor(lop[1].valor, 1, true));
                         break;
                     } catch {}
                     try {
@@ -831,7 +831,7 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.N, lop[1]);
-                        bytes.push(0xfd, 0x36, ...codificarValor(lop[1].valor, 1, true), ...codificarValor(lop[0].valor, 1, true));
+                        bytes.push(0xfd, 0x36, ...codificarValor(lop[0].valor, 1, true), ...codificarValor(lop[1].valor, 1, true));
                         break;
                     } catch {}
                     try {
@@ -945,12 +945,12 @@ class ProgramaAsm {
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RHL, lop[1]);
-                        bytes.push(0x22, ...codificarValor(lop[1].valor, 2, true))
+                        bytes.push(0x22, ...codificarValor(lop[0].valor, 2, true))
                         break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.SS, lop[1]);
-                        bytes.push(0xed, 67 + this.ValsSS[lop[1].valor]<<4, ...codificarValor(lop[1].valor, 2, true));
+                        bytes.push(0xed, 67 + this.ValsSS[lop[1].valor]<<4, ...codificarValor(lop[0].valor, 2, true));
                         break;
                     } catch {}
                     try {

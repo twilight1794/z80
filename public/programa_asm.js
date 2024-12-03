@@ -564,7 +564,7 @@ class ProgramaAsm {
                 else if (lop.length == 2){
                     this.esTipo(TipoParam.CC, lop[0]);
                     this.esTipo(TipoParam.NN, lop[1]);
-                    bytes.push(196+(this.valsCC[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 2, true));
+                    bytes.push(196+(this.ValsCC[lop[0].valor]<<3), ...codificarValor(lop[1].valor, 2, true));
                 }
                 else throw new NumeroParametrosIncorrectoError(ins, [1, 2], lop?.length);
                 break;

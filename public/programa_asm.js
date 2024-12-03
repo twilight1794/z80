@@ -650,25 +650,30 @@ class ProgramaAsm {
                     this.esTipo(TipoParam.RAF, lop[0]);
                     this.esTipo(TipoParam.RAF, lop[1]);
                     bytes.push(0x08);
+                    break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.RDE, lop[0]);
                     this.esTipo(TipoParam.RHL, lop[1]);
                     bytes.push(0xeb);
+                    break;
                 } catch {}
                 try {
                     this.esTipo(TipoParam.SP, lop[0]);
                     try {
                         this.esTipo(TipoParam.RHL, lop[1]);
                         bytes.push(0xe3);
+                        break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RIX, lop[1]);
                         bytes.push(0xdd, 0xe3);
+                        break;
                     } catch {}
                     try {
                         this.esTipo(TipoParam.RIY, lop[1]);
                         bytes.push(0xfd, 0xe3);
+                        break;
                     } catch {}
                     throw new TipoParametrosIncorrectoError(ins);
                 } catch {}

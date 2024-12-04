@@ -781,12 +781,26 @@ class ProgramaAsm {
                 break;
             case "jr":
                 if (lop.length == 1){
-                    this.esTipo(TipoParam.E, lop[0]);
-                    bytes.push(0x18, ...codificarValor(lop[0].valor-this.cl-2, 1, true));
-                    break;
+                    let orig_cl;
+                    try {
+                        orig_cl = lop[0].valor;
+                        lop[0].valor -= this.cl-2;
+                        this.esTipo(TipoParam.E, lop[0]);
+                        bytes.push(0x18, ...codificarValor(lop[0].valor, 1, true));
+                        break;
+                    } catch { lop[0].valor = orig_cl; }
+                    throw new TipoParametrosIncorrectoError(ins);
                 } else if (lop.length == 2){
-                    this.esTipo(TipoParam.CC, lop[0]);
-                    this.esTipo(TipoParam.E, lop[1]);
+                    let orig_cl;
+                    try {
+                        orig_cl = lop[1].valor;
+                        lop[1].valor -= this.cl-2;
+                        this.esTipo(TipoParam.CC, lop[0]);
+                        this.esTipo(TipoParam.E, lop[1]);
+                    } catch {
+                        lop[1].valor = orig_cl;
+                        throw new TipoParametrosIncorrectoError(ins);
+                    }
                     let val = codificarValor(lop[1].valor-this.cl-2, 1, true);
                     switch (lop[0].valor){
                         case "c":
